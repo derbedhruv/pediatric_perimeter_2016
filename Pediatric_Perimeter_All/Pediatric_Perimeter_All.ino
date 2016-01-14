@@ -13,22 +13,21 @@
 // Moderately bright green color.
 int r=163; int g=255; int b=0;
 
+//The number of LEDs corresponding to each meridian. Note that array index 0 is actually 
+//the physical meridian labelled 1. Edit the values accordingly.
+
 //__int8 is the best choice. No other complications right? --------
 // Which pin on the Arduino is connected to the NeoPixels?
-short pinArduino[25];
+short pinArduino[] = {16, 15, 3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 00};
 // How many NeoPixels are attached to the strips?
-short numPixels[25];
+short numPixels[] = {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24};
 Adafruit_NeoPixel meridians[25];
 
 void setup() {
-  
-  //The number of LEDs corresponding to each meridian. Note that array index 0 is actually 
-  //the physical meridian labelled 1. Edit the values accordingly.
-  numPixels = {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24};
-  pinArduino = {16, 15, 3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 00};
+    
   for(int i = 0;i<25;i++) {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
-    meridians[i] = Adafruit_NeoPixel(numPixels[i], PIN1, NEO_GRB + NEO_KHZ800);
+    meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
 
   sphere();
@@ -76,7 +75,7 @@ void hemisphere1() {
 void hemisphere2() {
   for(int i = 0; i < 25; i++) { 
     if( (i>18 && i!=24) || (i<7) ){ //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
-      meridian[i].begin();
+      meridians[i].begin();
     }
   }
 }
@@ -122,14 +121,14 @@ void stripN(int n) { //HERE, n starts from 0. ----------------------------------
   for(int j=0; j<numPixels[n]; j++) {
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     meridians[n].setBrightness(Br);
-    meridians[n].setPixelColor(j, pixels25.Color(r,g,b));
+    meridians[n].setPixelColor(j, meridians[24].Color(r,g,b));
     meridians[n].show(); // This sends the updated pixel color to the hardware.
     //  delay(0); // Delay for a period of time (in milliseconds).
   }
   // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1,2 and 3 are switched on
   for(int j=n*3;j<(n*3+3);j++) {
     meridians[24].setBrightness(Br);
-    meridians[24].setPixelColor(j, pixels25.Color(r,g,b));
+    meridians[24].setPixelColor(j, meridians[24].Color(r,g,b));
     meridians[24].show();// This sends the updated pixel color to the hardware.
     //  delay(0); // Delay for a period of time (in milliseconds).
   }
