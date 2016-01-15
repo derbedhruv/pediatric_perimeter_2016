@@ -24,14 +24,14 @@ short numPixels[] = {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 Adafruit_NeoPixel meridians[25];
 
 void setup() {
-    
   for(int i = 0;i<25;i++) {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
 
   sphere();
-  //delay(1000);
+  delay(1000);
+  clearAll();
   //hemisphere1();
   //delay(1000);
   //hemisphere2();
@@ -55,6 +55,16 @@ void setup() {
   //strip5();
   //delay(1000);
 }
+
+void clearAll() {
+  for(int i = 0; i<25; i++) {
+    clearN(i);
+  }
+}
+
+void clearN(int n) {
+  meridians[n].clear();
+} 
 
 void sphere() {
   //To draw a sphere with all the LED's on in the Perimeter, each strip is being called.
@@ -108,23 +118,30 @@ void quad4() {
   }
 }
 
-void loop(){
-  for(int i = 0; i<24; i++) {
-    stripN(i);
-  }
+void loop() {
+  fullStripAll();
   // Daisy Chain Strip
   // strip25();
 }
 
-void stripN(int n) { //HERE, n starts from 0. ------------------------------------------------
+void fullStripAll() {
+  for(int i = 0; i<24; i++) {
+    fullStripN(i);
+  }
+}
+
+void onlyStripN(int n) {
   // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
   for(int j=0; j<numPixels[n]; j++) {
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     meridians[n].setBrightness(Br);
-    meridians[n].setPixelColor(j, meridians[24].Color(r,g,b));
+    meridians[n].setPixelColor(j, meridians[24].Color(r,g,b)); //--------------why meridians[24].color???
     meridians[n].show(); // This sends the updated pixel color to the hardware.
     //  delay(0); // Delay for a period of time (in milliseconds).
   }
+}
+
+void daisyChainN(int n){
   // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1,2 and 3 are switched on
   for(int j=n*3;j<(n*3+3);j++) {
     meridians[24].setBrightness(Br);
@@ -134,6 +151,10 @@ void stripN(int n) { //HERE, n starts from 0. ----------------------------------
   }
 }
 
+void fullStripN(int n) { //HERE, n starts from 0. ------------------------------------------------
+  onlyStripN(n);
+  daisyChain(n);
+}
 /*void strip25() {
 
   // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
