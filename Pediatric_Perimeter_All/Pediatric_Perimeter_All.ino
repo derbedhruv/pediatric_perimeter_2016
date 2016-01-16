@@ -64,6 +64,7 @@ void setup() {
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
   clearAll();
+  // daisyChainN(14);
 }
 
 void loop() {
@@ -322,22 +323,30 @@ void lightPixelStripN(int strip, int Pixel) {
 
 void onlyStripN(int strip) {
   // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
-  for(int j=0; j < numPixels[strip]; j++) {
-    lightPixelStripN(strip, j);
-  }
+  meridians[strip-1].setBrightness(Br);
+  setStripColorN(strip-1);
+  meridians[strip-1].show(); // This sends the updated pixel color to the hardware.
+  meridians[strip-1].begin();
 }
 
 void daisyChainN(int n){
+  // first we need to convert the "real world" meridians into "daisy chain" coordinate meridians.
+  if (n < 8) {
+    n = 7 - n;
+  } else {
+    n = -n + 31;
+  }
+  
   // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1st ,2nd and 3rd LEDs are switched on.
-  for(int j = n*3; j < 3*(n + 1); j++) {
+  for(int j = 3*n; j < 3*n + 3; j++) {
     lightPixelStripN(24, j);
   }
 }
 
 void fullStripN(int n) {
   // this is a debugging mechanism to turn on all the strips and the daisy chain strip as well
-  onlyStripN(n-1);
-  daisyChainN(n-1);
+  onlyStripN(n);
+  daisyChainN(n);
 }
 
 void setStripColorN(int n) {
