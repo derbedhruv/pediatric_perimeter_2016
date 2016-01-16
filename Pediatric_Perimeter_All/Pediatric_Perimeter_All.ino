@@ -1,69 +1,106 @@
-// Pediatric Perimeter LED Addressing - Kanospa Mild - 21-12-15
-// LVPEI Srujana Innovation
+/**************************************************************
+//  PEDIATRIC PERIMETER ARDUINO SEGMENT FOR ADDRESSABLE LEDs
+//  SRUJANA CENTER FOR INNOVATION, LV PRASAD EYE INSTITUTE
+//
+//  AUTHORS: Sankalp Modi, Darpan Sanghavi, Dhruv Joshi
+//
+//  This code gives the user the following possible LED outputs through
+//  serial addressing:
+//  1. Hemispheres: Turning on half of the pediatric perimeter 'sphere'
+//    "h,l" for the left hemisphere
+//    "h,r" for the right hemisphere
+//    "h,a" for the left hemi without the central 30 degrees
+//    "h,b" for the right hemi without the central 30 degrees
+//
+//
+***************************************************************/
 
-//NeoPixel Library from Adafruit
+//NeoPixel Library from Adafruit is being used here
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
 
-#define Br 10
+#define Br 30      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
-int r=163; int g=255; int b=0;
+int r = 163, g = 255, b = 4;
 
 //The number of LEDs corresponding to each meridian. Note that array index 0 is actually 
 //the physical meridian labelled 1. Edit the values accordingly.
 
-//__int8 is the best choice. No other complications right? --------
-// Which pin on the Arduino is connected to the NeoPixels?
+/**************************************************************************************************
+//
+// ARDUINO PIN CONFIGURATION TO THE LED STRIPS AND HOW MANY PIXELS TO BE TURNED ON ON EACH STRIP!!
+//
+*************************************************************************************************/
 short pinArduino[] = {16, 15, 3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 00};
-// How many NeoPixels are attached to the strips?
 short numPixels[] = {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24};
-Adafruit_NeoPixel meridians[25];
+
+Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
+
+/*************************************************************************************************/
 
 void setup() {
   for(int i = 0;i<25;i++) {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
-
-  sphere();
-  delay(1000);
-  clearAll();
-  //hemisphere1();
-  //delay(1000);
-  //hemisphere2();
-  //delay(1000);
-  //quad1();
-  //delay(1000);
-  //quad2();
-  //delay(1000);
-  //quad3();
-  //delay(1000);
-  //quad4();
-  //delay(1000);
-  //strip1();
-  //delay(1000);
-  ///strip2();
-  //delay(1000);
-  //strip3();
-  //delay(1000);
-  //strip4();
-  //delay(1000);
-  //strip5();
-  //delay(1000);
 }
 
+void loop() {
+  // we don't really do anything here.. for now
+  fullStripAll();
+  delay(2000);
+  clearAll();
+  delay(3000);
+}
+
+/*
+void sweepStripN(int n){
+  currentMillis = millis();
+
+  // the code for choosing which LEDs need to be on..
+  // step 3: we put the latitudes high one by one with a time delay
+  // Serial.println("entered loop");
+  if(currentMillis - previousMillis <= interval) { //there is NO MINIMUM BOUND for wait time before the next pixel is switched on---------
+    // clear the previous latitude..
+    if (b < 24) { //---------------b adjust--------------- sweepStart in place of 24-----------
+      clearN(n);
+    }
+    if (b >= 0) { //---------------b adjust---------------- ... earlier b>=2
+      // then, write the present one HIGH
+      lightPixelStripN(currentMeridian, b);
+      Serial.print("Lighting pixel: ");
+      Serial.println(b);
+      // analogWrite(b, Slider);
+    } else {
+      // analogWrite(longitudeInt, Slider);
+      // digitalWrite(2, LOW);  // clear the last one as well, which will always be the topmost one (assuming a test is always completed when started).
+      clearN(n);
+      sweep = false;
+    }
+  } else {
+    //Serial.println(b-1);    // That's the iteration of the LED that's ON 
+    b--;    // change the b value
+    previousMillis = currentMillis;   
+    // We notify over serial (to processing), that the next LED has come on.
+  }
+}
+*/
+
 void clearAll() {
+  // put them all off
   for(int i = 0; i<25; i++) {
     clearN(i);
   }
 }
 
 void clearN(int n) {
+  // put off a particular meridian specified by n
   meridians[n].clear();
+  meridians[n].show();
 } 
 
 void sphere() {
@@ -118,57 +155,36 @@ void quad4() {
   }
 }
 
-void loop() {
-  fullStripAll();
-  // Daisy Chain Strip
-  // strip25();
-}
-
 void fullStripAll() {
   for(int i = 0; i<24; i++) {
     fullStripN(i);
   }
 }
 
+void lightPixelStripN(int n, int pixel) {
+  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+  meridians[n].setBrightness(Br);
+  meridians[n].setPixelColor(pixel, meridians[24].Color(r,g,b)); //--------------why meridians[24].color???
+  meridians[n].show(); // This sends the updated pixel color to the hardware.
+  meridians[n].begin();
+  //  delay(0); // Delay for a period of time (in milliseconds).
+}
+
 void onlyStripN(int n) {
   // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
   for(int j=0; j<numPixels[n]; j++) {
-    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-    meridians[n].setBrightness(Br);
-    meridians[n].setPixelColor(j, meridians[24].Color(r,g,b)); //--------------why meridians[24].color???
-    meridians[n].show(); // This sends the updated pixel color to the hardware.
-    //  delay(0); // Delay for a period of time (in milliseconds).
+    lightPixelStripN(n, j);
   }
 }
 
 void daisyChainN(int n){
-  // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1,2 and 3 are switched on
+  // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1st ,2nd and 3rd LEDs are switched on.
   for(int j=n*3;j<(n*3+3);j++) {
-    meridians[24].setBrightness(Br);
-    meridians[24].setPixelColor(j, meridians[24].Color(r,g,b));
-    meridians[24].show();// This sends the updated pixel color to the hardware.
-    //  delay(0); // Delay for a period of time (in milliseconds).
+    lightPixelStripN(24, j);
   }
 }
 
-void fullStripN(int n) { //HERE, n starts from 0. ------------------------------------------------
+void fullStripN(int n) { //HERE, n starts from 0. 
   onlyStripN(n);
-  daisyChain(n);
+  daisyChainN(n);
 }
-/*void strip25() {
-
-  // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
-//Numpixel =71 (72-1, LED Count starts from 0)
-  for(int i=0;i<NUMPIXELS25;i++){
-
-    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-    pixels.setBrightness(20);
-    pixels.setPixelColor(i, pixels.Color(r,g,b)); // Moderately bright green color.
-
-    pixels.show(); // This sends the updated pixel color to the hardware.
-
-    delay(0); // Delay for a period of time (in milliseconds).
-
-  }
-}
-*/
