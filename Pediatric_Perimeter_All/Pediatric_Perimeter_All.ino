@@ -84,10 +84,8 @@ void serialEvent() {
 */
 
 
-/*
 // CATCH SERIAL EVENTS AND THEN RUN THE APPROPRIATE FUNCTIONS
 void serialEvent() {
-  Serial.println("serial event!");
   if (Serial.available()) {
     char inChar = (char)Serial.read(); 
     // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
@@ -138,7 +136,8 @@ void serialEvent() {
            case 'l': {
              // THis is the hemisphere case. Turn on all the latitudes..
              // LEFT hemisphere.. 
-             
+             Serial.println("left hemi");
+             hemisphere1();
              break;
            }
            case 'r': { 
@@ -211,7 +210,9 @@ void serialEvent() {
         if (longit[0] == 'x') {
           // put everything off, but put the fixation back on
           digitalWrite(fixationLED, HIGH);
-          breakOut = true;  // break out of the loops yo
+          // breakOut = true;  // break out of the loops yo
+          clearAll();
+          delay(1);
           // reset everything...
           sweep = false;
         } else {
@@ -224,7 +225,7 @@ void serialEvent() {
     }
   }
 }
-*/
+
 
 /***************************************************************************************************
 //
@@ -245,7 +246,7 @@ void clearAll() {
 
 void clearN(int n) {
   // put off a particular meridian specified by n
-    // meridians[n-1].clear();
+    meridians[n-1].clear();
     meridians[n-1].setBrightness(0);      // because we want to "clear all"
     meridians[n-1].begin();
     meridians[n-1].show();
@@ -256,17 +257,14 @@ void sphere() {
   //Pixels 25 is the strip for Daisy Chain with 72 LED's on in all.
   for(int i = 0; i < 25; i++) {
     // meridians[i].clear();
-    meridians[i].setBrightness(Br); 
-    setStripColorN(i); 
-    meridians[i].begin();
-    meridians[i].show();
+    fullStripN(i);
   }
 }
 
 //Initialises Hemisphere 1 - Left Hemisphere: Physical Meridian numbers 7 to 19.
 void hemisphere1() {
-  for(int i = 6; i < 19; i++) { //take a full 25 loop, and clear() all the other ones? --------------------
-    meridians[i].begin();
+  for(int i = 7; i <= 19; i++) { //take a full 25 loop, and clear() all the other ones? --------------------
+    fullStripN(i);
   }
 }
 
@@ -274,7 +272,7 @@ void hemisphere1() {
 void hemisphere2() {
   for(int i = 0; i < 25; i++) { 
     if( (i > 18 && i != 24) || (i < 7) ){ //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
-      meridians[i].begin();
+      
     }
   }
 }
@@ -314,22 +312,22 @@ void fullStripAll() {
   }
 }
 
-void lightPixelStripN(int n, int pixel) {
-  meridians[n-1].setBrightness(Br);
-  setStripColorN(n-1);    // will set to (r,g,b) defined earlier
-  meridians[n-1].show(); // This sends the updated pixel color to the hardware.
-  meridians[n-1].begin();
+void lightPixelStripN(int strip, int Pixel) {
+  // light up the 'n' meridian
+  meridians[strip].setBrightness(Br);
+  meridians[strip].setPixelColor(Pixel, r,g,b);
+  meridians[strip].show(); // This sends the updated pixel color to the hardware.
+  meridians[strip].begin();
 }
 
-void onlyStripN(int n) {
+void onlyStripN(int strip) {
   // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
-  for(int j=0; j < numPixels[n-1]; j++) {
-    lightPixelStripN(n, j);
+  for(int j=0; j < numPixels[strip]; j++) {
+    lightPixelStripN(strip, j);
   }
 }
 
 void daisyChainN(int n){
-  n = n - 1;    // so that we can continue using natural numbers for referring to the meridians - easy to debug
   // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1st ,2nd and 3rd LEDs are switched on.
   for(int j = n*3; j < 3*(n + 1); j++) {
     lightPixelStripN(24, j);
