@@ -21,7 +21,7 @@
 #include <avr/power.h>
 #endif
 
-#define Br 30      // This is where you define the brightness of the LEDs - this is constant for all
+#define Br 20      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
@@ -37,8 +37,8 @@ int r = 163, g = 255, b = 4;
 //  Meridian angle  :
 //  (in terms of the isopter)
 *************************************************************************************************/
-short pinArduino[] = {16, 15, 3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 11};
-short numPixels[] =  {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24};
+short pinArduino[] = {16, 15,  3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 11};
+short numPixels[] =  {24, 24, 24, 24, 24, 11, 11, 12, 23, 23, 25, 24, 24, 26, 23, 24, 11,  9,  9,  9, 11, 26, 24, 24, 72};    // there are 72 in the daisy chain
 
 Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
 
@@ -54,10 +54,16 @@ int fixationLED = 12;
 
 
 void setup() {
-  for(int i = 0; i < sizeof(pinArduino); i++) {
+  // setup serial connection
+  Serial.begin(9600);
+  Serial.println("starting..");
+  
+  for(int i = 0; i < 25; i++) {
+    Serial.println("setting up meridian " + String(i));
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
+  clearAll();
 }
 
 void loop() {
@@ -67,8 +73,21 @@ void loop() {
   }
 }
 
+/*
+void serialEvent() {
+  if (Serial.available()) {
+    char in = (char)Serial.read();
+    Serial.println("putting on sphere");
+    sphere();
+  }
+}
+*/
+
+
+/*
 // CATCH SERIAL EVENTS AND THEN RUN THE APPROPRIATE FUNCTIONS
 void serialEvent() {
+  Serial.println("serial event!");
   if (Serial.available()) {
     char inChar = (char)Serial.read(); 
     // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
@@ -205,6 +224,7 @@ void serialEvent() {
     }
   }
 }
+*/
 
 /***************************************************************************************************
 //
@@ -218,22 +238,28 @@ void sweepStripN(int n){
 
 void clearAll() {
   // put them all off
-  for(int i = 0; i<25; i++) {
+  for(int i = 1; i <= 25; i++) {
     clearN(i);
   }
 }
 
 void clearN(int n) {
   // put off a particular meridian specified by n
-  meridians[n].clear();
-  meridians[n].show();
+    // meridians[n-1].clear();
+    meridians[n-1].setBrightness(0);      // because we want to "clear all"
+    meridians[n-1].begin();
+    meridians[n-1].show();
 } 
 
 void sphere() {
   //To draw a sphere with all the LED's on in the Perimeter, each strip is being called.
   //Pixels 25 is the strip for Daisy Chain with 72 LED's on in all.
   for(int i = 0; i < 25; i++) {
+    // meridians[i].clear();
+    meridians[i].setBrightness(Br); 
+    setStripColorN(i); 
     meridians[i].begin();
+    meridians[i].show();
   }
 }
 
@@ -289,9 +315,8 @@ void fullStripAll() {
 }
 
 void lightPixelStripN(int n, int pixel) {
-  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
   meridians[n-1].setBrightness(Br);
-  meridians[n-1].setPixelColor(pixel, meridians[24].Color(r,g,b));
+  setStripColorN(n-1);    // will set to (r,g,b) defined earlier
   meridians[n-1].show(); // This sends the updated pixel color to the hardware.
   meridians[n-1].begin();
 }
@@ -315,4 +340,11 @@ void fullStripN(int n) {
   // this is a debugging mechanism to turn on all the strips and the daisy chain strip as well
   onlyStripN(n-1);
   daisyChainN(n-1);
+}
+
+void setStripColorN(int n) {
+  // set colour on all LEDs for a strip 'n'
+  for (int j = 0; j < numPixels[n]; j++) {
+      meridians[n].setPixelColor(j, r,g,b);
+  }
 }
