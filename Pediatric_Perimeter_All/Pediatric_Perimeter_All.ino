@@ -27,21 +27,31 @@
 // Moderately bright green color.
 int r = 163, g = 255, b = 4;
 
+
 /**************************************************************************************************
 //
 //  ARDUINO PIN CONFIGURATION TO THE LED STRIPS AND HOW MANY PIXELS TO BE TURNED ON ON EACH STRIP!!
 //
-//  Arduino Pin     :  16 15 3  22 21 20 34 32 30 42  44  46  48  50  52  40  38  36  28  6   24  19  18  12  11     13
+//  Arduino Pin     :  16 15 3  22 21 20 34 32 30 42  44  46  48  50  52  40  38  36  28  26  24  19  18  17  11     12
 //  Meridian Label  :  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  daisy  fixation
 //  Meridian angle  :
 //  (in terms of the isopter)
 *************************************************************************************************/
-short pinArduino[] = {16, 15, 3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 00};
-short numPixels[] = {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24};
+short pinArduino[] = {16, 15, 3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 11};
+short numPixels[] =  {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24};
 
 Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
 
 /*************************************************************************************************/
+
+// THE FOLLOWING ARE VARIABLES FOR THE ENTIRE SERIALEVENT INTERRUPT ONLY
+// the variable 'breakOut' is a boolean which is used to communicate to the loop() that we need to immedietely shut everything off
+String inputString = "", lat = "", longit = "";
+boolean acquired = false, breakOut = false, sweep = false;
+unsigned long currentMillis;
+int sweepStart, longitudeInt, Slider = 255, currentSweepLED;
+int fixationLED = 12;
+
 
 void setup() {
   for(int i = 0; i < sizeof(pinArduino); i++) {
@@ -51,13 +61,156 @@ void setup() {
 }
 
 void loop() {
-  // we don't really do anything here.. for now
-  fullStripAll();
-  delay(2000);
-  clearAll();
-  delay(3000);
+  // keep polling for breakOut - it is because of this polling behaviour that we shouldn't use a delay() anywhere.
+  if (breakOut == true) {
+     clearAll(); 
+  }
 }
 
+// CATCH SERIAL EVENTS AND THEN RUN THE APPROPRIATE FUNCTIONS
+void serialEvent() {
+  if (Serial.available()) {
+    char inChar = (char)Serial.read(); 
+    // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
+    // for historical reasons we will store this as variables (lat, long)
+    if (inChar == ',') {
+      breakOut = false;
+      // Serial.println(inputString);
+      lat = inputString;
+      // reset the variable
+      inputString = "";
+    } else {
+      // if its a newline, that means we've reached the end of the command. The stuff before this is a character indicating the second argument of the function to be performed.
+      if (inChar == '\n') {
+        breakOut = false;
+        longit = inputString;
+        // reset everything again..
+        inputString = "";
+        
+      // we deal with 3 cases: sweeps, hemispheres and quadrants
+     switch(lat[0]) {  // use only the first character, the rest is most likely garbage
+         
+       // this is the case of setting brightness of the LEDs
+       case 'm':{
+         // brightness = String(longit).toInt();
+         break;
+       }
+       
+       // change sweep time
+       case 't':{
+         // interval= longit.toInt();
+         break;
+       }
+       
+       // choose strip to sweep
+       case 's': {
+         // this is the case of sweeping a single longitude. 
+         // remember to serial.print the present LED which is on - this will be reflected in the processing program (with the delay removed as much as possible)
+       }
+ 
+       case 'l':{
+           // put on the fixation LED
+       }
+       
+       case 'h': {     
+         digitalWrite(fixationLED,LOW);
+         // we then switch through WHICH hemisphere
+         switch(longit[0]){
+           case 'l': {
+             // THis is the hemisphere case. Turn on all the latitudes..
+             // LEFT hemisphere.. 
+             
+             break;
+           }
+           case 'r': { 
+             // THis is the hemisphere case. Turn on all the latitudes..
+             
+             break;  
+           }
+           // 30 degrees and outer case:
+           case 'a': {
+             
+             break;
+           }
+           case 'b': { 
+             
+             break;  
+           }
+         }
+         break;
+       }
+       case 'q': {
+         // quadrants..
+         digitalWrite(fixationLED,LOW);
+         switch(longit[0]) {
+           // we shall go anticlockwise. "1" shall start from the bottom right. 
+          case '1': {
+            // latitudes.. all on
+            
+            break;
+          } 
+          case '2': {
+            // latitudes.. all on
+            
+            break;
+          } 
+          case '3': {
+            // latitudes.. all on
+            
+            break;
+          } 
+          case '4': {
+            // latitudes.. all on
+            
+            break;
+          } 
+          case '5': {
+            // turn on only the 30 degrees and higher latitudes
+            
+            break;
+          }
+          case '6': {
+            // turn on only the 30 degrees and higher latitudes
+            
+            break;
+          }
+          case '7': {
+            // turn on only the 30 degrees and higher latitudes
+            
+            break;
+          }
+         case '8': {
+            // turn on only the 30 degrees and higher latitudes
+            
+            break;
+          } 
+         }
+         break;
+       }
+     } 
+        
+        if (longit[0] == 'x') {
+          // put everything off, but put the fixation back on
+          digitalWrite(fixationLED, HIGH);
+          breakOut = true;  // break out of the loops yo
+          // reset everything...
+          sweep = false;
+        } else {
+          digitalWrite(fixationLED,LOW);
+          inputString = "";
+        }
+      } else {
+        inputString += inChar;
+      }
+    }
+  }
+}
+
+/***************************************************************************************************
+//
+//  FUNCTION DEFINITIONS
+//
+***************************************************************************************************/
 
 void sweepStripN(int n){
   // kinetic sweep of a strip, starting from the last
@@ -94,7 +247,7 @@ void hemisphere1() {
 //Initializes Hemisphere 2 - Right Hemisphere
 void hemisphere2() {
   for(int i = 0; i < 25; i++) { 
-    if( (i>18 && i!=24) || (i<7) ){ //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
+    if( (i > 18 && i != 24) || (i < 7) ){ //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
       meridians[i].begin();
     }
   }
@@ -158,7 +311,8 @@ void daisyChainN(int n){
   }
 }
 
-void fullStripN(int n) { //HERE, n starts from 0. 
+void fullStripN(int n) {
+  // this is a debugging mechanism to turn on all the strips and the daisy chain strip as well
   onlyStripN(n-1);
   daisyChainN(n-1);
 }
