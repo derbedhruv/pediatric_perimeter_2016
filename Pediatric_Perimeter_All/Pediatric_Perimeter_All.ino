@@ -150,59 +150,56 @@ void serialEvent() {
                }
                // 30 degrees and outer case:
                case 'a': {
-                 
+                 // 30 degrees OFF left hemisphere
+                 hemisphere3();
                  break;
                }
                case 'b': { 
-                 
+                 hemisphere4();
                  break;  
                }
              }
              break;
            }
            case 'q': {
-             // quadrants..
+             Serial.println("quadrants");
              digitalWrite(fixationLED,LOW);
              switch(longit[0]) {
                // we shall go anticlockwise. "1" shall start from the bottom right. 
               case '1': {
-                // latitudes.. all on
-                
+                quad1();
                 break;
               } 
               case '2': {
-                // latitudes.. all on
-                
+                quad2();
                 break;
               } 
               case '3': {
-                // latitudes.. all on
-                
+                quad3();
                 break;
               } 
               case '4': {
-                // latitudes.. all on
-                
+                quad4();
                 break;
               } 
               case '5': {
                 // turn on only the 30 degrees and higher latitudes
-                
+                quad5();
                 break;
               }
               case '6': {
                 // turn on only the 30 degrees and higher latitudes
-                
+                quad6();
                 break;
               }
               case '7': {
                 // turn on only the 30 degrees and higher latitudes
-                
+                quad7();
                 break;
               }
               case '8': {
                 // turn on only the 30 degrees and higher latitudes
-                
+                quad8();
                 break;
               } 
              }
@@ -269,45 +266,102 @@ void sphere() {
 void hemisphere1() {
   for(int i = 7; i <= 19; i++) {
     fullStripN(i);
-    // delay(500);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 //Initializes Hemisphere 2 - Right Hemisphere
 void hemisphere2() {
   for(int i = 1; i < 24; i++) { 
-    if( (i > 18) || (i < 7) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
+    if( (i > 18) || (i < 8) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
       fullStripN(i);
+    }
+  }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
+}
+
+//Initialises Hemisphere a - Left Hemisphere without the central 30 degrees (or the central daisy)
+void hemisphere3() {
+  for(int i = 7; i <= 19; i++) {
+    onlyStripN(i);
+  }
+}
+
+//Initializes Hemisphere b - Right Hemisphere without central 30 degrees
+void hemisphere4() {
+  for(int i = 1; i < 24; i++) { 
+    if( (i > 18) || (i < 8) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
+      onlyStripN(i);
     }
   }
 }
 
 //Initializes Quadrant 1
 void quad1() {
-  for(int i = 0; i < 6; i++) { 
-    meridians[i].begin();
+  for(int i = 1; i <= 7; i++) { 
+    fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 //Initializes Quadrant 2
 void quad2() {
-  for(int i = 6; i < 12; i++) { 
-    meridians[i].begin();
+  for(int i = 7; i <= 13; i++) { 
+    fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 //Initializes Quadrant 3
 void quad3() {
-  for(int i = 12; i < 18; i++) { 
-    meridians[i].begin();
+  for(int i = 13; i <= 19; i++) { 
+    fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 //Initializes Quadrant 4
 void quad4() {
-  for(int i = 18; i < 24; i++) { 
-    meridians[i].begin();
+  for(int i = 19; i <= 24; i++) { 
+    fullStripN(i);
   }
+  fullStripN(1);
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
+}
+
+//Initializes Quadrant 5 - which is quad 1 without the central 30
+void quad5() {
+  for(int i = 1; i <= 7; i++) { 
+    onlyStripN(i);
+  }
+}
+
+//Initializes Quadrant 6
+void quad6() {
+  for(int i = 7; i <= 13; i++) { 
+    onlyStripN(i);
+  }
+}
+
+//Initializes Quadrant 7 - 
+void quad7() {
+  for(int i = 13; i <= 19; i++) { 
+    onlyStripN(i);
+  }
+}
+
+//Initializes Quadrant 8
+void quad8() {
+  for(int i = 19; i <= 24; i++) { 
+    onlyStripN(i);
+  }
+  onlyStripN(1);
 }
 
 void fullStripAll() {
@@ -315,6 +369,8 @@ void fullStripAll() {
      // turn on all strips 
     fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 void lightPixelStripN(int strip, int Pixel) {
@@ -341,12 +397,9 @@ void daisyChainN(int n){
   }
   
   // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1st ,2nd and 3rd LEDs are switched on.
-  for(int j = 3*n; j < 3*n + 3; j++) {
+  for(int j = 3*n; j < 3*(n + 1); j++) {
     lightPixelStripN(24, j);
   }
-  
-  meridians[24].show(); // This sends the updated pixel color to the hardware.
-  meridians[24].begin();
 }
 
 void fullStripN(int n) {
