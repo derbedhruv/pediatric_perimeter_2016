@@ -21,7 +21,7 @@
 #include <avr/power.h>
 #endif
 
-#define Br 10      // This is where you define the brightness of the LEDs - this is constant for all
+#define Br 25      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
@@ -29,6 +29,7 @@
 #define r 163
 #define g 255
 #define b 4
+#define interval 500  // this is the interval between LEDs in the sweep
 
 
 /**************************************************************************************************
@@ -51,9 +52,8 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 // the variable 'breakOut' is a boolean which is used to communicate to the loop() that we need to immedietely shut everything off
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
-unsigned long currentMillis;
-byte sweepStart, longitudeInt, Slider = 255, currentSweepLED;
-byte fixationLED = 12;
+unsigned long previousMillis, currentMillis;  // the interval for the sweep in kinetic perimetry (in ms)
+byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, fixationLED = 12, daisyStrip;
 
 
 void setup() {
@@ -69,22 +69,44 @@ void setup() {
 }
 
 void loop() {
-  // keep polling for breakOut - it is because of this polling behaviour that we shouldn't use a delay() anywhere.
-  if (breakOut == true) {
-     clearAll(); 
+  if (sweep == true) {
+    // we will poll for this variable and then sweep the same LED
+    currentMillis = millis();
+    if(currentMillis - previousMillis <= interval) {
+           // update the LED to be put on. Check if the current LED is less than the length of the sweeping strip
+           if (currentSweepLED >= 3) {
+             // then, write the current one to the 
+             meridians[sweepStrip-1].clear();
+             lightPixelStripN(sweepStrip, currentSweepLED - 3);
+             meridians[sweepStrip-1].show(); // This sends the updated pixel color to the hardware.
+             meridians[sweepStrip-1].begin();
+           } else {
+             // we're done with the present strip. switch to daisy chain.
+             // clear all previous meridian stuff...
+             meridians[sweepStrip-1].clear();
+             meridians[sweepStrip-1].show();
+             meridians[sweepStrip-1].begin();
+             
+             meridians[24].clear();
+             lightPixelStripN(24, 3*daisyStrip + 2 - currentSweepLED);
+             meridians[24].show(); // This sends the updated pixel color to the hardware.
+             meridians[24].begin();
+           }
+           
+           // stop everything when the currentSweepLED is 0.
+           if (currentSweepLED == 255) {
+             previousMillis = 0; 
+             clearAll();
+             sweep = false;
+           }
+         } else {           // what to do when its within the interval
+           Serial.println(currentSweepLED);    // That's the iteration of the LED that's ON 
+           currentSweepLED = currentSweepLED - 1;    // update the LED that has to be on
+           previousMillis = currentMillis;   
+           // We notify over serial (to processing), that the next LED has come on.
+         }
   }
 }
-
-/*
-void serialEvent() {
-  if (Serial.available()) {
-    char in = (char)Serial.read();
-    Serial.println("putting on sphere");
-    sphere();
-  }
-}
-*/
-
 
 // CATCH SERIAL EVENTS AND THEN RUN THE APPROPRIATE FUNCTIONS
 void serialEvent() {
@@ -124,7 +146,14 @@ void serialEvent() {
            // choose strip to sweep
            case 's': {
              // this is the case of sweeping a single longitude. 
-             // remember to serial.print the present LED which is on - this will be reflected in the processing program (with the delay removed as much as possible)
+             // Based on the number entered as longit[0], we will turn on that particular LED.
+             byte chosenStrip = longit.toInt();
+             if (chosenStrip <= 24 && chosenStrip > 0) {
+               sweep = true;
+               sweepStrip = chosenStrip;
+               daisyStrip = daisyConverter(sweepStrip);
+               currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain
+             }
            }
      
            case 'l':{
@@ -233,10 +262,6 @@ void serialEvent() {
 //  FUNCTION DEFINITIONS
 //
 ***************************************************************************************************/
-
-void sweepStripN(int n){
-  // kinetic sweep of a strip, starting from the last
-}
 
 void clearAll() {
   // put them all off
@@ -390,15 +415,21 @@ void onlyStripN(int strip) {
 
 void daisyChainN(int n){
   // first we need to convert the "real world" meridians into "daisy chain" coordinate meridians.
-  if (n < 8) {
-    n = 7 - n;
-  } else {
-    n = -n + 31;
-  }
+  int m = daisyConverter(n);
   
   // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1st ,2nd and 3rd LEDs are switched on.
-  for(int j = 3*n; j < 3*(n + 1); j++) {
+  for(int j = 3*m; j < 3*(m + 1); j++) {
     lightPixelStripN(24, j);
+  }
+  
+}
+
+int daisyConverter(int n) {
+   // converts the given meridian into the daisy "meridian" 
+   if (n < 8) {
+    return 7 - n;
+  } else {
+    return -n + 31;
   }
 }
 
