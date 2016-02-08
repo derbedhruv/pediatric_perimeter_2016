@@ -58,7 +58,8 @@ byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, fixati
 
 void setup() {
   // setup serial connection
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.setTimeout(500);
   Serial.println("starting..");
   
   for(int i = 0; i < 25; i++) {
@@ -75,11 +76,10 @@ void loop() {
     if(currentMillis - previousMillis <= interval) {
            // update the LED to be put on. Check if the current LED is less than the length of the sweeping strip
            if (currentSweepLED >= 3) {
-             // then, write the current one to the 
-             meridians[sweepStrip-1].clear();
-             lightPixelStripN(sweepStrip, currentSweepLED - 3);
+             // only the strip LEDs
+             // lightPixelStripN(sweepStrip, currentSweepLED - 4, 0);    // put off previous LED
+             lightPixelStripN(sweepStrip, currentSweepLED - 3, Br);    // put on the current LED
              meridians[sweepStrip-1].show(); // This sends the updated pixel color to the hardware.
-             meridians[sweepStrip-1].begin();
            } else {
              // we're done with the present strip. switch to daisy chain.
              // clear all previous meridian stuff...
@@ -88,7 +88,7 @@ void loop() {
              meridians[sweepStrip-1].begin();
              
              meridians[24].clear();
-             lightPixelStripN(24, 3*daisyStrip + 2 - currentSweepLED);
+             lightPixelStripN(24, 3*daisyStrip + 2 - currentSweepLED, Br);
              meridians[24].show(); // This sends the updated pixel color to the hardware.
              meridians[24].begin();
            }
@@ -106,11 +106,8 @@ void loop() {
            // We notify over serial (to processing), that the next LED has come on.
          }
   }
-}
 
-// CATCH SERIAL EVENTS AND THEN RUN THE APPROPRIATE FUNCTIONS
-void serialEvent() {
-  if (Serial.available()) {
+  if (Serial.available() > 0) {
     char inChar = (char)Serial.read(); 
     // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
     // for historical reasons we will store this as variables (lat, long)
@@ -154,6 +151,7 @@ void serialEvent() {
                daisyStrip = daisyConverter(sweepStrip);
                currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain
              }
+             break;
            }
      
            case 'l':{
@@ -298,7 +296,7 @@ void hemisphere1() {
 
 //Initializes Hemisphere 2 - Right Hemisphere
 void hemisphere2() {
-  for(int i = 1; i < 24; i++) { 
+  for(int i = 1; i <= 24; i++) { 
     if( (i > 18) || (i < 8) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
       fullStripN(i);
     }
@@ -398,9 +396,9 @@ void fullStripAll() {
   meridians[24].begin();
 }
 
-void lightPixelStripN(int strip, int Pixel) {
+void lightPixelStripN(int strip, int Pixel, int brightness) {
   // light up the 'n' meridian
-  meridians[strip].setBrightness(Br);
+  meridians[strip].setBrightness(brightness);
   meridians[strip].setPixelColor(Pixel, r,g,b);
   
 }
@@ -419,7 +417,7 @@ void daisyChainN(int n){
   
   // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1st ,2nd and 3rd LEDs are switched on.
   for(int j = 3*m; j < 3*(m + 1); j++) {
-    lightPixelStripN(24, j);
+    lightPixelStripN(24, j, Br);
   }
   
 }
