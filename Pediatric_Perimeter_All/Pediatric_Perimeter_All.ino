@@ -31,6 +31,8 @@
 #define b 4
 #define interval 500  // this is the interval between LEDs in the sweep
 
+#define fixationLED 12  // the fixation LED pin
+
 
 /**************************************************************************************************
 //
@@ -41,7 +43,7 @@
 //  Meridian angle  :
 //  (in terms of the isopter)
 *************************************************************************************************/
-byte pinArduino[] = {16, 15,  3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 11};
+byte pinArduino[] = {15, 3,  16, 22, 21, 20, 30, 32, 42, 44, 46, 48, 50, 52, 34, 36, 38, 40, 28, 19, 26, 24, 18, 17, 11};
 byte numPixels[] =  {24, 24, 24, 24, 24, 11, 11, 12, 23, 23, 25, 24, 24, 26, 23, 24, 11,  9,  9,  9, 11, 26, 24, 24, 72};    // there are 72 in the daisy chain
 
 Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
@@ -53,7 +55,7 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
 unsigned long previousMillis, currentMillis;  // the interval for the sweep in kinetic perimetry (in ms)
-byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, fixationLED = 12, daisyStrip;
+byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
 
 
 void setup() {
