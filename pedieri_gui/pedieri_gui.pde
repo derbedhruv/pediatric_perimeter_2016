@@ -19,7 +19,6 @@ Serial arduino;                 // create serial object
 int kk=0;
 
 PrintWriter output;             // The File Writing Object
-byte m=0;
 int ext = 0, me=-1;             // "me" tracks the meridian number
 String azimuth;                // converts "me" to the azimuth, which is used for preparing the proper isopter
 boolean detailsEntered = false, videoRecording = false,timeStampDone=true;    // These booleans follow whether information's been entered and when to start the video
@@ -101,7 +100,7 @@ void setup() {
   if (Serial.list().length != 0) {
     println("Arduino MEGA connected succesfully.");
     String port = Serial.list()[0];
-    // then we open up the port.. 9600 bauds
+    // then we open up the port.. 115200- bauds to make the transfer superfast w.r.t. adafruit neopixels
     arduino = new Serial(this, port, 115200);
     arduino.buffer(1);
   } else {
@@ -172,13 +171,7 @@ void setup() {
       .setSize(80, 40)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
           //.setColor(0)
-            ;    
-           cp5.addSlider("sliderValue")
-     .setPosition(500,550)
-     .setSize(220,20)
-     .setRange(0,255)
-     .setNumberOfTickMarks(10)
-     ;
+            ;
      
   // the fixation button...
   cp5.addBang("Fixation") //The Bang Fixation and the Specifications
@@ -425,7 +418,6 @@ void mouseReleased() {
       // println(buttonstring[i]);
       
       if (detailsEntered == true) {
-        m=byte(sliderValue);
         textVideo="The test has Started"; 
       } else {
         textVideo="Please Enter the Patient name";
@@ -441,13 +433,11 @@ void mouseReleased() {
         
         // println("sweep");
         // this is the case of the sweeps..
-
         arduino.write('s');
         arduino.write(',');
         arduino.write(buttonstring[i]);
-        arduino.write('.');
-        arduino.write(m);
         arduino.write('\n');
+        
         textValue = "kinetic perimetry, Meridian " + azimuth + " degrees";
         if (timeStampDone == true) {
           output.print("Meridian " + azimuth); 
@@ -465,8 +455,6 @@ void mouseReleased() {
         arduino.write('h');
         arduino.write(',');
         arduino.write(buttonstring[i]);
-        arduino.write('.');
-        arduino.write(m);
         arduino.write('\n');
         textValue = "Hemisphere " + buttonstring[i];
         if (timeStampDone == true) {
@@ -496,8 +484,6 @@ void mouseReleased() {
         arduino.write('q');
         arduino.write(',');
         arduino.write(buttonstring[i]);
-        arduino.write('.');
-        arduino.write(m);
         arduino.write('\n');
         textValue = "Quadrant " + buttonstring[i];
          if (timeStampDone == true) {
