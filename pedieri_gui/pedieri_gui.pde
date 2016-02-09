@@ -190,22 +190,18 @@ void setup() {
   } else {
     println("Checking if correct camera has been plugged in ...");
     
-    for (int i = 0; i < cameras.length; i++) {  //Listing the avalibale Cameras
-      println(cameras[i]);
+    for (int i = 0; i < cameras.length; i++) {  // Listing the available Cameras
+      // println(cameras[i] + ' ' + cameras[i].length() + ' ' + cameras[i].substring(0, 5));
       
-      /*
-      if (cameras[i].length() == 24 && cameras[i].substring(10,17).equals("LifeCam")) {
+      if (cameras[i].length() == 13 && cameras[i].substring(0, 6).equals("HD USB")) {
         print("...success!");
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
         cam.start();      // shall start acquiring video feed from the camera
         break; 
       } 
-      println("...NO. Please check the camera connected!"); 
+      println("...NO. Please check the camera connected! Closing program."); 
       exit();
-      */
-    }  
-    cam = new GSCapture(this, 640, 480, 30);      // Camera object will capture in 640x480 resolution
-    cam.start();
+    }
   }
 }
 
@@ -221,7 +217,7 @@ void draw() {
   // text(textfield, 1050, 440); 
   // text(textMe, 1110, 440);
   text(textTimer, 700, 530);
-    
+
   // The following is the red ellipse being printed to indicate which LED is on
   for (int p = 0; p < 24; p++) {
     if (perimeter[p] > 1) {
