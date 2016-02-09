@@ -21,7 +21,7 @@
 #include <avr/power.h>
 #endif
 
-#define Br 30      // This is where you define the brightness of the LEDs - this is constant for all
+#define Br 10      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
@@ -38,7 +38,7 @@ int r = 163, g = 255, b = 4;
 //  (in terms of the isopter)
 *************************************************************************************************/
 short pinArduino[] = {16, 15, 3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 11};
-short numPixels[] =  {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24};
+short numPixels[] =  {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 72};
 
 Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
 
@@ -54,10 +54,13 @@ int fixationLED = 12;
 
 
 void setup() {
+  Serial.begin(9600);
+  
   for(int i = 0; i < sizeof(pinArduino); i++) {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
+  fullStripAll();
 }
 
 void loop() {
@@ -69,6 +72,7 @@ void loop() {
 
 // CATCH SERIAL EVENTS AND THEN RUN THE APPROPRIATE FUNCTIONS
 void serialEvent() {
+  Serial.println("something happened");
   if (Serial.available()) {
     char inChar = (char)Serial.read(); 
     // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
@@ -119,12 +123,14 @@ void serialEvent() {
            case 'l': {
              // THis is the hemisphere case. Turn on all the latitudes..
              // LEFT hemisphere.. 
-             
+             clearAll();
+             hemisphere1();
              break;
            }
            case 'r': { 
              // THis is the hemisphere case. Turn on all the latitudes..
-             
+             clearAll();
+             hemisphere2();
              break;  
            }
            // 30 degrees and outer case:
@@ -294,6 +300,7 @@ void lightPixelStripN(int n, int pixel) {
   meridians[n-1].setPixelColor(pixel, meridians[24].Color(r,g,b));
   meridians[n-1].show(); // This sends the updated pixel color to the hardware.
   meridians[n-1].begin();
+  delay(1);        // NOT SURE IF THIS IS REALLY NEEDED
 }
 
 void onlyStripN(int n) {
