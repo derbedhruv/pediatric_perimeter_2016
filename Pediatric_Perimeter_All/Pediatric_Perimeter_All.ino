@@ -69,7 +69,6 @@ void setup() {
   clearAll();
   
   byte meridians_turnOn[] = {21, 22, 23, 24, 1, 2, 3};
-  Serial.println(sizeof(meridians_turnOn));
   turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
@@ -277,18 +276,14 @@ void loop() {
 
 void clearAll() {
   // put them all off
-  for(int i = 1; i <= 25; i++) {
-    clearN(i);
+  for(int i = 0; i < 25; i++) {
+    meridians[i].clear();
+    meridians[i].setBrightness(0);      // because we want to "clear all"
+    meridians[i].begin();
+    meridians[i].show();
   }
 }
 
-void clearN(int n) {
-  // put off a particular meridian specified by n
-    meridians[n-1].clear();
-    meridians[n-1].setBrightness(0);      // because we want to "clear all"
-    meridians[n-1].begin();
-    meridians[n-1].show();
-} 
 
 void sphere() {
   //To draw a sphere with all the LED's on in the Perimeter, each strip is being called.
