@@ -2,7 +2,7 @@
 //  PEDIATRIC PERIMETER ARDUINO SEGMENT FOR ADDRESSABLE LEDs
 //  SRUJANA CENTER FOR INNOVATION, LV PRASAD EYE INSTITUTE
 //
-//  AUTHORS: Sankalp Modi, Darpan Sanghavi, Dhruv Joshi
+//  AUTHORS: Dhruv Joshi
 //
 //  This code gives the user the following possible LED outputs through
 //  serial addressing:
@@ -56,7 +56,6 @@ boolean acquired = false, breakOut = false, sweep = false;
 unsigned long previousMillis, currentMillis, sweep_interval = 500;  // the interval for the sweep in kinetic perimetry (in ms)
 byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
 
-
 void setup() {
   // setup serial connection
   Serial.begin(115200);
@@ -69,25 +68,9 @@ void setup() {
   }
   clearAll();
   
-  // cycling through all meridians
-  for (int ii = 0; ii < 9 ; ii++) {
-    meridians[24].setBrightness(Br);
-    int m = daisyConverter(ii + 1);
-    for (int j = 3*m; j < 3*(m + 1); j++) {
-      meridians[24].setPixelColor(j, r, g, b);
-      // delay(100);
-      Serial.println(j);
-    }
-    
-    // delay(500);
-  }
-  meridians[24].show();
-  
-  for (int ii = 0; ii < 9; ii++) {
-    meridians[ii].setBrightness(Br);
-    setStripColorN(ii);
-    meridians[ii].show(); 
-  }
+  byte meridians_turnOn[] = {21, 22, 23, 24, 1, 2, 3};
+  Serial.println(sizeof(meridians_turnOn));
+  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 void loop() {
@@ -318,6 +301,7 @@ void sphere() {
 
 //Initialises Hemisphere 1 - Left Hemisphere: Physical Meridian numbers 7 to 19.
 void hemisphere1() {
+  // turn on 7 to 19, including both
   for(int i = 7; i <= 19; i++) {
     fullStripN(i);
   }
@@ -327,6 +311,7 @@ void hemisphere1() {
 
 //Initializes Hemisphere 2 - Right Hemisphere
 void hemisphere2() {
+  // turn on less than 18 and greater than 8, not including both
   for(int i = 1; i <= 24; i++) { 
     if( (i > 18) || (i < 8) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
       fullStripN(i);
@@ -472,5 +457,33 @@ void setStripColorN(int n) {
   // set colour on all LEDs for a strip 'n'
   for (int j = 0; j < numPixels[n]; j++) {
       meridians[n].setPixelColor(j, r, g, b);
+  }
+}
+
+void turnThemOn (byte meridian_range[], boolean daisy_on, byte number_of_meridians) {
+  // This generalized function turns on entire meridian strips (1 to 24), given an array of which ones to turn on
+  // It also turns on particular "meridians" in the daisy, but only if the daisy_on is set to true, default false
+
+  // First the meridians
+  for (int ii = 0; ii < number_of_meridians; ii++) {
+    int meridian_to_be_turned_on = meridian_range[ii] - 1;
+    
+    meridians[meridian_to_be_turned_on].setBrightness(Br);
+    setStripColorN(meridian_to_be_turned_on);
+    meridians[meridian_to_be_turned_on].show(); 
+  }
+  
+  // then cycling through the daisy
+  if (daisy_on == true) {
+    for (int ii = 0; ii < number_of_meridians ; ii++) {
+      meridians[24].setBrightness(Br);
+      
+      int m = daisyConverter(meridian_range[ii]);
+      
+      for (int j = 3*m; j < 3*(m + 1); j++) {
+        meridians[24].setPixelColor(j, r, g, b);
+      }
+    }
+    meridians[24].show();
   }
 }
