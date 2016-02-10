@@ -68,8 +68,7 @@ void setup() {
   }
   clearAll();
   
-  byte meridians_turnOn[] = {21, 22, 23, 24, 1, 2, 3};
-  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
+  sphere();
 }
 
 void loop() {
@@ -286,12 +285,10 @@ void clearAll() {
 
 
 void sphere() {
-  //To draw a sphere with all the LED's on in the Perimeter, each strip is being called.
-  //Pixels 25 is the strip for Daisy Chain with 72 LED's on in all.
-  for(int i = 0; i < 25; i++) {
-    // meridians[i].clear();
-    fullStripN(i);
-  }
+  // Draw a sphere with all the LEDs on
+  // Pixels 25 is the strip for Daisy Chain with 72 LED's on in all.
+  byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
+  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initialises Hemisphere 1 - Left Hemisphere: Physical Meridian numbers 7 to 19.
