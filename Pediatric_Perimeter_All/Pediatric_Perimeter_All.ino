@@ -373,41 +373,6 @@ void quad8() {
   turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
-void fullStripAll() {
-  for(int i = 1; i <= sizeof(pinArduino); i++) {
-     // turn on all strips 
-    fullStripN(i);
-  }
-  meridians[24].show(); // This sends the updated pixel color to the hardware.
-  meridians[24].begin();
-}
-
-void lightPixelStripN(int strip, int Pixel, int brightness) {
-  // light up the 'n' meridian
-  meridians[strip].setBrightness(brightness);
-  meridians[strip].setPixelColor(Pixel, r,g,b);
-  
-}
-
-void onlyStripN(int strip) {
-  // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
-  meridians[strip-1].setBrightness(Br);
-  setStripColorN(strip-1);
-  meridians[strip-1].show(); // This sends the updated pixel color to the hardware.
-}
-
-void daisyChainN(int n){
-  // first we need to convert the "real world" meridians into "daisy chain" coordinate meridians.
-  int m = daisyConverter(n);
-  
-  // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1st ,2nd and 3rd LEDs are switched on.
-  for(int j = 3*m; j < 3*(m + 1); j++) {
-    meridians[24].setBrightness(Br);
-    meridians[24].setPixelColor(j, r, g, b);
-  }
-  
-}
-
 int daisyConverter(int n) {
    // converts the given meridian into the daisy "meridian" 
    if (n < 8) {
@@ -415,12 +380,6 @@ int daisyConverter(int n) {
   } else {
     return -n + 31;
   }
-}
-
-void fullStripN(int n) {
-  // this is a debugging mechanism to turn on all the strips and the daisy chain strip as well
-  onlyStripN(n);
-  daisyChainN(n);
 }
 
 void setStripColorN(int n) {
