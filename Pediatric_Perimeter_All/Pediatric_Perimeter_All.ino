@@ -283,7 +283,6 @@ void clearAll() {
   }
 }
 
-
 void sphere() {
   // Draw a sphere with all the LEDs on
   // Pixels 25 is the strip for Daisy Chain with 72 LED's on in all.
@@ -294,39 +293,28 @@ void sphere() {
 //Initialises Hemisphere 1 - Left Hemisphere: Physical Meridian numbers 7 to 19.
 void hemisphere1() {
   // turn on 7 to 19, including both
-  for(int i = 7; i <= 19; i++) {
-    fullStripN(i);
-  }
-  meridians[24].show(); // This sends the updated pixel color to the hardware.
-  meridians[24].begin();
+  byte meridians_turnOn[] = {7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Hemisphere 2 - Right Hemisphere
 void hemisphere2() {
   // turn on less than 18 and greater than 8, not including both
-  for(int i = 1; i <= 24; i++) { 
-    if( (i > 18) || (i < 8) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
-      fullStripN(i);
-    }
-  }
-  meridians[24].show(); // This sends the updated pixel color to the hardware.
-  meridians[24].begin();
+  byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7, 19, 20, 21, 22, 23, 24};
+  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initialises Hemisphere a - Left Hemisphere without the central 30 degrees (or the central daisy)
 void hemisphere3() {
-  for(int i = 7; i <= 19; i++) {
-    onlyStripN(i);
-  }
+  // turn on 7 to 19, including both
+  byte meridians_turnOn[] = {7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+  turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 //Initializes Hemisphere b - Right Hemisphere without central 30 degrees
 void hemisphere4() {
-  for(int i = 1; i < 24; i++) { 
-    if( (i > 18) || (i < 8) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
-      onlyStripN(i);
-    }
-  }
+  byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7, 19, 20, 21, 22, 23, 24};
+  turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 1
