@@ -319,68 +319,58 @@ void hemisphere4() {
 
 //Initializes Quadrant 1
 void quad1() {
-  for(int i = 1; i <= 7; i++) { 
-    fullStripN(i);
-  }
-  meridians[24].show(); // This sends the updated pixel color to the hardware.
-  meridians[24].begin();
+  // meridian 1 to 7
+  byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7};
+  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 2
 void quad2() {
-  for(int i = 7; i <= 13; i++) { 
-    fullStripN(i);
-  }
-  meridians[24].show(); // This sends the updated pixel color to the hardware.
-  meridians[24].begin();
+  // 7 to 13
+  byte meridians_turnOn[] = {7, 8, 9, 10, 11, 12, 13};
+  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 3
 void quad3() {
-  for(int i = 13; i <= 19; i++) { 
-    fullStripN(i);
-  }
-  meridians[24].show(); // This sends the updated pixel color to the hardware.
-  meridians[24].begin();
+  // meridian 13 to 19
+  byte meridians_turnOn[] = {13, 14, 15, 16, 17, 18, 19};
+  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 4
 void quad4() {
-  for(int i = 19; i <= 24; i++) { 
-    fullStripN(i);
-  }
-  fullStripN(1);
-  meridians[24].show(); // This sends the updated pixel color to the hardware.
-  meridians[24].begin();
+  // 19 to 24
+  byte meridians_turnOn[] = {19, 20, 21, 22, 23, 24};
+  turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 5 - which is quad 1 without the central 30
 void quad5() {
-  for(int i = 1; i <= 7; i++) { 
-    onlyStripN(i);
-  }
+  // meridian 1 to 7, without central LEDs
+  byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7};
+  turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 6
 void quad6() {
-  for(int i = 7; i <= 13; i++) { 
-    onlyStripN(i);
-  }
+  // meridian 7 to 13, without central LEDs
+  byte meridians_turnOn[] = {7, 8, 9, 10, 11, 12, 13};
+  turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 7 - 
 void quad7() {
-  for(int i = 13; i <= 19; i++) { 
-    onlyStripN(i);
-  }
+  // meridian 13 to 19 without cental LEDs
+  byte meridians_turnOn[] = {13, 14, 15, 16, 17, 18, 19};
+  turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 8
 void quad8() {
-  for(int i = 19; i <= 24; i++) { 
-    onlyStripN(i);
-  }
-  onlyStripN(1);
+  // 19 to 24, without central
+  byte meridians_turnOn[] = {19, 20, 21, 22, 23, 24};
+  turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 void fullStripAll() {
