@@ -11,7 +11,18 @@
 //    "h,r" for the right hemisphere
 //    "h,a" for the left hemi without the central 30 degrees
 //    "h,b" for the right hemi without the central 30 degrees
+//  
+//  2. Quadrants: Turning on a quarter of the pediatric perimeter 'sphere'
+//    "q,1" for the top left
+//    "q,2" for the top right 
+//    "q,3" for the bottom left
+//    "q,4" for the bottom right hemi 
+//  
+//      The following are the same, but without the central 30 degrees
+//    q,5 to q,8
 //
+//  3. Meridian Sweeps (Kinetic Perimetry)
+//    "s,n", where n is the meridian number (in natural number units, same as that marked on the actual perimeter)
 //
 ***************************************************************/
 
@@ -67,8 +78,6 @@ void setup() {
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
   clearAll();
-  
-  sphere();
 }
 
 void loop() {
