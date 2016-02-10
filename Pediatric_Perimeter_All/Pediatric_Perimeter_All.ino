@@ -21,24 +21,29 @@
 #include <avr/power.h>
 #endif
 
-#define Br 10      // This is where you define the brightness of the LEDs - this is constant for all
+#define Br 25      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
-int r = 163, g = 255, b = 4;
+// reducing memory usage so making these into preprocessor directives
+#define r 163
+#define g 255
+#define b 4
+
+#define fixationLED 12  // the fixation LED pin
 
 
 /**************************************************************************************************
 //
 //  ARDUINO PIN CONFIGURATION TO THE LED STRIPS AND HOW MANY PIXELS TO BE TURNED ON ON EACH STRIP!!
 //
-//  Arduino Pin     :  16 15 3  22 21 20 34 32 30 42  44  46  48  50  52  40  38  36  28  26  24  19  18  17  11     12
+//  Arduino Pin     :  15 3 16 22 21 20 30 32 42  44  46  48  50  52  34  36  38  40  28  19  26  24  18  17  11     12
 //  Meridian Label  :  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  daisy  fixation
 //  Meridian angle  :
 //  (in terms of the isopter)
 *************************************************************************************************/
-short pinArduino[] = {16, 15, 3, 22, 21, 20 ,34, 32, 30, 42, 44, 46, 48, 50, 52, 40, 38, 36, 28, 26, 24, 19, 18, 17, 11};
-short numPixels[] =  {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 72};
+byte pinArduino[] = {15, 3,  16, 22, 21, 20, 30, 32, 42, 44, 46, 48, 50, 52, 34, 36, 38, 40, 28, 19, 26, 24, 18, 17, 11};
+byte numPixels[] =  {24, 24, 24, 24, 24, 11, 11, 12, 23, 23, 25, 24, 24, 26, 23, 24, 11,  9,  9,  9, 11, 26, 24, 24, 72};    // there are 72 in the daisy chain
 
 Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
 
@@ -48,32 +53,92 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 // the variable 'breakOut' is a boolean which is used to communicate to the loop() that we need to immedietely shut everything off
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
-unsigned long currentMillis;
-int sweepStart, longitudeInt, Slider = 255, currentSweepLED;
-int fixationLED = 12;
+unsigned long previousMillis, currentMillis, sweep_interval = 500;  // the interval for the sweep in kinetic perimetry (in ms)
+byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
 
 
 void setup() {
-  Serial.begin(9600);
+  // setup serial connection
+  Serial.begin(115200);
+  Serial.setTimeout(500);
+  Serial.println("starting..");
   
-  for(int i = 0; i < sizeof(pinArduino); i++) {
+  for(int i = 0; i < 25; i++) {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
-  fullStripAll();
-}
-
-void loop() {
-  // keep polling for breakOut - it is because of this polling behaviour that we shouldn't use a delay() anywhere.
-  if (breakOut == true) {
-     clearAll(); 
+  clearAll();
+  
+  // cycling through all meridians
+  for (int ii = 0; ii < 9 ; ii++) {
+    meridians[24].setBrightness(Br);
+    int m = daisyConverter(ii + 1);
+    for (int j = 3*m; j < 3*(m + 1); j++) {
+      meridians[24].setPixelColor(j, r, g, b);
+      // delay(100);
+      Serial.println(j);
+    }
+    
+    // delay(500);
+  }
+  meridians[24].show();
+  
+  for (int ii = 0; ii < 9; ii++) {
+    meridians[ii].setBrightness(Br);
+    setStripColorN(ii);
+    meridians[ii].show(); 
   }
 }
 
-// CATCH SERIAL EVENTS AND THEN RUN THE APPROPRIATE FUNCTIONS
-void serialEvent() {
-  Serial.println("something happened");
-  if (Serial.available()) {
+void loop() {
+  if (sweep == true) {
+    // we will poll for this variable and then sweep the same LED
+    currentMillis = millis();
+    Serial.println(currentMillis - previousMillis);
+    if(currentMillis - previousMillis <= sweep_interval) {
+           // update the LED to be put on. Check if the current LED is less than the length of the sweeping strip
+           if (currentSweepLED > 3) {
+             // Writing this part in direct neopixel code because function calls are expensive and freeze the serialEvent interrupt
+             meridians[sweepStrip-1].setBrightness(Br);
+             meridians[sweepStrip-1].setPixelColor(currentSweepLED - 3, 0, 0, 0);    // set previous LED off
+             meridians[sweepStrip-1].setPixelColor(currentSweepLED - 4, r, g, b);
+             
+             meridians[sweepStrip-1].show(); // This sends the updated pixel color to the hardware.
+             
+           } else if (currentSweepLED == 3) {
+             // we're done with the present strip. switch to daisy chain.
+             // clear all previous meridian stuff...
+             meridians[sweepStrip-1].clear();
+             meridians[sweepStrip-1].show();
+             sweep_interval = 1;      // infinitely short so that we just zap off the longer strip
+             meridians[24].setBrightness(Br);  // set this here to avoid wasting steps later
+             
+           } else if (currentSweepLED < 3) {
+             // only need to light the daisy
+             meridians[24].setPixelColor(3*daisyStrip + 2 - currentSweepLED - 1, 0, 0, 0);
+             meridians[24].setPixelColor(3*daisyStrip + 2 - currentSweepLED, r, g, b);
+             meridians[24].show(); // This sends the updated pixel color to the hardware.
+             
+             // reduce sweep interval because now we're slowing down the interrupt due to the neopixels stuff
+             sweep_interval = 250;    // this figure should be properly calibrated
+           }
+           
+           // stop everything when the currentSweepLED is 0.
+           if (currentSweepLED == 255) {
+             previousMillis = 0; 
+             clearAll();
+             sweep = false;
+             sweep_interval = 500;
+           }
+         } else {           // what to do when its within the interval
+           Serial.println(currentSweepLED);    // That's the iteration of the LED that's ON 
+           currentSweepLED = currentSweepLED - 1;    // update the LED that has to be on
+           previousMillis = currentMillis;   
+           // We notify over serial (to processing), that the next LED has come on.
+         }
+  }
+
+  if (Serial.available() > 0) {
     char inChar = (char)Serial.read(); 
     // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
     // for historical reasons we will store this as variables (lat, long)
@@ -86,119 +151,127 @@ void serialEvent() {
     } else {
       // if its a newline, that means we've reached the end of the command. The stuff before this is a character indicating the second argument of the function to be performed.
       if (inChar == '\n') {
-        breakOut = false;
-        longit = inputString;
-        // reset everything again..
-        inputString = "";
+         breakOut = false;
+         longit = inputString;
+         // reset everything again..
+         inputString = "";
         
-      // we deal with 3 cases: sweeps, hemispheres and quadrants
-     switch(lat[0]) {  // use only the first character, the rest is most likely garbage
-         
-       // this is the case of setting brightness of the LEDs
-       case 'm':{
-         // brightness = String(longit).toInt();
-         break;
-       }
-       
-       // change sweep time
-       case 't':{
-         // interval= longit.toInt();
-         break;
-       }
-       
-       // choose strip to sweep
-       case 's': {
-         // this is the case of sweeping a single longitude. 
-         // remember to serial.print the present LED which is on - this will be reflected in the processing program (with the delay removed as much as possible)
-       }
- 
-       case 'l':{
-           // put on the fixation LED
-       }
-       
-       case 'h': {     
-         digitalWrite(fixationLED,LOW);
-         // we then switch through WHICH hemisphere
-         switch(longit[0]){
-           case 'l': {
-             // THis is the hemisphere case. Turn on all the latitudes..
-             // LEFT hemisphere.. 
-             clearAll();
-             hemisphere1();
+          // we deal with 3 cases: sweeps, hemispheres and quadrants
+         switch(lat[0]) {  // use only the first character, the rest is most likely garbage
+             
+           // this is the case of setting brightness of the LEDs
+           case 'm':{
+             // brightness = String(longit).toInt();
              break;
            }
-           case 'r': { 
-             // THis is the hemisphere case. Turn on all the latitudes..
-             clearAll();
-             hemisphere2();
-             break;  
-           }
-           // 30 degrees and outer case:
-           case 'a': {
-             
+           
+           // change sweep time
+           case 't':{
+             // interval= longit.toInt();
              break;
            }
-           case 'b': { 
-             
-             break;  
+           
+           // choose strip to sweep
+           case 's': {
+             // this is the case of sweeping a single longitude. 
+             // Based on the number entered as longit[0], we will turn on that particular LED.
+             byte chosenStrip = longit.toInt();
+             if (chosenStrip <= 24 && chosenStrip > 0) {
+               sweep = true;
+               sweepStrip = chosenStrip;
+               daisyStrip = daisyConverter(sweepStrip);
+               currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain
+             }
+             break;
            }
-         }
-         break;
-       }
-       case 'q': {
-         // quadrants..
-         digitalWrite(fixationLED,LOW);
-         switch(longit[0]) {
-           // we shall go anticlockwise. "1" shall start from the bottom right. 
-          case '1': {
-            // latitudes.. all on
-            
-            break;
-          } 
-          case '2': {
-            // latitudes.. all on
-            
-            break;
-          } 
-          case '3': {
-            // latitudes.. all on
-            
-            break;
-          } 
-          case '4': {
-            // latitudes.. all on
-            
-            break;
-          } 
-          case '5': {
-            // turn on only the 30 degrees and higher latitudes
-            
-            break;
-          }
-          case '6': {
-            // turn on only the 30 degrees and higher latitudes
-            
-            break;
-          }
-          case '7': {
-            // turn on only the 30 degrees and higher latitudes
-            
-            break;
-          }
-         case '8': {
-            // turn on only the 30 degrees and higher latitudes
-            
-            break;
-          } 
-         }
-         break;
-       }
-     } 
+     
+           case 'l':{
+               // put on the fixation LED
+           }
+           
+           case 'h': {     
+             // clearAll();
+             // digitalWrite(fixationLED,LOW);
+             // we then switch through WHICH hemisphere
+             switch(longit[0]){
+               case 'l': {
+                 // LEFT hemisphere.. 
+                 Serial.println("left hemi");
+                 hemisphere1();
+                 break;
+               }
+               case 'r': {
+                 // RIGHT hemisphere.. 
+                 Serial.println("right hemi");
+                 hemisphere2();             
+                 break;  
+               }
+               // 30 degrees and outer case:
+               case 'a': {
+                 // 30 degrees OFF left hemisphere
+                 hemisphere3();
+                 break;
+               }
+               case 'b': { 
+                 hemisphere4();
+                 break;  
+               }
+             }
+             break;
+           }
+           case 'q': {
+             Serial.println("quadrants");
+             digitalWrite(fixationLED,LOW);
+             switch(longit[0]) {
+               // we shall go anticlockwise. "1" shall start from the bottom right. 
+              case '1': {
+                quad1();
+                break;
+              } 
+              case '2': {
+                quad2();
+                break;
+              } 
+              case '3': {
+                quad3();
+                break;
+              } 
+              case '4': {
+                quad4();
+                break;
+              } 
+              case '5': {
+                // turn on only the 30 degrees and higher latitudes
+                quad5();
+                break;
+              }
+              case '6': {
+                // turn on only the 30 degrees and higher latitudes
+                quad6();
+                break;
+              }
+              case '7': {
+                // turn on only the 30 degrees and higher latitudes
+                quad7();
+                break;
+              }
+              case '8': {
+                // turn on only the 30 degrees and higher latitudes
+                quad8();
+                break;
+              } 
+             }
+             break;
+           }
+         } 
         
         if (longit[0] == 'x') {
           // put everything off, but put the fixation back on
-          digitalWrite(fixationLED, HIGH);
-          breakOut = true;  // break out of the loops yo
+          // digitalWrite(fixationLED, HIGH);
+          // breakOut = true;  // break out of the loops yo
+          Serial.println("clear all");
+          clearAll();
+          delay(1);
           // reset everything...
           sweep = false;
         } else {
@@ -212,79 +285,137 @@ void serialEvent() {
   }
 }
 
+
 /***************************************************************************************************
 //
 //  FUNCTION DEFINITIONS
 //
 ***************************************************************************************************/
 
-void sweepStripN(int n){
-  // kinetic sweep of a strip, starting from the last
-}
-
 void clearAll() {
   // put them all off
-  for(int i = 0; i<25; i++) {
+  for(int i = 1; i <= 25; i++) {
     clearN(i);
   }
 }
 
 void clearN(int n) {
   // put off a particular meridian specified by n
-  meridians[n].clear();
-  meridians[n].show();
+    meridians[n-1].clear();
+    meridians[n-1].setBrightness(0);      // because we want to "clear all"
+    meridians[n-1].begin();
+    meridians[n-1].show();
 } 
 
 void sphere() {
   //To draw a sphere with all the LED's on in the Perimeter, each strip is being called.
   //Pixels 25 is the strip for Daisy Chain with 72 LED's on in all.
   for(int i = 0; i < 25; i++) {
-    meridians[i].begin();
+    // meridians[i].clear();
+    fullStripN(i);
   }
 }
 
 //Initialises Hemisphere 1 - Left Hemisphere: Physical Meridian numbers 7 to 19.
 void hemisphere1() {
-  for(int i = 6; i < 19; i++) { //take a full 25 loop, and clear() all the other ones? --------------------
-    meridians[i].begin();
+  for(int i = 7; i <= 19; i++) {
+    fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 //Initializes Hemisphere 2 - Right Hemisphere
 void hemisphere2() {
-  for(int i = 0; i < 25; i++) { 
-    if( (i > 18 && i != 24) || (i < 7) ){ //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
-      meridians[i].begin();
+  for(int i = 1; i <= 24; i++) { 
+    if( (i > 18) || (i < 8) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
+      fullStripN(i);
+    }
+  }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
+}
+
+//Initialises Hemisphere a - Left Hemisphere without the central 30 degrees (or the central daisy)
+void hemisphere3() {
+  for(int i = 7; i <= 19; i++) {
+    onlyStripN(i);
+  }
+}
+
+//Initializes Hemisphere b - Right Hemisphere without central 30 degrees
+void hemisphere4() {
+  for(int i = 1; i < 24; i++) { 
+    if( (i > 18) || (i < 8) ) { //between physical meridians 19 and 24, or 1 to 7. Not the daisy chain "meridian".
+      onlyStripN(i);
     }
   }
 }
 
 //Initializes Quadrant 1
 void quad1() {
-  for(int i = 0; i < 6; i++) { 
-    meridians[i].begin();
+  for(int i = 1; i <= 7; i++) { 
+    fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 //Initializes Quadrant 2
 void quad2() {
-  for(int i = 6; i < 12; i++) { 
-    meridians[i].begin();
+  for(int i = 7; i <= 13; i++) { 
+    fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 //Initializes Quadrant 3
 void quad3() {
-  for(int i = 12; i < 18; i++) { 
-    meridians[i].begin();
+  for(int i = 13; i <= 19; i++) { 
+    fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
 //Initializes Quadrant 4
 void quad4() {
-  for(int i = 18; i < 24; i++) { 
-    meridians[i].begin();
+  for(int i = 19; i <= 24; i++) { 
+    fullStripN(i);
   }
+  fullStripN(1);
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
+}
+
+//Initializes Quadrant 5 - which is quad 1 without the central 30
+void quad5() {
+  for(int i = 1; i <= 7; i++) { 
+    onlyStripN(i);
+  }
+}
+
+//Initializes Quadrant 6
+void quad6() {
+  for(int i = 7; i <= 13; i++) { 
+    onlyStripN(i);
+  }
+}
+
+//Initializes Quadrant 7 - 
+void quad7() {
+  for(int i = 13; i <= 19; i++) { 
+    onlyStripN(i);
+  }
+}
+
+//Initializes Quadrant 8
+void quad8() {
+  for(int i = 19; i <= 24; i++) { 
+    onlyStripN(i);
+  }
+  onlyStripN(1);
 }
 
 void fullStripAll() {
@@ -292,34 +423,54 @@ void fullStripAll() {
      // turn on all strips 
     fullStripN(i);
   }
+  meridians[24].show(); // This sends the updated pixel color to the hardware.
+  meridians[24].begin();
 }
 
-void lightPixelStripN(int n, int pixel) {
-  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-  meridians[n-1].setBrightness(Br);
-  meridians[n-1].setPixelColor(pixel, meridians[24].Color(r,g,b));
-  meridians[n-1].show(); // This sends the updated pixel color to the hardware.
-  meridians[n-1].begin();
-  delay(1);        // NOT SURE IF THIS IS REALLY NEEDED
+void lightPixelStripN(int strip, int Pixel, int brightness) {
+  // light up the 'n' meridian
+  meridians[strip].setBrightness(brightness);
+  meridians[strip].setPixelColor(Pixel, r,g,b);
+  
 }
 
-void onlyStripN(int n) {
+void onlyStripN(int strip) {
   // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
-  for(int j=0; j < numPixels[n-1]; j++) {
-    lightPixelStripN(n, j);
-  }
+  meridians[strip-1].setBrightness(Br);
+  setStripColorN(strip-1);
+  meridians[strip-1].show(); // This sends the updated pixel color to the hardware.
 }
 
 void daisyChainN(int n){
-  n = n - 1;    // so that we can continue using natural numbers for referring to the meridians - easy to debug
+  // first we need to convert the "real world" meridians into "daisy chain" coordinate meridians.
+  int m = daisyConverter(n);
+  
   // Code for lighting the appropriate LEDs for the Nth meridian. For Physical meridian 1 (j=0), Daisy strips' 1st ,2nd and 3rd LEDs are switched on.
-  for(int j = n*3; j < 3*(n + 1); j++) {
-    lightPixelStripN(24, j);
+  for(int j = 3*m; j < 3*(m + 1); j++) {
+    meridians[24].setBrightness(Br);
+    meridians[24].setPixelColor(j, r, g, b);
+  }
+  
+}
+
+int daisyConverter(int n) {
+   // converts the given meridian into the daisy "meridian" 
+   if (n < 8) {
+    return 7 - n;
+  } else {
+    return -n + 31;
   }
 }
 
 void fullStripN(int n) {
   // this is a debugging mechanism to turn on all the strips and the daisy chain strip as well
-  onlyStripN(n-1);
-  daisyChainN(n-1);
+  onlyStripN(n);
+  daisyChainN(n);
+}
+
+void setStripColorN(int n) {
+  // set colour on all LEDs for a strip 'n'
+  for (int j = 0; j < numPixels[n]; j++) {
+      meridians[n].setPixelColor(j, r, g, b);
+  }
 }
