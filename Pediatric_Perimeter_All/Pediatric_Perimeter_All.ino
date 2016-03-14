@@ -42,6 +42,7 @@
 #define b 4
 
 #define fixationLED 12  // the fixation LED pin
+#define fixationStrength 100  // brightness of the fixation
 
 
 /**************************************************************************************************
@@ -54,7 +55,7 @@
 //  (in terms of the isopter)
 *************************************************************************************************/
 byte pinArduino[] = {15, 3,  16, 22, 21, 20, 30, 32, 42, 44, 46, 48, 50, 52, 34, 36, 38, 40, 28, 19, 26, 24, 18, 17, 11};
-byte numPixels[] =  {24, 24, 24, 24, 24, 11, 11, 12, 23, 23, 25, 24, 24, 26, 23, 24, 11,  9,  9,  9, 11, 26, 24, 24, 72};    // there are 72 in the daisy chain
+byte numPixels[] =  {24, 24, 24, 24, 19, 11, 11, 12, 19, 23, 25, 24, 24, 26, 23, 24, 11,  9,  9,  9, 11, 26, 24, 24, 72};    // there are 72 in the daisy chain
 
 Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
 
@@ -84,7 +85,7 @@ void loop() {
   if (sweep == true) {
     // we will poll for this variable and then sweep the same LED
     currentMillis = millis();
-    Serial.println(currentMillis - previousMillis);
+    // Serial.println(currentMillis - previousMillis);
     if(currentMillis - previousMillis <= sweep_interval) {
            // update the LED to be put on. Check if the current LED is less than the length of the sweeping strip
            if (currentSweepLED > 3) {
@@ -181,7 +182,9 @@ void loop() {
            
            case 'h': {     
              // clearAll();
-             // digitalWrite(fixationLED,LOW);
+             // turn off the fixation
+             analogWrite(fixationLED, 0);
+             
              // we then switch through WHICH hemisphere
              switch(longit[0]){
                case 'l': {
@@ -211,7 +214,9 @@ void loop() {
            }
            case 'q': {
              Serial.println("quadrants");
-             digitalWrite(fixationLED,LOW);
+             // turn off the fixation
+             analogWrite(fixationLED, 0);
+             
              switch(longit[0]) {
                // we shall go anticlockwise. "1" shall start from the bottom right. 
               case '1': {
@@ -290,6 +295,8 @@ void clearAll() {
     meridians[i].begin();
     meridians[i].show();
   }
+  // then put on fixation
+  analogWrite(fixationLED, fixationStrength);
 }
 
 void sphere() {
