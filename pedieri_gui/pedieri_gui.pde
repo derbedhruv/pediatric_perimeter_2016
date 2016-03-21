@@ -1,7 +1,8 @@
 /***************************************
-THIS IS THE LATEST VERSION AS OF 09-FEB-2016
+THIS IS THE LATEST VERSION AS OF 21-MAR-2016
   Project Name :Pediatric Perimeter
   Author : Dhruv Joshi
+  Contributor : Karthik Reddy
 
   Modifications made:
     - Video capture speed is now much faster (30 fps) though there are dropped frames
@@ -19,6 +20,7 @@ Serial arduino;                 // create serial object
 int kk=0;
 
 PrintWriter output;             // The File Writing Object
+byte m=0;
 int ext = 0, me=-1;             // "me" tracks the meridian number
 String azimuth;                // converts "me" to the azimuth, which is used for preparing the proper isopter
 boolean detailsEntered = false, videoRecording = false,timeStampDone=true;    // These booleans follow whether information's been entered and when to start the video
@@ -100,12 +102,12 @@ void setup() {
   if (Serial.list().length != 0) {
     println("Arduino MEGA connected succesfully.");
     String port = Serial.list()[0];
-    // then we open up the port.. 115200- bauds to make the transfer superfast w.r.t. adafruit neopixels
+    // then we open up the port.. 9600 bauds
     arduino = new Serial(this, port, 115200);
     arduino.buffer(1);
   } else {
     println("Arduino not connected or detected, please replug"); 
-    exit();
+    // exit();
   }
   
   size(1300, 600);  //The Size of the Panel 
@@ -171,7 +173,13 @@ void setup() {
       .setSize(80, 40)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
           //.setColor(0)
-            ;
+            ;    
+           cp5.addSlider("sliderValue")
+     .setPosition(500,550)
+     .setSize(220,20)
+     .setRange(0,255)
+     .setNumberOfTickMarks(10)
+     ;
      
   // the fixation button...
   cp5.addBang("Fixation") //The Bang Fixation and the Specifications
@@ -190,18 +198,20 @@ void setup() {
   } else {
     println("Checking if correct camera has been plugged in ...");
     
-    for (int i = 0; i < cameras.length; i++) {  // Listing the available Cameras
-      // println(cameras[i] + ' ' + cameras[i].length() + ' ' + cameras[i].substring(0, 5));
+    for (int i = 0; i < cameras.length; i++) {  //Listing the avalibale Cameras
+      println(cameras[i]);
       
-      if (cameras[i].length() == 13 && cameras[i].substring(0, 6).equals("HD USB")) {
+      println(cameras[i].length());
+      println(cameras[i].substring(3,6));
+      if (cameras[i].length() == 13 && cameras[i].substring(3,6).equals("USB")) {
         print("...success!");
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
         cam.start();      // shall start acquiring video feed from the camera
         break; 
       } 
-      println("...NO. Please check the camera connected! Closing program."); 
-      exit();
-    }
+      // println("...NO. Please check the camera connected!"); 
+      // exit();
+    }  
   }
 }
 
@@ -217,7 +227,7 @@ void draw() {
   // text(textfield, 1050, 440); 
   // text(textMe, 1110, 440);
   text(textTimer, 700, 530);
-
+    
   // The following is the red ellipse being printed to indicate which LED is on
   for (int p = 0; p < 24; p++) {
     if (perimeter[p] > 1) {
@@ -270,19 +280,19 @@ void draw() {
     // start showing the camera feed...
     if (cam.available() == true) {
       collectedFrames = collectedFrames + 1;
-      cam.read();
-      image(cam, 245, 0);
-      
-      PImage videoSection = get(245, 0, 1055, 600);    // crop our section of interest of the page
-      videoSection.loadPixels();    // Loads the pixel data for the *CROPPED* display window into the pixels[] array. This function must always be called before reading from or writing to pixels[].
-      
-      if (videoRecording == true) {
-        mm.addFrame(videoSection.pixels);  // Array containing the values for all the pixels in the display window.
-      } 
+      cam.read();    // read only if available, otherwise interpolate with previous frame
     } else {
-      image(cam, 245, 0);  // put the buffered image at least..
+      // that's a dropped frame...
       droppedFrames = droppedFrames + 1;
     }
+    image(cam, 245, 0);    // display the image
+      
+    PImage videoSection = get(245, 0, 1055, 600);    // crop our section of interest of the page
+    videoSection.loadPixels();    // Loads the pixel data for the *CROPPED* display window into the pixels[] array. This function must always be called before reading from or writing to pixels[].
+    
+    if (videoRecording == true) {
+      mm.addFrame(videoSection.pixels);  // Array containing the values for all the pixels in the display window.
+    } 
   }
   // println("collected: " + collectedFrames + " ,dropped: " + droppedFrames);
 }
@@ -324,7 +334,7 @@ public void Save() {//Bang Function for the Button Save
     textVideo = "Thank you. Video is ON. Please click on a test..";
     detailsEntered = true;      // Details have been entered. Awesome. Show the video.
     
-    mm = new GSMovieMaker(this, width-245, height, folderName + "/" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps); // the Mavie Maker Object
+    mm = new GSMovieMaker(this, width-245, height, folderName + "/" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.MEDIUM, fps); // the Mavie Maker Object
     mm.setQueueSize(0, 60);
     videoRecording = true;        // start recording the video.
     // then we start the video..
@@ -414,6 +424,7 @@ void mouseReleased() {
       // println(buttonstring[i]);
       
       if (detailsEntered == true) {
+        m=byte(sliderValue);
         textVideo="The test has Started"; 
       } else {
         textVideo="Please Enter the Patient name";
@@ -429,11 +440,13 @@ void mouseReleased() {
         
         // println("sweep");
         // this is the case of the sweeps..
+
         arduino.write('s');
         arduino.write(',');
         arduino.write(buttonstring[i]);
+        arduino.write('.');
+        arduino.write(m);
         arduino.write('\n');
-        
         textValue = "kinetic perimetry, Meridian " + azimuth + " degrees";
         if (timeStampDone == true) {
           output.print("Meridian " + azimuth); 
@@ -451,6 +464,8 @@ void mouseReleased() {
         arduino.write('h');
         arduino.write(',');
         arduino.write(buttonstring[i]);
+        arduino.write('.');
+        arduino.write(m);
         arduino.write('\n');
         textValue = "Hemisphere " + buttonstring[i];
         if (timeStampDone == true) {
@@ -480,6 +495,8 @@ void mouseReleased() {
         arduino.write('q');
         arduino.write(',');
         arduino.write(buttonstring[i]);
+        arduino.write('.');
+        arduino.write(m);
         arduino.write('\n');
         textValue = "Quadrant " + buttonstring[i];
          if (timeStampDone == true) {
@@ -547,6 +564,7 @@ void keyPressed() {
   if (detailsEntered == true) {    // after the patient's data's been entered, ofc
     // println("key pressed");
     Stop();
+    println("stopped");
   } 
 }
 
