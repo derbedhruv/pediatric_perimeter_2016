@@ -21,7 +21,7 @@ int kk = 0;
 
 PrintWriter output;             // The File Writing Object
 byte m = 0;                     // This byte is used to send a slider value to the arduino (brightness choice)
-int ext = 0, me=-1;             // "me" tracks the meridian number
+int ext = 0, me = -1;             // "me" tracks the meridian number
 String azimuth;                // converts "me" to the azimuth, which is used for preparing the proper isopter
 boolean detailsEntered = false, videoRecording = false,timeStampDone=true;    // These booleans follow whether information's been entered and when to start the video
 
@@ -208,9 +208,9 @@ void setup() {
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
         cam.start();      // shall start acquiring video feed from the camera
         break; 
-      } 
-      // println("...NO. Please check the camera connected!"); 
-      // exit();
+      }
+      println("...NO. Please check the camera connected!"); 
+      exit();
     }  
   }
 }
