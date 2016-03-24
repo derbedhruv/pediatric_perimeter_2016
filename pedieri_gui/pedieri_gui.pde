@@ -1,11 +1,11 @@
 /***************************************
-THIS IS THE LATEST VERSION AS OF 21-MAR-2016
-  Project Name :Pediatric Perimeter
+THIS IS THE LATEST VERSION AS OF 24-MAR-2016
+  Project Name : Pediatric Perimeter v3.x
   Author : Dhruv Joshi
-  Contributor : Karthik Reddy
 
   Modifications made:
     - Video capture speed is now much faster (30 fps) though there are dropped frames
+    - Removed junk code
     
   Libraries used (Processing v2.0):
     - controlp5 v2.0.4 https://code.google.com/p/controlp5/downloads/detail?name=controlP5-2.0.4.zip&can=2&q=
@@ -17,10 +17,10 @@ import codeanticode.gsvideo.*;  // Importing GS Video Library
 import controlP5.*;             // Import Control P5 Library
 
 Serial arduino;                 // create serial object
-int kk=0;
+int kk = 0;
 
 PrintWriter output;             // The File Writing Object
-byte m=0;
+byte m = 0;                     // This byte is used to send a slider value to the arduino (brightness choice)
 int ext = 0, me=-1;             // "me" tracks the meridian number
 String azimuth;                // converts "me" to the azimuth, which is used for preparing the proper isopter
 boolean detailsEntered = false, videoRecording = false,timeStampDone=true;    // These booleans follow whether information's been entered and when to start the video
@@ -424,7 +424,7 @@ void mouseReleased() {
       // println(buttonstring[i]);
       
       if (detailsEntered == true) {
-        m=byte(sliderValue);
+        m = byte(sliderValue);
         textVideo="The test has Started"; 
       } else {
         textVideo="Please Enter the Patient name";
