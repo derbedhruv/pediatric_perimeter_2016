@@ -21,9 +21,9 @@ int kk = 0;
 
 PrintWriter output;             // The File Writing Object
 byte m = 0;                     // This byte is used to send a slider value to the arduino (brightness choice)
-int me = -1;             // "me" tracks the meridian number
-String azimuth;                // converts "me" to the azimuth, which is used for preparing the proper isopter
-boolean detailsEntered = false, videoRecording = false,timeStampDone=true;    // These booleans follow whether information's been entered and when to start the video
+int me = -1;                    // "me" tracks the meridian number
+String azimuth;                 // converts "me" to the azimuth, which is used for preparing the proper isopter
+boolean detailsEntered = false, videoRecording = false, timeStampDone = true;    // These booleans follow whether information's been entered and when to start the video
 
 // These variables relate to hte ellipses that indicate current LED position.
 int i = 25, xi, yi;             // Store position of the LED, but not for long.
@@ -36,6 +36,7 @@ int[] perimeter =
   -1, -1, -1, -1,
   -1, -1, -1, -1};           // THe most imporftant variable in this whole project
 // The perimeter shall store the radial positions (discrete) of the LEDs presently, which wil come from feedback from the arduino as it sweeps. The cardinal order of the elements indicates the azimuthal angle (discrete). There are 24 elements.
+
 int[] hemquad = {0, 0, 0, 0, 0, 0};  // this stores the alpha value of the hemisphere and quadrants. When one is clicked, it just puts that damn value.
 int sliderValue = 100;
 // controlp5 related objects
@@ -334,7 +335,7 @@ public void Save() {//Bang Function for the Button Save
     textVideo = "Thank you. Video is ON. Please click on a test..";
     detailsEntered = true;      // Details have been entered. Awesome. Show the video.
     
-    mm = new GSMovieMaker(this, width-245, height, folderName + "/" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.MEDIUM, fps); // the Mavie Maker Object
+    mm = new GSMovieMaker(this, width-245, height, folderName + "/" + year() + "" + month() + "" + day() + "_" + textName + ".avi", GSMovieMaker.MJPEG, GSMovieMaker.HIGH, fps); // the Mavie Maker Object
     mm.setQueueSize(0, 60);
     videoRecording = true;        // start recording the video.
     // then we start the video..
