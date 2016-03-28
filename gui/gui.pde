@@ -6,6 +6,7 @@ THIS IS THE LATEST VERSION AS OF 28-MAR-2016
   Modifications made:
     - Video capture speed is now much faster (30 fps) though there are dropped frames
     - Removed junk code
+    - Removed the use of a button color map, instead using code to generate image vectors
     
   Libraries used (Processing v2.0):
     - controlp5 v2.0.4 https://code.google.com/p/controlp5/downloads/detail?name=controlP5-2.0.4.zip&can=2&q=
@@ -38,6 +39,7 @@ int[] perimeter =
 // The perimeter shall store the radial positions (discrete) of the LEDs presently, which wil come from feedback from the arduino as it sweeps. The cardinal order of the elements indicates the azimuthal angle (discrete). There are 24 elements.
 
 int[] hemquad = {0, 0, 0, 0, 0, 0};  // this stores the alpha value of the hemisphere and quadrants. When one is clicked, it just puts that damn value.
+
 int sliderValue = 100;
 // controlp5 related objects
 ControlP5 cp5;                  // Control P5 Object Creation     
@@ -73,29 +75,6 @@ int droppedFrames = 0, collectedFrames = 0;
 int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
 int ang = 0;
 
-//Declaration of the names for the buttons and their parameters 
-String[] buttonstring= {
-  "37", "35", "33", "31", 
-  "29", "27", "25", "23", 
-  "52", "50", "48", "46", 
-  "44", "42", "40", "38", 
-  "36", "34", "32", "30", 
-  "28", "26", "24", "22", 
-  "l", "r", 
-  "3", "2", "1", "4"
-}; //the names of the buttons
-
-color[] buttoncolor= {
-  0xFF7D8075, 0xFF6F686F, 0xFF7E0516, 0xFFB97A57, 
-  /**/ 0xFFF0202E /**/, 0xFFFEAEC7, 0xFFF78525, /**/ 0xFFFFC10A /**/,   // changed to reflect what processing sees
-  0xFFCC00FF, 0xFFEFE3AF, 0xFF23B14D, 0xFFB5E51D, 
-  /**/ 0xFF00A3E8 /**/, 0xFF9AD9EA, 0xFF3F47CE, 0xFF7092BF,   // changed to reflect what processing sees
-  0xFFA349A3, 0xFFC7BFE6, 0xFF417B7D, /**/ 0xFFFF0080 /**/,   // changed to reflect what processing is seeing
-  0xFF838ADB, 0xFFDA9D80, 0xFF86AADE, 0xFFA3D981,
-  0xFF40003F, 0xFFA4A351,
-  0xFF000079, 0xFF870C3A, 0xFF55761F, 0xFF457894
-  
-}; //the colors of the buttons
 String textfield=""; // Text field String for display
 
 void setup() {
@@ -342,7 +321,7 @@ public void Save() {//Bang Function for the Button Save
   }
 }
 
-public void Stop(){
+public void Stop() {
   // this function stops the video taking and also stops the present operation on the arduino.
   // mm.finish(); // Completes the Video at this Instant
   int milliseconds_passed = c.millis();    // the milliseconds reading of the timer
@@ -351,6 +330,7 @@ public void Stop(){
   c.reset();
   arduino.write('x');
   arduino.write('\n');
+  
   if(timeStampDone == false) {
     output.print("\t\t" + hour() + ":" + minute() +":" + second()); 
     output.print("\t\t" + textTimer + " : " + milliseconds_passed + "\t");
@@ -423,6 +403,7 @@ void mousePressed() {
   
   
 void mouseReleased() {
+  /*
   // The Mouse event the tests for the Buttons for the Sectors
       
       if (detailsEntered == true) {
@@ -432,7 +413,7 @@ void mouseReleased() {
       }
       
       // we will check the different cases for i...
-      if (int(buttonstring[i]) >= 22) {  
+      if (false) {  
         // the following resets the timer..
         kk++;
         if (kk == 1) {
@@ -442,50 +423,21 @@ void mouseReleased() {
         // println("sweep");
         // this is the case of the sweeps..
 
-        arduino.write('s');
-        arduino.write(',');
-        arduino.write(buttonstring[i]);
-        arduino.write('.');
-        arduino.write(m);
-        arduino.write('\n');
         textValue = "kinetic perimetry, Meridian " + azimuth + " degrees";
         if (timeStampDone == true) {
           output.print("Meridian " + azimuth); 
           output.print("\t\t"+hour() + ":" + minute() +":" + second());
           timeStampDone = false;  
         }
-      } else if (buttonstring[i] == "l" || buttonstring[i] == "r") {
+      } else if (false) {
         // the following resets the timer..
         kk++;
         if (kk == 1) {
           c.reset();
         }
         
-        // println("hemi");
-        arduino.write('h');
-        arduino.write(',');
-        arduino.write(buttonstring[i]);
-        arduino.write('.');
-        arduino.write(m);
-        arduino.write('\n');
-        textValue = "Hemisphere " + buttonstring[i];
-        if (timeStampDone == true) {
-          output.print("Hemisphere");
-          if (buttonstring[i] == "l") {
-            output.print(" left");
-          } else {
-            output.print(" right"); 
-          }
-          output.print("\t\t" + hour() + ":" + minute() +":" + second());
-          timeStampDone = false;  
-        }
-        if (buttonstring[i] == "l") {
-          hemquad[4] = 200;
-        } else {
-          hemquad[5] = 200;
-        }
       
-      } else if (int(buttonstring[i]) < 22) {
+      } else if (int(22) {
         // the following resets the timer..
         kk++;
         if (kk == 1) {
@@ -493,30 +445,10 @@ void mouseReleased() {
         }
         
         // println("quadrant");
-        arduino.write('q');
-        arduino.write(',');
-        arduino.write(buttonstring[i]);
-        arduino.write('.');
-        arduino.write(m);
-        arduino.write('\n');
-        textValue = "Quadrant " + buttonstring[i];
-         if (timeStampDone == true) {
-          output.print("Quadrant");
-          if (buttonstring[i] == "2") {
-            output.print(" top right");
-          } else if (buttonstring[i] == "3") {
-            output.print(" top left");
-          } else if (buttonstring[i] == "4") {
-            output.print(" bottom left"); 
-          } else if (buttonstring[i] == "1") {
-            output.print(" bottom right"); 
-          } 
-          output.print("\t" + hour() + ":" + minute() +":" + second());
-          timeStampDone = false;  
-        }
-        hemquad[int(buttonstring[i]) - 1] = 200;  // set that particular quadrant to 'done' 
-      }
+        
     }
+    */
+}
 
 
 void customize(DropdownList ddl) {
@@ -565,10 +497,4 @@ void keyPressed() {
     Stop();
     println("stopped");
   } 
-}
-
-// the code that puts the fixation OFF..
-public void Fixation(){
-  arduino.write('x');
-  arduino.write('\n');
 }
