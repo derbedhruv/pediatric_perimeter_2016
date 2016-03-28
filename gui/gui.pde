@@ -330,7 +330,7 @@ public void Save() {//Bang Function for the Button Save
     // output.close(); // File written, all's well
     
     // notify the user..
-    textValue = "File Created with "+textName+".txt  as the Name";
+    textValue = "File Created with " + textName + ".txt  as the Name";
     textVideo = "Thank you. Video is ON. Please click on a test..";
     detailsEntered = true;      // Details have been entered. Awesome. Show the video.
     
