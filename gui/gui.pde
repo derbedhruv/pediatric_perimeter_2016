@@ -1,5 +1,5 @@
 /***************************************
-THIS IS THE LATEST VERSION AS OF 24-MAR-2016
+THIS IS THE LATEST VERSION AS OF 28-MAR-2016
   Project Name : Pediatric Perimeter v3.x
   Author : Dhruv Joshi
 
@@ -62,9 +62,8 @@ String textDate="";
 String textTime="";
 String textMe="";
 
-// button colour map variables...
+// button background...
 PImage buttonm;       // image of the buttons (visible)
-PImage buttoncolmap;  // colormap of the buttons (hidden)
 
 // movie/video related variables
 GSCapture cam;        // GS Video Capture Object
@@ -111,13 +110,12 @@ void setup() {
     // exit();
   }
   
-  size(1300, 600);  //The Size of the Panel 
-  
-   
+  size(1300, 600);  //The Size of the entire frame 
+     
   cp5 = new ControlP5(this);
   t = new Textlabel(cp5,"--",840,20);
   buttonm = loadImage("buttonm.png");//Front End
-  buttoncolmap=loadImage("buttoncolmap.png"); //Backend
+  
   c = new ControlTimer();
   c.setSpeedOfTime(1);
   cp5.setColorLabel(0xff000000);
@@ -372,13 +370,15 @@ public void Stop(){
 }
 
 void mousePressed() {
-  //println(mouseX+" "+mouseY);
+  // println(mouseX+" "+mouseY);
   // This part presumable deals with the LED indication being printed on the screen...
   // When one clicks on the perimeter sweep diagram, of course...
-  float r = sqrt(sq(mouseX - 1096) + sq(mouseY - 200));    // radial distance from the center of the perimeter and the mouse 
-  // println(r);
+  float r_meridian = sqrt(sq(mouseX - 1096) + sq(mouseY - 200));    // radial distance from the center of the perimeter and the mouse
+  float r_quad = sqrt(sq(mouseX - 991) + sq(mouseY - 515));
+  float r_hemi = sqrt(sq(mouseX - 1191) + sq(mouseY - 514));
+  // println(str(r_meridian) + ", " + str(r_hemi) + ", " + str(r_quad));
   
-  if (r <= 207 && r > 25) {  // If the mouse hath clicked in the general sweep region.. remember we're just trying to find theta here
+  if (r_meridian <= 207 && r_meridian > 25) {  // If the mouse hath clicked in the general sweep region.. remember we're just trying to find theta here
     // println("chose a semi-meridian");
     
     // The next 3 lines simply find the azimuthal angle
@@ -387,45 +387,44 @@ void mousePressed() {
     theta = degrees(theta);
     
     // Then we choose the sign of theta based on standard polar coordinates convention
-    if(mouseX>1096  && mouseY<200)
+    if(mouseX > 1096  && mouseY < 200) {
       theta= -1*theta;
-    else if(mouseX<1096)// && mouseY<200)
+    } else if(mouseX < 1096){
       theta = 180 - theta; 
-    else if(mouseX>1096 && mouseY>200)
+    } else if(mouseX > 1096 && mouseY > 200) {
       theta = 360 - theta;
-    
-    // What's next? discretization of theta into a variable that represents which LED is on..  
-    float a = ((theta  - 7.5)/15);
-    
-    if (a < 0) {
-      a = 23;                    // The single meridian which is at the end is numbered 23
     }
     
-     
+    // What's next? discretization of theta into a variable that represents which LED is on..  
+    float a = ((theta  - 7.5)/15);    
+     /*
     me = int(a);    // The variable "me" tracks the meridian number, by discretizing "a"
     azimuth = str(((me + 1)*15)%360);    // calculate the azimuth angle which has actually been mentioned from the 'me' variable
     println(azimuth);
+    
     // Now we know whch meridian's been selected.
     // println("Meridian" + me);
     textMe = ("Angle: " + theta + " degrees");    // print to the textfield indicating which meridian was selected
-    // ang = int(((me+1)*15) /*+ 7.5*/);    // The 7.5 degrees has been removed so that the red dot will come in the center of the meridian, which is more representative of reality
+    */
         
-  } else textMe = "None";
+  } 
+  
+  if (r_hemi < 68.0) {
+     // this is a hemi, check angle quickly and find out 
+     println("hemi!");
+  }
+  
+  if (r_quad < 68.0) {
+     // this is a quad 
+     println("quad!");
+  }
 }
   
   
 void mouseReleased() {
   // The Mouse event the tests for the Buttons for the Sectors
-  color testcolor = buttoncolmap.get(mouseX, mouseY); // get the color in the hidden image 
-  // println(hex(testcolor, 6));    /******** USE THIS TO DEBUG WHAT COLOUR PROCESSING IS ACTUALLY SEEING!****/
-      
-  for (i=0; i<buttonstring.length; ++i) { //check the color and copy the name of the button
-    if (testcolor == buttoncolor[i]) {
-      textfield = buttonstring[i];
-      // println(buttonstring[i]);
       
       if (detailsEntered == true) {
-        m = byte(sliderValue);
         textVideo="The test has Started"; 
       } else {
         textVideo="Please Enter the Patient name";
@@ -516,10 +515,8 @@ void mouseReleased() {
         }
         hemquad[int(buttonstring[i]) - 1] = 200;  // set that particular quadrant to 'done' 
       }
-      break;  //Break statement is essential else would lead to a number of bugs
     }
-  }
-}
+
 
 void customize(DropdownList ddl) {
   // This part changes the properties of the MALE/FEMALE dropdown
