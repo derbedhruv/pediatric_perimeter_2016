@@ -17,7 +17,7 @@ import codeanticode.gsvideo.*;  // Importing GS Video Library
 import controlP5.*;             // Import Control P5 Library
 
 Serial arduino;                 // create serial object
-int kk = 0;
+byte kk = 0;                    // This variable keeps track of the millis timer
 
 PrintWriter output;             // The File Writing Object
 byte m = 0;                     // This byte is used to send a slider value to the arduino (brightness choice)
@@ -47,7 +47,7 @@ DropdownList d1;                // Dropdown List creation
 
 String folderName = "";           // Will store the folder name into which shit will be saved
 
-// te following bariables shall hold the values that were entered about the patient
+// the following variables shall hold the values that were entered about the patient
 String textValue = "";
 String textFile = "";           
 String textName = "";
@@ -70,8 +70,9 @@ GSCapture cam;        // GS Video Capture Object
 GSMovieMaker mm;      // GS Video Movie Maker Object  
 int droppedFrames = 0, collectedFrames = 0;
 
-int fps = 30;          // The Number of Frames per second Declaration
+int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
 int ang = 0;
+
 //Declaration of the names for the buttons and their parameters 
 String[] buttonstring= {
   "37", "35", "33", "31", 
@@ -208,7 +209,7 @@ void setup() {
         cam.start();      // shall start acquiring video feed from the camera
         break; 
       }
-      println("...NO. Please check the camera connected!"); 
+      println("...NO. Please check the camera connected and try again."); 
       exit();
     }  
   }
