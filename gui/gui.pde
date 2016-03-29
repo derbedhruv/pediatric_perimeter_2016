@@ -40,6 +40,9 @@ GSCapture cam;        // GS Video Capture Object
 GSMovieMaker mm;      // GS Video Movie Maker Object
 int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
 
+// PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
+String textName, textAge, textMR, textDescription;
+
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
 void setup() {
@@ -471,6 +474,14 @@ public class ControlFrame extends PApplet {
           .setFont(createFont("arial", 12))
             .setAutoClear(false)
               ;
+    cp5.addBang("Save")  //The Bang Save and the Specifications
+    .setPosition(20, 250)
+      .setSize(150, 40)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
+          ; 
+    
+    
+    
   }
 
   public void draw() {
