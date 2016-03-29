@@ -14,7 +14,7 @@ private ControlP5 cp5;
     cp5 = new ControlP5( this );
     // DECLARE THE CONTROLFRAME, WHICH IS THE OTHER FRAME
     ControlFrame cf1 = addControlFrame( "hello", 200, 200, 40, 40, color( 100 ) );
-    cf1.setVisible(false);  // set it to be invisible, so we can give it focus later
+    cf1.setVisible(true);  // set it to be invisible, so we can give it focus later
   }
   
   void draw() {
@@ -62,8 +62,8 @@ ControlFrame addControlFrame(final String theName, int theWidth, int theHeight, 
       public void windowClosing(WindowEvent we) {
       removeFrame( theName );
     }
-  } 
-  );
+  });
+  
   f.setResizable( false );
   f.setVisible( false );
   // sleep a little bit to allow p to call setup.
@@ -94,14 +94,11 @@ ControlFrame getFrame( String theName ) {
 // the ControlFrame class extends PApplet, so we are creating a new processing applet inside a new frame with a controlP5 object loaded
 // herein we define our new object
 public class ControlFrame extends PApplet {
-
   int w, h;
 
-  int bg;
-
   public void setup() {
-    size( w , h );
-    frameRate( 30 );
+    size(w, h);
+    frameRate(30);
     cp5 = new ControlP5( this );
   }
 
@@ -115,7 +112,6 @@ public class ControlFrame extends PApplet {
     name = theName;
     w = theWidth;
     h = theHeight;
-    bg = theColor;
   }
 
 
@@ -131,7 +127,7 @@ public class ControlFrame extends PApplet {
   }
   
   public void setVisible( boolean b) {
-    frame.setVisible( b );
+    frame.setVisible(b);
   }
   
   
