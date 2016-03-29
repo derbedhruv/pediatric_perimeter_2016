@@ -43,12 +43,6 @@ void keyPressed() {
     case('1'):
     getFrame("hello").setVisible( true );
     break;
-    case('2'):
-    getFrame("hello").setUndecorated( true );
-    break;
-    case('3'):
-    getFrame("hello").setUndecorated( false );
-    break;
     case('4'):
     getFrame("hello").setVisible( false );
     break;
@@ -151,22 +145,6 @@ public class ControlFrame extends PApplet {
     public void dispose() {
     frame.dispose();
     super.dispose();
-  }
-  
-  public boolean isUndecorated() {
-    return isUndecorated;
-  }
-  
-  public void setUndecorated( boolean theFlag ) {
-    if (theFlag != isUndecorated()) {
-      isUndecorated = theFlag;
-      frame.removeNotify();
-      frame.setUndecorated(isUndecorated);
-      setSize(width, height);
-      setBounds(0, 0, width, height);
-      frame.setSize(width, height);
-      frame.addNotify();
-    }
   }
   
   public void setVisible( boolean b) {
