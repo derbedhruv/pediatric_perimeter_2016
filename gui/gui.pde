@@ -42,6 +42,7 @@ Serial arduino;                 // create serial object
 GSCapture cam;        // GS Video Capture Object
 GSMovieMaker video_recording;      // GS Video Movie Maker Object
 int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
+boolean startRecording = false;
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 String textName, textAge, textMR, textDescription;
@@ -109,9 +110,8 @@ void draw() {
   fill(0);
   rect(0, 0, 640, 480);
   if (cam.available() == true) {
-    cam.read();    // read only if available, otherwise interpolate with previous frame
-  } else {
-  }
+    cam.read();
+  } 
   image(cam, 0, 0);    // display the image, interpolate with the previous image if this one was a dropped frame
   
   // draw the crosshair at the center of the video feed
@@ -128,6 +128,12 @@ void draw() {
   
   // draw the isopter/meridians
   drawIsopter(meridians, isopter_center[0], isopter_center[1], isopter_diameter);
+  
+  // RECORD THE FRAME, SAVE AS RECORDED VIDEO
+  if (startRecording == true) {
+    loadPixels();
+    video_recording.addFrame(pixels);
+  }
 }
 
 // DRAW FOUR QUADRANTS - THE MOST GENERAL FUNCTION
@@ -501,8 +507,11 @@ public class ControlFrame extends PApplet {
     // TODO: Save patient details to a file in the same folder, along with isopter angles
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
-    video_recording = new GSMovieMaker(main_frame, width, height, "./" + year() + "" + month() + "" + day() + "_" + textName + ".avi", GSMovieMaker.MJPEG, GSMovieMaker.HIGH, fps);
+    video_recording = new GSMovieMaker(main_frame, width, height, "./" + year() + "" + month() + "" + day() + "_" + textName + ".mpg", GSMovieMaker.MJPEG, GSMovieMaker.HIGH, fps);
     this.setVisible(false);
+    startRecording = true;
+    video_recording.setQueueSize(0, 60);
+    video_recording.start();
   }
 
   public ControlFrame(Object theParent, Frame theFrame, String theName, int theWidth, int theHeight, int theColor) {
