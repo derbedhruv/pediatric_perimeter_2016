@@ -13,6 +13,7 @@
   
 */
 import processing.serial.*;
+import codeanticode.gsvideo.*;
 
 // HEMI AND QUAD VARIABLES
 int quad_state[][] = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};    // 1 means the quad has not been done yet, 2 means it has already been done, 3 means it is presently going on, negative means it is being hovered upon
@@ -39,6 +40,16 @@ int hovered_count;    // the current meridian which has been hovered over
 // SERIAL OBJECT/ARDUINO
 Serial arduino;                 // create serial object
 
+// VIDEO FEED AND VIDEO SAVING VARIABLES
+// movie/video related variables
+GSCapture cam;        // GS Video Capture Object
+GSMovieMaker mm;      // GS Video Movie Maker Object  
+int droppedFrames = 0, collectedFrames = 0;
+
+int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
+int ang = 0;
+
+
 void setup() {
   // INITIATE SERIAL CONNECTION
   println(Serial.list()[Serial.list().length - 1]);
@@ -56,6 +67,34 @@ void setup() {
   
   // default background colour
   size(1000, 480);  // the size of the video feed + the side bar with the controls
+  frameRate(fps);
+  
+  // CONNECT TO THE CAMERA
+  String[] cameras = GSCapture.list(); //The avaliable Cameras
+  println(cameras);
+     
+  // We check if the right camera is plugged in, and if so only then do we proceed, otherwise we exit the program.
+  if (cameras.length == 0) {
+    println("There are no cameras available for capture.");
+    //exit();
+  } else {
+    println("Checking if correct camera has been plugged in ...");
+    
+    for (int i = 0; i < cameras.length; i++) {  //Listing the avalibale Cameras
+      println(cameras[i]);
+      
+      println(cameras[i].length());
+      println(cameras[i].substring(3,6));
+      // if (cameras[i].length() == 13 && cameras[i].substring(3,6).equals("USB")) {
+        print("...success!");
+        cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
+        cam.start();      // shall start acquiring video feed from the camera
+        break; 
+      // }
+      // println("...NO. Please check the camera connected and try again."); 
+      // exit();
+    }  
+  }
 }
 
 void draw() {
@@ -65,6 +104,14 @@ void draw() {
   // draw the video capture here
   fill(0);
   rect(0, 0, 640, 480);
+  if (cam.available() == true) {
+    collectedFrames = collectedFrames + 1;
+    cam.read();    // read only if available, otherwise interpolate with previous frame
+  } else {
+    // that's a dropped frame...
+    droppedFrames = droppedFrames + 1;
+  }
+  image(cam, 0, 0);    // display the image
   
   // draw the crosshair at the center of the video feed
   stroke(#ff0000);
