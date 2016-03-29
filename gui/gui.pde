@@ -6,36 +6,20 @@ import controlP5.*;
 import processing.serial.*;
 import codeanticode.gsvideo.*;
 
-
+// DECLARING A CONTROLP5 OBJECT
 private ControlP5 cp5;
 
-int bgColor;
-
-void setup() {
-
-  size(400, 400 );
-
-  cp5 = new ControlP5( this );
-
-  /* Add a controlframe */
-
-  ControlFrame cf1 = addControlFrame( "hello", 200, 200, 40, 40, color( 100 ) );
-  
-  // add a slider with an EventListener. When dragging the slider, 
-  // variable bgColor will change accordingly. 
-  cf1.control().addSlider( "s1" ).setRange( 0, 255 ).addListener( new ControlListener() {
-    public void controlEvent( ControlEvent ev ) {
-      bgColor = color( ev.getValue() );
-    }
+// THIS IS THE MAIN FRAME
+  void setup() {
+    cp5 = new ControlP5( this );
+    // DECLARE THE CONTROLFRAME, WHICH IS THE OTHER FRAME
+    ControlFrame cf1 = addControlFrame( "hello", 200, 200, 40, 40, color( 100 ) );
+    cf1.setVisible(false);  // set it to be invisible, so we can give it focus later
   }
-  );
   
-  cf1.setVisible( false );
-}
-
-void draw() {
-  background( bgColor );
-}
+  void draw() {
+  
+  }
 
 
 void keyPressed() {
@@ -107,9 +91,8 @@ ControlFrame getFrame( String theName ) {
 }
 
 
-// the ControlFrame class extends PApplet, so we 
-// are creating a new processing applet inside a
-// new frame with a controlP5 object loaded
+// the ControlFrame class extends PApplet, so we are creating a new processing applet inside a new frame with a controlP5 object loaded
+// herein we define our new object
 public class ControlFrame extends PApplet {
 
   int w, h;
@@ -123,7 +106,7 @@ public class ControlFrame extends PApplet {
   }
 
   public void draw() {
-    background( bg );
+    background(0);
   }
 
   public ControlFrame(Object theParent, Frame theFrame, String theName, int theWidth, int theHeight, int theColor) {
