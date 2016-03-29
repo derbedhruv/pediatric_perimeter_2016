@@ -459,6 +459,18 @@ public class ControlFrame extends PApplet {
           .setFont(createFont("arial", 12))
             .setAutoClear(false)
               ;
+    cp5.addTextfield("Age")
+    .setPosition(20, 150)
+      .setSize(150, 30)
+          .setFont(createFont("arial", 12))
+            .setAutoClear(false)
+              ;
+    cp5.addTextfield("Description")
+    .setPosition(20, 200)
+      .setSize(150, 30)
+          .setFont(createFont("arial", 12))
+            .setAutoClear(false)
+              ;
   }
 
   public void draw() {
