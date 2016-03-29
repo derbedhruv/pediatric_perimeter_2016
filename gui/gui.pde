@@ -450,6 +450,7 @@ public class ControlFrame extends PApplet {
     frameRate(30);
     cp5 = new ControlP5( this );
     
+    // ADDING CP5 ELEMENTS
     cp5.addTextfield("Name") //Text Field Name and the Specifications
     .setPosition(20, 50)
       .setSize(150, 30)
@@ -479,13 +480,19 @@ public class ControlFrame extends PApplet {
       .setSize(150, 40)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
           ; 
-    
-    
-    
+  
   }
 
   public void draw() {
     background(0);
+  }
+    
+  public void Save() {
+    // save function for the cp5.Bang object "Save"
+    textName = cp5.get(Textfield.class, "Name").getText();
+    textAge = cp5.get(Textfield.class, "Age").getText();
+    textDescription = cp5.get(Textfield.class, "Description").getText();
+    println("Name, Age, Description = " + textName + ", " + textAge + ", " + textDescription);
   }
 
   public ControlFrame(Object theParent, Frame theFrame, String theName, int theWidth, int theHeight, int theColor) {
