@@ -28,10 +28,11 @@ int hemi_hover_code[][] = {{0, 3}, {1, 2}};
 
 // ISOPTER VARIABLES
 // 24 meridians and their present state of testing
-int meridians[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+int meridians[] = {28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28};    // negative value means its being hovered over
 color meridian_text_color[] = {};
 int isopter_center[] = {820, 150};
 int isopter_diameter = 250;
+int current_sweep_meridian;
 
 // VARIABLES THAT KEEP TRACK OF WHAT OBJECT (HEMI, QUAD OR ISOPTER) WE ARE HOVERING OVER AND WHICH COUNT IT IS
 // THIS WILL ENABLE SENDING A SERIAL COMM TO THE ARDUINO VERY EASILY ON A MOUSE PRESS EVENT
@@ -116,11 +117,12 @@ void draw() {
   colorQuads(quad_state, quad_center[0], quad_center[1], 2.5, 2.5);    // quads
   colorQuads(hemi_state, hemi_center[0], hemi_center[1], 2.5, 0);      // hemis
   
+  // check if the mouse is hovering over the hemis, quads or isopter - if so, change to hover colour
+  hover(mouseX, mouseY);
+  
   // draw the isopter/meridians
   drawIsopter(meridians, isopter_center[0], isopter_center[1], isopter_diameter);
   
-  // check if the mouse is hovering over the hemis, quads or isopter - if so, change to hover colour
-  hover(mouseX, mouseY);
 }
 
 // DRAW FOUR QUADRANTS - THE MOST GENERAL FUNCTION
@@ -163,12 +165,20 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     // draw the text at a location near the edge, which is along an imaginary circle of larger diameter - at point (xt, yt)
     float xt = cos(radians(-i*15))*(diameter + 30)/2 + x - 10;
     float yt = sin(radians(-i*15))*(diameter + 20)/2 + y + 5;
-    if (meridians[i] == -2) {
+    if (meridians[i] < 0) {
       fill(#ff0000);
     } else {
       fill(0); 
     }
-    text(str(i*15), xt, yt);  
+    text(str(i*15), xt, yt);  // draw the label of the meridian (in degrees)
+    
+    // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
+    fill(#ff0000);  // red colour
+    if (abs(meridians[i]) < 28) {
+      float xi = cos(radians(-i*15))*(diameter*abs(meridians[i])/(2*27)) + x;
+      float yi = sin(radians(-i*15))*(diameter*abs(meridians[i])/(2*27)) + y;
+      ellipse(xi, yi, 10, 10);
+    }
   }
 }
 
@@ -188,9 +198,9 @@ void hover(float x, float y) {
       // calculate angle at which mouse is from the center
       float angle = degrees(angleSubtended(x, y, isopter_center[0], isopter_center[1]));
       
-      meridians[hovered_count] = -1;    // clear out the previously hovered one
+      meridians[hovered_count] = abs(meridians[hovered_count]);    // clear out the previously hovered one
       hovered_count = int((angle + 5)/15)%24;    // this is the actual angle on which you are hovering
-      meridians[hovered_count] = -2;      // set the presently hovered meridian to change state
+      meridians[hovered_count] = -1*abs(meridians[hovered_count]);      // set the presently hovered meridian to change state
       cursor(HAND);     // change cursor to indicate that this thing can be clicked on
       
      } else if (r_quad < 0.5*quad_diameter[0]) {
@@ -277,22 +287,24 @@ void mousePressed() {
         hemi_state[hemi_hover_code[hovered_count - 2][0]][1] = 3;
         hemi_state[hemi_hover_code[hovered_count - 2][1]][1] = 3;
       }
-    }    
+    }
+    case 's':
+        current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
   }
 }
 
 void clearHemisQuads() {
  // checks if any hemi_state or quad_state values are == 3, and makes them into 2 (done)
- for (int i = 0; i < 4; i++) {  // 4 quadrants
-  for (int j = 0; j < 2; j++) {  // inner and outer
-    if (quad_state[i][j] == 3) {
-       quad_state[i][j] = 2;
-    }
-    if (hemi_state[i][j] == 3) {
-       hemi_state[i][j] = 2;
-    }
-  }
- }
+   for (int i = 0; i < 4; i++) {  // 4 quadrants
+      for (int j = 0; j < 2; j++) {  // inner and outer
+        if (quad_state[i][j] == 3) {
+           quad_state[i][j] = 2;
+        }
+        if (hemi_state[i][j] == 3) {
+           hemi_state[i][j] = 2;
+        }
+      }
+   }
 }
 
 
@@ -322,10 +334,9 @@ void serialEvent(Serial arduino) {
   String inString = arduino.readStringUntil('\n');
   if (inString != null && inString.length() <= 4) {
     // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end 
-    print(inString);
+    // print(inString);
     
-    // assuming that this feedback will only come from the arduino iff we are in sweep mode
-    // then that means that the variable hovered_count will be equal to the meridian number
-    meridians[hovered_count] = parseInt(inString);
+    meridians[current_sweep_meridian] = parseInt(inString.substring(0, inString.length() - 2));
+    printArray(meridians[current_sweep_meridian]);
   } 
 }
