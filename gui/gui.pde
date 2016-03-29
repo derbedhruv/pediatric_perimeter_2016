@@ -507,7 +507,7 @@ public class ControlFrame extends PApplet {
     // TODO: Save patient details to a file in the same folder, along with isopter angles
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
-    video_recording = new GSMovieMaker(main_frame, width, height, "./" + year() + "" + month() + "" + day() + "_" + textName + ".mpg", GSMovieMaker.MJPEG, GSMovieMaker.HIGH, fps);
+    video_recording = new GSMovieMaker(main_frame, 1000, 480, "./" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
     this.setVisible(false);
     startRecording = true;
     video_recording.setQueueSize(0, 60);
