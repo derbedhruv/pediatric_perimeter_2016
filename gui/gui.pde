@@ -45,7 +45,7 @@ int fps = 30;          // The Number of Frames per second Declaration (used for 
 void setup() {
   cp5 = new ControlP5( this );
   // DECLARE THE CONTROLFRAME, WHICH IS THE OTHER FRAME
-  ControlFrame cf1 = addControlFrame( "hello", 200, 200, 40, 40, color( 100 ) );
+  ControlFrame cf1 = addControlFrame( "Patient Information", 200,480, 40, 40, color( 100 ) );
   cf1.setVisible(true);  // set it to be invisible, so we can give it focus later
   
   // INITIATE SERIAL CONNECTION
@@ -367,21 +367,7 @@ void serialEvent(Serial arduino) {
 }
 /**********************************************************************************************************************************/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
+/* who ya gonna call? These functions..
 void keyPressed() {
   switch(key) {
     case('1'):
@@ -397,8 +383,7 @@ void keyPressed() {
 }
 */
 
-
-/* BELOW FUNCTIONS ARE REGARDING CREATING AND DESTROYING CONTROLFRAMES*/
+/* FUNCTIONS BELOW ARE REGARDING CREATING AND DESTROYING CONTROLFRAMES*/
 
 HashMap<String, ControlFrame> frames = new HashMap<String, ControlFrame>();
 
@@ -461,6 +446,19 @@ public class ControlFrame extends PApplet {
     size(w, h);
     frameRate(30);
     cp5 = new ControlP5( this );
+    
+    cp5.addTextfield("Name") //Text Field Name and the Specifications
+    .setPosition(20, 50)
+      .setSize(150, 30)
+        .setFocus(true)
+          .setFont(createFont("arial", 12))
+            .setAutoClear(false);
+    cp5.addTextfield("MR No")
+    .setPosition(20, 100)
+      .setSize(150, 30)
+          .setFont(createFont("arial", 12))
+            .setAutoClear(false)
+              ;
   }
 
   public void draw() {
