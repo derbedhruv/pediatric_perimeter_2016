@@ -150,7 +150,8 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
   // first draw the background circle
   stroke(0);
   fill(#eeeeee);
-  ellipse(x, y, diameter, diameter);
+  ellipse(x, y, diameter, diameter);    // the outer circle of the isopter, representing the projection of the whole dome
+  ellipse(x, y, 0.25*diameter, 0.25*diameter);  // the inner daisy chain
   
   // Then draw the 24 meridians
   for (int i = 0; i < 24; i++) {
@@ -175,8 +176,8 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
     fill(#ff0000);  // red colour
     if (abs(meridians[i]) < 28) {
-      float xi = cos(radians(-i*15))*(diameter*abs(meridians[i])/(2*27)) + x;
-      float yi = sin(radians(-i*15))*(diameter*abs(meridians[i])/(2*27)) + y;
+      float xi = cos(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + x;
+      float yi = sin(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + y;
       ellipse(xi, yi, 10, 10);
     }
   }
