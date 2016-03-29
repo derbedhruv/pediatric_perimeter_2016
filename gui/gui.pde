@@ -6,6 +6,9 @@ import controlP5.*;
 import processing.serial.*;
 import codeanticode.gsvideo.*;
 
+// IMPORTANT: DECLARING A GLOBAL REFERENCE TO THE MAIN PAPPLET 
+PApplet main_frame; 
+
 // DECLARING A CONTROLP5 OBJECT
 private ControlP5 cp5;
 
@@ -37,7 +40,7 @@ Serial arduino;                 // create serial object
 
 // VIDEO FEED AND VIDEO SAVING VARIABLES
 GSCapture cam;        // GS Video Capture Object
-GSMovieMaker mm;      // GS Video Movie Maker Object
+GSMovieMaker video_recording;      // GS Video Movie Maker Object
 int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
@@ -46,9 +49,10 @@ String textName, textAge, textMR, textDescription;
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
 void setup() {
-  cp5 = new ControlP5( this );
+  main_frame = this;
+  cp5 = new ControlP5(this);
   // DECLARE THE CONTROLFRAME, WHICH IS THE OTHER FRAME
-  ControlFrame cf1 = addControlFrame( "Patient Information", 200,480, 40, 40, color( 100 ) );
+  ControlFrame cf1 = addControlFrame( "Patient Information", 200, 480, 40, 40, color(100));
   cf1.setVisible(true);  // set it to be invisible, so we can give it focus later
   
   // INITIATE SERIAL CONNECTION
@@ -492,7 +496,13 @@ public class ControlFrame extends PApplet {
     textName = cp5.get(Textfield.class, "Name").getText();
     textAge = cp5.get(Textfield.class, "Age").getText();
     textDescription = cp5.get(Textfield.class, "Description").getText();
-    println("Name, Age, Description = " + textName + ", " + textAge + ", " + textDescription);
+    // println("Name, Age, Description = " + textName + ", " + textAge + ", " + textDescription);
+    
+    // TODO: Save patient details to a file in the same folder, along with isopter angles
+    
+    // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
+    video_recording = new GSMovieMaker(main_frame, width, height, "./" + year() + "" + month() + "" + day() + "_" + textName + ".avi", GSMovieMaker.MJPEG, GSMovieMaker.HIGH, fps);
+    this.setVisible(false);
   }
 
   public ControlFrame(Object theParent, Frame theFrame, String theName, int theWidth, int theHeight, int theColor) {
