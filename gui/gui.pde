@@ -73,10 +73,11 @@ String last_tested = "Nothing";
 // THIS IS THE MAIN FRAME
 void setup() {
   main_frame = this;
-  cp5 = new ControlP5(this);
+  
   // DECLARE THE CONTROLFRAME, WHICH IS THE OTHER FRAME
   ControlFrame cf1 = addControlFrame( "Patient Information", 200, 480, 40, 40, color(100));
   cf1.setVisible(true);  // set it to be invisible, so we can give it focus later
+  cf1.setUndecorated(true);    // remove the title bar from this so that someone doesn't accidentally close it and screw everything up
   
   // INITIATE SERIAL CONNECTION
   if (Serial.list().length != 0) {
@@ -122,17 +123,23 @@ void setup() {
     }
   }
   
-  // ADD BUTTONS TO THE MAIN UI
+  // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
+  cp5 = new ControlP5(this);
+  cp5.setColorForeground(#eeeeee);
+  cp5.setColorActive(#0000ff);
+  
   // ADD A BUTTON FOR "FINISHING" WHICH WILL CLOSE AND SAVE THE VIDEO AND ALSO MAKE A POPUP APPEAR THAT SHALL ASK FOR USER INPUTS ABOUT THE TEST (NOTES)
   cp5.addBang("FINISH") //The Bang Clear and the Specifications
-    .setPosition(650, 400)
-      .setSize(60, 25)
+    .setPosition(660, 390)
+      .setSize(75, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
           ;
-  cp5.addBang("PATIENT INFO") //The Bang Clear and the Specifications
-    .setPosition(650, 425)
-      .setSize(60, 25)
+  cp5.addBang("PATIENT_INFO") //The Bang Clear and the Specifications
+    .setPosition(660, 420)
+      .setSize(75, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
           ;
           
   // send a "clear all" signal to the arduino in case some random LEDs lit up..
@@ -438,6 +445,15 @@ void serialEvent(Serial arduino) {
     meridians[current_sweep_meridian] = parseInt(inString.substring(0, inString.length() - 2));
   } 
 }
+
+// THE BANG FUNCTIONS
+void FINISH() {
+  println("finished everything");
+}
+
+void PATIENT_INFO() {
+  getFrame("Patient Information").setVisible( true );
+}
 /**********************************************************************************************************************************/
 
 /* who ya gonna call? These functions..
@@ -592,6 +608,22 @@ public class ControlFrame extends PApplet {
     public void dispose() {
     frame.dispose();
     super.dispose();
+  }
+  
+  public boolean isUndecorated() {
+    return isUndecorated;
+  }
+  
+  public void setUndecorated( boolean theFlag ) {
+    if (theFlag != isUndecorated()) {
+      isUndecorated = theFlag;
+      frame.removeNotify();
+      frame.setUndecorated(isUndecorated);
+      setSize(width, height);
+      setBounds(0, 0, width, height);
+      frame.setSize(width, height);
+      frame.addNotify();
+    }
   }
   
   public void setVisible( boolean b) {
