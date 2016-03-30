@@ -328,7 +328,7 @@ void mousePressed() {
   arduino.write(hovered_object);
   arduino.write(',');
   if (hovered_object == 's') {
-   arduino.write(str(hovered_count + 1)); 
+   arduino.write(str((24 - hovered_count)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
   } else {
     arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
   }
@@ -417,11 +417,8 @@ public void Stop() {
 void serialEvent(Serial arduino) { 
   String inString = arduino.readStringUntil('\n');
   if (inString != null && inString.length() <= 4) {
-    // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end 
-    // print(inString);
-    
+    // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
     meridians[current_sweep_meridian] = parseInt(inString.substring(0, inString.length() - 2));
-    printArray(meridians[current_sweep_meridian]);
   } 
 }
 /**********************************************************************************************************************************/
