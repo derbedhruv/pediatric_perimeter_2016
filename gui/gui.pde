@@ -1,4 +1,19 @@
-/** Modified from ControlP5 frame **/
+/***************************************
+THIS IS THE LATEST VERSION AS OF 30-MAR-2016
+  Project Name : Pediatric Perimeter v3.x
+  Author : Dhruv Joshi
+  Modifications made:
+    - Video capture speed is now much faster (30 fps) though there are dropped frames
+    - Removed junk code
+    - used ControlP5 frames to add a second window for patient data entry
+    - cleaner and more responsive UI
+    - No image sprites used, all UI elements generated through code
+    
+  Libraries used (Processing v2.0):
+    - controlp5 v2.0.4 https://code.google.com/p/controlp5/downloads/detail?name=controlP5-2.0.4.zip&can=2&q=
+    - GSVideo v1.0.0 http://gsvideo.sourceforge.net/#download
+    
+*/
  
 import java.awt.*;
 import java.awt.event.*;
