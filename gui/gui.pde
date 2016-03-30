@@ -62,7 +62,11 @@ boolean startRecording = false;
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 String textName, textAge, textMR = "test", textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
 int previousMillis = 0, currentMillis = 0;
-int reaction_time;
+int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
+
+// STATUS VARIABLES
+String status = "idle";
+String last_tested = "Nothing";
 
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
@@ -148,9 +152,11 @@ void draw() {
   // draw the isopter/meridians
   drawIsopter(meridians, isopter_center[0], isopter_center[1], isopter_diameter);
   
-  // print reaction time
+  // print reaction time and information about what was the last thing tested and the thing presently being tested
   fill(0);
-  text("Reaction time is : " + str(reaction_time) + "ms", 800, 400);
+  text("Reaction time is : " + str(reaction_time) + "ms", 700, 400);
+  text("Last thing tested : " + last_tested, 700, 420);
+  text("PRESENT STATUS : " + status, 700, 440);
   
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
@@ -246,7 +252,6 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
 // CHECK IF THE MOUSE IS OVER ANYTHING IMPORTANT
 // DO THIS BY FINDING IF THE RADIAL DISTANCE FROM ANY OF THE HEMI, QUAD OR ISOPTER IS SIGNIFICANT
 void hover(float x, float y) {
-  cursor(ARROW);
   hovered_object = 'c';    // random character which has no meaning to the arduino API
   if (x > 640) {  // otherwise it's over the video and therefore none of our concern
     float r_isopter = sqrt(sq(x - isopter_center[0]) + sq(y - isopter_center[1]));
@@ -298,6 +303,8 @@ void hover(float x, float y) {
         hemi_state[hemi_hover_code[hovered_count][0]][0] *= -1;
         hemi_state[hemi_hover_code[hovered_count][1]][0] *= -1;
       }      
+    } else {
+        cursor(ARROW); 
     }
   }
 }
@@ -334,6 +341,7 @@ void mousePressed() {
   switch(hovered_object) {
     case 'q': {      
       previousMillis = millis();      // start the timer from now
+      status = "quadrant";
       if (hovered_count <= 4) {
          quad_state[abs(4 - hovered_count)][0] = 3;
          break;
@@ -344,17 +352,22 @@ void mousePressed() {
     }
     case 'h': {
       previousMillis = millis();      // start the timer from now
+      status = "hemi";
       if (hovered_count < 2) {
         hemi_state[hemi_hover_code[hovered_count][0]][0] = 3;
         hemi_state[hemi_hover_code[hovered_count][1]][0] = 3;
+        break;
       } else {
         hemi_state[hemi_hover_code[hovered_count - 2][0]][1] = 3;
         hemi_state[hemi_hover_code[hovered_count - 2][1]][1] = 3;
+        break;
       }
     }
     case 's':
-        previousMillis = millis();      // start the timer from now
-        current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
+      previousMillis = millis();      // start the timer from now
+      status = "sweep";
+      current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
+      break;
   }
 }
 
@@ -394,6 +407,10 @@ public void Stop() {
   // CALCULATE REACTION TIME AND PRINT IT TO SCREEN
   reaction_time = currentMillis - previousMillis;  
   println("Reaction time is " + str(reaction_time) + "ms");
+  
+  // UPDATE STATUS VARIABLES
+  last_tested = status;    // last tested thing becomes the previuos value of status
+  status = "Test stopped. idle";
 }
 
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
