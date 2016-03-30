@@ -57,7 +57,6 @@ void setup() {
   cf1.setVisible(true);  // set it to be invisible, so we can give it focus later
   
   // INITIATE SERIAL CONNECTION
-  println(Serial.list()[Serial.list().length - 1]);
   if (Serial.list().length != 0) {
     String port = Serial.list()[Serial.list().length - 1];
     println("Arduino MEGA connected succesfully.");
@@ -90,12 +89,12 @@ void setup() {
       
       println(cameras[i].length());
       println(cameras[i].substring(3,6));
-      // if (cameras[i].length() == 13 && cameras[i].substring(3,6).equals("USB")) {
+      if (cameras[i].length() == 13 && cameras[i].substring(3,6).equals("USB")) {
         println("...success!");
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
         cam.start();      // shall start acquiring video feed from the camera
         break; 
-      // }
+      }
       // println("...NO. Please check the camera connected and try again."); 
       // exit();
     }  
