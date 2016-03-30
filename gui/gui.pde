@@ -108,9 +108,11 @@ void setup() {
         cam.start();      // shall start acquiring video feed from the camera
         break; 
       }
-      // println("...NO. Please check the camera connected and try again."); 
-      // exit();
     }  
+    if (cam == null) {
+      println("...NO. Please check the camera connected and try again."); 
+      exit();
+    }
   }
 }
   
