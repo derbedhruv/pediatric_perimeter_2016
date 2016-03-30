@@ -190,23 +190,23 @@ void loop() {
                case '1': {
                  // LEFT hemisphere.. 
                  Serial.println("left hemi");
-                 hemisphere1();
+                 hemisphere3();
                  break;
                }
                case '2': {
                  // RIGHT hemisphere.. 
                  Serial.println("right hemi");
-                 hemisphere4();             
+                 hemisphere2();             
                  break;  
                }
                // 30 degrees and outer case:
                case '3': {
                  // 30 degrees OFF left hemisphere
-                 hemisphere3();
+                 hemisphere1();
                  break;
                }
                case '0': { 
-                 hemisphere2();
+                 hemisphere4();
                  break;  
                }
              }
@@ -220,39 +220,39 @@ void loop() {
              switch(longit[0]) {
                // we shall go anticlockwise. "1" shall start from the bottom right. 
               case '1': {
-                quad4();
+                quad8();
                 break;
               } 
               case '2': {
-                quad3();
+                quad7();
                 break;
               } 
               case '3': {
-                quad2();
+                quad6();
                 break;
               } 
               case '4': {
-                quad1();
+                quad5();
                 break;
               } 
               case '5': {
                 // turn on only the 30 degrees and higher latitudes
-                quad8();
+                quad4();
                 break;
               }
               case '6': {
                 // turn on only the 30 degrees and higher latitudes
-                quad7();
+                quad3();
                 break;
               }
               case '7': {
                 // turn on only the 30 degrees and higher latitudes
-                quad6();
+                quad2();
                 break;
               }
               case '8': {
                 // turn on only the 30 degrees and higher latitudes
-                quad5();
+                quad1();
                 break;
               } 
              }
