@@ -121,6 +121,23 @@ void setup() {
       exit();
     }
   }
+  
+  // ADD BUTTONS TO THE MAIN UI
+  // ADD A BUTTON FOR "FINISHING" WHICH WILL CLOSE AND SAVE THE VIDEO AND ALSO MAKE A POPUP APPEAR THAT SHALL ASK FOR USER INPUTS ABOUT THE TEST (NOTES)
+  cp5.addBang("FINISH") //The Bang Clear and the Specifications
+    .setPosition(650, 400)
+      .setSize(60, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          ;
+  cp5.addBang("PATIENT INFO") //The Bang Clear and the Specifications
+    .setPosition(650, 425)
+      .setSize(60, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          ;
+          
+  // send a "clear all" signal to the arduino in case some random LEDs lit up..
+  arduino.write('x');
+  arduino.write('\n');
 }
   
 void draw() {
@@ -155,9 +172,9 @@ void draw() {
   
   // print reaction time and information about what was the last thing tested and the thing presently being tested
   fill(0);
-  text("Reaction time is : " + str(reaction_time) + "ms", 700, 400);
-  text("Last thing tested : " + last_tested, 700, 420);
-  text("PRESENT STATUS : " + status, 700, 440);
+  text("Reaction time is : " + str(reaction_time) + "ms", 750, 400);
+  text("Last thing tested : " + last_tested, 750, 420);
+  text("PRESENT STATUS : " + status, 750, 440);
   
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
@@ -324,16 +341,18 @@ void mousePressed() {
   // println(str(mouseX) + "," + str(mouseY));
   // really simple - just send the instruction to the arduino via serial
   // it will be of the form (hovered_object, hovered_count\n)
-  print(str(hovered_object) + ",");
-  println(str(hovered_count));
-  arduino.write(hovered_object);
-  arduino.write(',');
-  if (hovered_object == 's') {
-   arduino.write(str((24 - hovered_count)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
-  } else {
-    arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
+  if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's') {
+    print(str(hovered_object) + ",");
+    println(str(hovered_count));
+    arduino.write(hovered_object);
+    arduino.write(',');
+    if (hovered_object == 's') {
+     arduino.write(str((24 - hovered_count)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
+    } else {
+      arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
+    }
+    arduino.write('\n');
   }
-  arduino.write('\n');
   
   // change colour of the object to "presently being done"
   switch(hovered_object) {
