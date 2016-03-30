@@ -8,6 +8,7 @@ THIS IS THE LATEST VERSION AS OF 30-MAR-2016
     - used ControlP5 frames to add a second window for patient data entry
     - cleaner and more responsive UI
     - No image sprites used, all UI elements generated through code
+    - aligned the hemis and quads in the UI w.r.t. the frame of reference of the camera feed
     
   Libraries used (Processing v2.0):
     - controlp5 v2.0.4 https://code.google.com/p/controlp5/downloads/detail?name=controlP5-2.0.4.zip&can=2&q=
@@ -332,10 +333,7 @@ void mousePressed() {
   } else {
     arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
   }
-  arduino.write('\n');   
-    
-  // clear the hemis and quads which were "being done"
-  clearHemisQuads();
+  arduino.write('\n');
   
   // change colour of the object to "presently being done"
   switch(hovered_object) {
