@@ -60,7 +60,7 @@ int fps = 30;          // The Number of Frames per second Declaration (used for 
 boolean startRecording = false;
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
-String textName, textAge, textMR, textDescription;
+String textName, textAge, textMR = "test", textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
 
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
@@ -81,7 +81,7 @@ void setup() {
     arduino.buffer(1);
   } else {
     println("Arduino not connected or detected, please replug"); 
-    // exit();
+    exit();
   }
   
   // default background colour
@@ -99,11 +99,9 @@ void setup() {
   } else {
     println("Checking if correct camera has been plugged in ...");
     
-    for (int i = 0; i < cameras.length; i++) {  //Listing the avalibale Cameras
-      println(cameras[i]);
-      
-      println(cameras[i].length());
-      println(cameras[i].substring(3,6));
+    for (int i = 0; i < cameras.length; i++) {  //Listing the avalibale Cameras      
+      // println(cameras[i].length());
+      // println(cameras[i].substring(3,6));
       if (cameras[i].length() == 13 && cameras[i].substring(3,6).equals("USB")) {
         println("...success!");
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
@@ -521,7 +519,7 @@ public class ControlFrame extends PApplet {
     // TODO: Save patient details to a file in the same folder, along with isopter angles
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
-    video_recording = new GSMovieMaker(main_frame, 1000, 480, "./" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
+    video_recording = new GSMovieMaker(main_frame, 1000, 480, "./" + year() + "" + month() + "" + day() + "_" + textMR + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
     this.setVisible(false);
     startRecording = true;
     video_recording.setQueueSize(0, 60);
