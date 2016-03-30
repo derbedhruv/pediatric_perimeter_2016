@@ -18,6 +18,7 @@ THIS IS THE LATEST VERSION AS OF 30-MAR-2016
  
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
 import controlP5.*;
 import processing.serial.*;
 import codeanticode.gsvideo.*;
@@ -87,6 +88,11 @@ void setup() {
     // then we open up the port.. 115200 bauds
     arduino = new Serial(this, port, 115200);
     arduino.buffer(1);
+    
+    // send a "clear all" signal to the arduino in case some random LEDs lit up..
+    arduino.write('x');
+    arduino.write('\n');
+  
   } else {
     println("Arduino not connected or detected, please replug"); 
     exit();
@@ -141,10 +147,6 @@ void setup() {
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
           ;
-          
-  // send a "clear all" signal to the arduino in case some random LEDs lit up..
-  arduino.write('x');
-  arduino.write('\n');
 }
   
 void draw() {
@@ -449,6 +451,17 @@ void serialEvent(Serial arduino) {
 // THE BANG FUNCTIONS
 void FINISH() {
   println("finished everything");
+  // stop the video recording, open up a popup asking for any final notes before closing
+  // String notes = showInputDialog(this, JTextArea, "Any final notes?");
+  
+  JTextArea textArea = new JTextArea(10, 5);
+  
+  int okCxl = JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(this), textArea, "Completion Notes", JOptionPane.OK_CANCEL_OPTION);
+
+  if (okCxl == JOptionPane.OK_OPTION) {
+    String text = textArea.getText();
+    // Process text.
+  }
 }
 
 void PATIENT_INFO() {
