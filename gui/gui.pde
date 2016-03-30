@@ -61,6 +61,8 @@ boolean startRecording = false;
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 String textName, textAge, textMR = "test", textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
+int previousMillis = 0, currentMillis = 0;
+int reaction_time;
 
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
@@ -117,6 +119,9 @@ void setup() {
 }
   
 void draw() {
+  // update the millisecond counter
+  currentMillis = millis();
+  
   // plain and simple background color
   background(#cccccc);
   
@@ -143,7 +148,12 @@ void draw() {
   // draw the isopter/meridians
   drawIsopter(meridians, isopter_center[0], isopter_center[1], isopter_diameter);
   
+  // print reaction time
+  fill(0);
+  text("Reaction time is : " + str(reaction_time) + "ms", 800, 400);
+  
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
+  // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
   if (startRecording == true) {
     loadPixels();
     video_recording.addFrame(pixels);
@@ -306,8 +316,8 @@ void mousePressed() {
   // println(str(mouseX) + "," + str(mouseY));
   // really simple - just send the instruction to the arduino via serial
   // it will be of the form (hovered_object, hovered_count\n)
-  // print(str(hovered_object) + ",");
-  // println(str(hovered_count));
+  print(str(hovered_object) + ",");
+  println(str(hovered_count));
   arduino.write(hovered_object);
   arduino.write(',');
   if (hovered_object == 's') {
@@ -323,6 +333,7 @@ void mousePressed() {
   // change colour of the object to "presently being done"
   switch(hovered_object) {
     case 'q': {      
+      previousMillis = millis();      // start the timer from now
       if (hovered_count <= 4) {
          quad_state[abs(4 - hovered_count)][0] = 3;
          break;
@@ -332,6 +343,7 @@ void mousePressed() {
       }
     }
     case 'h': {
+      previousMillis = millis();      // start the timer from now
       if (hovered_count < 2) {
         hemi_state[hemi_hover_code[hovered_count][0]][0] = 3;
         hemi_state[hemi_hover_code[hovered_count][1]][0] = 3;
@@ -341,6 +353,7 @@ void mousePressed() {
       }
     }
     case 's':
+        previousMillis = millis();      // start the timer from now
         current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
   }
 }
@@ -378,7 +391,9 @@ public void Stop() {
   // UI UPDATE - MAKE QUADS/HEMIS PRESENTLY IN ACTIVE STATE TO 'DONE' STATE
   clearHemisQuads();
   
-  // CALCULATE REACTION TIME
+  // CALCULATE REACTION TIME AND PRINT IT TO SCREEN
+  reaction_time = currentMillis - previousMillis;  
+  println("Reaction time is " + str(reaction_time) + "ms");
 }
 
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
