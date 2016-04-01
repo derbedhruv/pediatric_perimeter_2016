@@ -225,6 +225,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
   
   // we draw the two curves representing the isopter extent
   // second curve
+  /*
   noFill();
   beginShape();
   curveVertex(736,235);
@@ -247,6 +248,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
   curveVertex(904,64);
   curveVertex(909,51);
   endShape();
+  */
   
   // Then draw the 24 meridians
   for (int i = 0; i < 24; i++) {
@@ -439,6 +441,10 @@ public void Stop() {
   // UPDATE STATUS VARIABLES
   last_tested = status;    // last tested thing becomes the previuos value of status
   status = "Test stopped. idle";
+  
+  // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE
+  PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
+  isopter.save(base_folder + "/isopter.jpg");  // save it to a file in the same folder
 }
 
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
@@ -455,6 +461,7 @@ void FINISH() {
   println("finished everything");
   // stop the video recording, open up a popup asking for any final notes before closing
   // String notes = showInputDialog(this, JTextArea, "Any final notes?");
+  video_recording.finish();
   
   JTextArea textArea = new JTextArea(10, 5);
   
@@ -583,7 +590,7 @@ public class ControlFrame extends PApplet {
   public void Save() {
     // save function for the cp5.Bang object "Save"
     textName = cp5.get(Textfield.class, "Name").getText();
-    if (textName == null) {
+    if (int(textName) == 0) {
       textName = "test";    // If you don't enter anything, the default is "test" 
     }
     textAge = cp5.get(Textfield.class, "Age").getText();
@@ -591,7 +598,7 @@ public class ControlFrame extends PApplet {
     textMR = cp5.get(Textfield.class, "MR No").getText();
     
     // TODO: Create files for the saving patient details
-    base_folder = "./" + year() + "/" + month() + "/" + day() + "/" + textName;    // the folder into which data will be stored - categorized chronologically
+    base_folder = "./" + year() + "/" + month() + "/" + day() + "/" + textName + "_" + hour() + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
     isopter_text = createWriter(base_folder + "/" + textName + "_isopter.txt");
     quadHemi_text = createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
     
