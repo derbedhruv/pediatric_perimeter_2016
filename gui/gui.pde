@@ -424,11 +424,10 @@ public void Stop() {
   if (hovered_object == 'q') {
     quadHemi_text.print(hour() + ":" + minute() + ":");
     int s = second();
-    println(s);
     if (s < 10) {
       quadHemi_text.print("0" + str(s) + "\t");      // so that the text formatting is proper
     } else {
-      quadHemi_text.print(str(s) + "\t");
+      quadHemi_text.print(str(s) + "\t\t");
     }
     switch (hovered_count) {
       case 1:
@@ -463,6 +462,34 @@ public void Stop() {
         quadHemi_text.print("BR Quad Full");
         break;
     } 
+    quadHemi_text.print("\t" + str(reaction_time) + "\t");
+    quadHemi_text.print("No Flag\t");
+    quadHemi_text.println("No notes\t");
+    quadHemi_text.flush();
+  }
+  
+  if(hovered_object == 'q') {
+    quadHemi_text.print(hour() + ":" + minute() + ":");
+    int s = second();
+    if (s < 10) {
+      quadHemi_text.print("0" + str(s) + "\t");      // so that the text formatting is proper
+    } else {
+      quadHemi_text.print(str(s) + "\t\t");
+    }
+    switch(hovered_count) {
+      case 0:
+        quadHemi_text.print("R Hemi Outer");
+        break;
+      case 1:
+        quadHemi_text.print("L Hemi Outer");
+        break;
+      case 2:
+        quadHemi_text.print("R Hemi Full");
+        break;
+      case 3:
+        quadHemi_text.print("L Hemi Full");
+        break;
+    }
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
     quadHemi_text.print("No Flag\t");
     quadHemi_text.println("No notes\t");
@@ -645,7 +672,7 @@ public class ControlFrame extends PApplet {
     
     // Create files for saving patient details
     // give them useful header information
-    base_folder = year() + "/" + month() + "/" + day() + "/" + textName + "_" + hour() + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
+    base_folder = year() + "/" + month() + "/" + day() + "/" + textName + "_" + hour() + "_" + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
     isopter_text = main_frame.createWriter(base_folder + "/" + textName + "_isopter.txt");
     isopter_text.println("Isopter angles for patient " + textName);
     isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
