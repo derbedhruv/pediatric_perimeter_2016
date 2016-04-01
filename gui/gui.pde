@@ -67,6 +67,7 @@ int previousMillis = 0, currentMillis = 0;
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
 String base_folder;
+String flag;
 
 // STATUS VARIABLES
 String status = "idle";
@@ -475,8 +476,7 @@ public void Stop() {
         break;
     } 
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
-    quadHemi_text.print("No Flag\t");
-    quadHemi_text.println("No notes\t");
+    quadHemi_text.print(flag + "\t");
     quadHemi_text.flush();
   }
   
@@ -503,8 +503,7 @@ public void Stop() {
         break;
     }
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
-    quadHemi_text.print("No Flag\t");
-    quadHemi_text.println("No notes\t");
+    quadHemi_text.print(flag + "\t");
     quadHemi_text.flush();
   }
   
@@ -525,10 +524,10 @@ public void Stop() {
     isopter_text.print((hovered_count - 1)*15 + "\t\t");
     isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
     isopter_text.print(str(reaction_time) + "\t\t\t");
-    isopter_text.print("no flag" + "\t");
-    isopter_text.println("No Notes");
+    isopter_text.print(flag + "\t");
     isopter_text.flush();
   }
+  flag = null;    // reset the flag variable
 }
 
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
@@ -560,6 +559,11 @@ void FINISH() {
 
 void PATIENT_INFO() {
   getFrame("Patient Information").setVisible( true );
+}
+
+void FLAG() {
+  // just update hte flag variable to "flagged"
+  flag = "flagged"; 
 }
 /**********************************************************************************************************************************/
 
