@@ -469,22 +469,6 @@ void PATIENT_INFO() {
 }
 /**********************************************************************************************************************************/
 
-/* who ya gonna call? These functions..
-void keyPressed() {
-  switch(key) {
-    case('1'):
-    getFrame("hello").setVisible( true );
-    break;
-    case('4'):
-    getFrame("hello").setVisible( false );
-    break;
-    case('5'):
-    removeFrame("hello");
-    break;
-  }
-}
-*/
-
 /* FUNCTIONS BELOW ARE REGARDING CREATING AND DESTROYING CONTROLFRAMES*/
 
 HashMap<String, ControlFrame> frames = new HashMap<String, ControlFrame>();
@@ -548,42 +532,50 @@ public class ControlFrame extends PApplet {
     size(w, h);
     frameRate(30);
     cp5 = new ControlP5( this );
-    
+    cp5.setColorForeground(#eeeeee);
+    cp5.setColorActive(#0000ff);
+    cp5.setColorBackground(#ffffff); 
+  
     // ADDING CP5 ELEMENTS
     cp5.addTextfield("Name") //Text Field Name and the Specifications
     .setPosition(20, 50)
       .setSize(150, 30)
         .setFocus(true)
-          .setFont(createFont("arial", 12))
+          .setFont(createFont("arial", 12)).setColor(0)
             .setAutoClear(false);
     cp5.addTextfield("MR No")
     .setPosition(20, 100)
       .setSize(150, 30)
-          .setFont(createFont("arial", 12))
+          .setFont(createFont("arial", 12)).setColor(0)
             .setAutoClear(false)
               ;
     cp5.addTextfield("Age")
     .setPosition(20, 150)
       .setSize(150, 30)
-          .setFont(createFont("arial", 12))
+          .setFont(createFont("arial", 12)).setColor(0)
             .setAutoClear(false)
               ;
     cp5.addTextfield("Description")
     .setPosition(20, 200)
       .setSize(150, 30)
-          .setFont(createFont("arial", 12))
+          .setFont(createFont("arial", 12)).setColor(0)
             .setAutoClear(false)
               ;
     cp5.addBang("Save")  //The Bang Save and the Specifications
     .setPosition(20, 250)
       .setSize(150, 40)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
+          .setColor(0)
           ; 
   
   }
 
   public void draw() {
-    background(0);
+    background(#cccccc);
+    fill(0);
+    text("PEDIATRIC PERIMETER v3.x", 20, 25);
+    text("Please enter information,", 20, 320);
+    text("then click SAVE", 20, 320);
   }
     
   public void Save() {
