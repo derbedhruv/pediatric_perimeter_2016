@@ -426,6 +426,7 @@ void keyPressed() {
 // 1. REACTION TIME CALCULATION
 // 2. SEND SIGNAL TO ARDUINO TO "STOP" ('x\n')
 // 3. DRAW/UPDATE ISOPTER
+// 4. WRITE ISOPTER ANGLE VALUES TO FILE AND ALSO QUAD/HEMI VALUES
 public void Stop() {
   // SIGNAL ARDUINO TO STOP
   arduino.write('x');
@@ -441,6 +442,8 @@ public void Stop() {
   // UPDATE STATUS VARIABLES
   last_tested = status;    // last tested thing becomes the previuos value of status
   status = "Test stopped. idle";
+  
+  // SAVE TO TEXT FILE IN PROPER FORMAT
   
   // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE
   PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
@@ -462,6 +465,7 @@ void FINISH() {
   // stop the video recording, open up a popup asking for any final notes before closing
   // String notes = showInputDialog(this, JTextArea, "Any final notes?");
   video_recording.finish();
+  isopter_text.close();
   
   JTextArea textArea = new JTextArea(10, 5);
   
@@ -597,9 +601,14 @@ public class ControlFrame extends PApplet {
     textDescription = cp5.get(Textfield.class, "Description").getText();
     textMR = cp5.get(Textfield.class, "MR No").getText();
     
-    // TODO: Create files for the saving patient details
-    base_folder = "./" + year() + "/" + month() + "/" + day() + "/" + textName + "_" + hour() + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
+    // Create files for the saving patient details
+    // give them useful header information
+    base_folder = year() + "/" + month() + "/" + day() + "/" + textName + "_" + hour() + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
     isopter_text = createWriter(base_folder + "/" + textName + "_isopter.txt");
+    isopter_text.println("Isopter angles for patient " + textName);
+    isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
+    isopter_text.flush();
+    
     quadHemi_text = createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
