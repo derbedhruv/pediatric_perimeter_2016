@@ -468,7 +468,7 @@ public void Stop() {
     quadHemi_text.flush();
   }
   
-  if(hovered_object == 'q') {
+  if(hovered_object == 'h') {
     quadHemi_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
