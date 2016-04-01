@@ -601,15 +601,15 @@ public class ControlFrame extends PApplet {
     textDescription = cp5.get(Textfield.class, "Description").getText();
     textMR = cp5.get(Textfield.class, "MR No").getText();
     
-    // Create files for the saving patient details
+    // Create files for saving patient details
     // give them useful header information
     base_folder = year() + "/" + month() + "/" + day() + "/" + textName + "_" + hour() + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
-    isopter_text = createWriter(base_folder + "/" + textName + "_isopter.txt");
+    isopter_text = main_frame.createWriter(base_folder + "/" + textName + "_isopter.txt");
     isopter_text.println("Isopter angles for patient " + textName);
     isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
     isopter_text.flush();
     
-    quadHemi_text = createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
+    // quadHemi_text = createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
     video_recording = new GSMovieMaker(main_frame, 1000, 480, base_folder + "/" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
