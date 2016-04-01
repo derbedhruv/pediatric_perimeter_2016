@@ -417,6 +417,53 @@ public void Stop() {
   status = "Test stopped. idle";
   
   // SAVE QUADS AND HEMIS TO TEXT FILE IN PROPER FORMAT
+  if (hovered_object == 'q') {
+    quadHemi_text.print(hour() + ":" + minute() + ":");
+    int s = second();
+    println(s);
+    if (s < 10) {
+      quadHemi_text.print("0" + str(s) + "\t");      // so that the text formatting is proper
+    } else {
+      quadHemi_text.print(str(s) + "\t");
+    }
+    switch (hovered_count) {
+      case 1:
+        quadHemi_text.print("TR Quad Outer");
+        break;
+        
+      case 2:
+        quadHemi_text.print("TL Quad Outer");
+        break;
+        
+      case 3:
+        quadHemi_text.print("BL Quad Outer");
+        break;
+        
+      case 4:
+        quadHemi_text.print("BR Quad Outer");
+        break;
+        
+      case 5:
+        quadHemi_text.print("TR Quad Full");
+        break;
+        
+      case 6:
+        quadHemi_text.print("TL Quad Full");
+        break;
+        
+      case 7:
+        quadHemi_text.print("BL Quad Full");
+        break;
+        
+      case 8:
+        quadHemi_text.print("BR Quad Full");
+        break;
+    } 
+    quadHemi_text.print("\t" + str(reaction_time) + "\t");
+    quadHemi_text.print("No Flag\t");
+    quadHemi_text.println("No notes\t");
+    quadHemi_text.flush();
+  }
   
   // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE  
   if (hovered_object == 's') {
@@ -604,6 +651,7 @@ public class ControlFrame extends PApplet {
     quadHemi_text = main_frame.createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
     quadHemi_text.println("Meridian and Quad tests for patient " + textName);
     quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
+    quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
     quadHemi_text.flush();
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
