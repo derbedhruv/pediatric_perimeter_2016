@@ -62,9 +62,11 @@ int fps = 30;          // The Number of Frames per second Declaration (used for 
 boolean startRecording = false;
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
-String textName, textAge, textMR = "test", textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
+String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
 int previousMillis = 0, currentMillis = 0;
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
+PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
+String base_folder;
 
 // STATUS VARIABLES
 String status = "idle";
@@ -575,20 +577,26 @@ public class ControlFrame extends PApplet {
     fill(0);
     text("PEDIATRIC PERIMETER v3.x", 20, 25);
     text("Please enter information,", 20, 320);
-    text("then click SAVE", 20, 320);
+    text("then click SAVE", 20, 340);
   }
     
   public void Save() {
     // save function for the cp5.Bang object "Save"
     textName = cp5.get(Textfield.class, "Name").getText();
+    if (textName == null) {
+      textName = "test";    // If you don't enter anything, the default is "test" 
+    }
     textAge = cp5.get(Textfield.class, "Age").getText();
     textDescription = cp5.get(Textfield.class, "Description").getText();
-    // println("Name, Age, Description = " + textName + ", " + textAge + ", " + textDescription);
+    textMR = cp5.get(Textfield.class, "MR No").getText();
     
-    // TODO: Save patient details to a file in the same folder, along with isopter angles
+    // TODO: Create files for the saving patient details
+    base_folder = "./" + year() + "/" + month() + "/" + day() + "/" + textName;    // the folder into which data will be stored - categorized chronologically
+    isopter_text = createWriter(base_folder + "/" + textName + "_isopter.txt");
+    quadHemi_text = createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
-    video_recording = new GSMovieMaker(main_frame, 1000, 480, "./" + year() + "" + month() + "" + day() + "_" + textMR + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
+    video_recording = new GSMovieMaker(main_frame, 1000, 480, base_folder + "/" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
     this.setVisible(false);
     startRecording = true;
     video_recording.setQueueSize(0, 60);
