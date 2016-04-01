@@ -222,34 +222,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
   fill(#eeeeee);
   ellipse(x, y, diameter, diameter);    // the outer circle of the isopter, representing the projection of the whole dome
   ellipse(x, y, 0.25*diameter, 0.25*diameter);  // the inner daisy chain
-  
-  // we draw the two curves representing the isopter extent
-  // second curve
-  /*
-  noFill();
-  beginShape();
-  curveVertex(736,235);
-  curveVertex(785,214);
-  curveVertex(802,210);
-  curveVertex(818,217);
-  curveVertex(839,211);
-  curveVertex(856,213);
-  curveVertex(908,237);
-  endShape();
-  
-  beginShape();
-  curveVertex(734,55);
-  curveVertex(735,64);
-  curveVertex(769,58);
-  curveVertex(802,77);
-  curveVertex(820,79);
-  curveVertex(838,76);
-  curveVertex(875,57);
-  curveVertex(904,64);
-  curveVertex(909,51);
-  endShape();
-  */
-  
+    
   // Then draw the 24 meridians
   for (int i = 0; i < 24; i++) {
     // first calculate the location of the points on the circumference of this circle, given that meridians are at 15 degree (PI/12) intervals
@@ -443,11 +416,29 @@ public void Stop() {
   last_tested = status;    // last tested thing becomes the previuos value of status
   status = "Test stopped. idle";
   
-  // SAVE TO TEXT FILE IN PROPER FORMAT
+  // SAVE QUADS AND HEMIS TO TEXT FILE IN PROPER FORMAT
   
-  // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE
-  PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
-  isopter.save(base_folder + "/isopter.jpg");  // save it to a file in the same folder
+  // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE  
+  if (hovered_object == 's') {
+    // redraw isopter image to file
+    PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
+    isopter.save(base_folder + "/isopter.jpg");  // save it to a file in the same folder
+  
+    // write this to the isopter text file
+    isopter_text.print(hour() + ":" + minute() + ":");
+    int s = second();
+    if (s < 10) {
+      isopter_text.print("0" + s + "\t");      // so that the text formatting is proper
+    } else {
+      isopter_text.print(s + "\t");
+    }
+    isopter_text.print((hovered_count - 1)*15 + "\t\t");
+    isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
+    isopter_text.print(str(reaction_time) + "\t\t\t");
+    isopter_text.print("no flag" + "\t");
+    isopter_text.println("No Notes");
+    isopter_text.flush();
+  }
 }
 
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
@@ -607,9 +598,13 @@ public class ControlFrame extends PApplet {
     isopter_text = main_frame.createWriter(base_folder + "/" + textName + "_isopter.txt");
     isopter_text.println("Isopter angles for patient " + textName);
     isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
+    isopter_text.println("Timestamp\t|Meridian\t|Angle\t|Reaction Time (ms)\t|Flag\t|Notes\t|");
     isopter_text.flush();
     
-    // quadHemi_text = createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
+    quadHemi_text = main_frame.createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
+    quadHemi_text.println("Meridian and Quad tests for patient " + textName);
+    quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
+    quadHemi_text.flush();
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
     video_recording = new GSMovieMaker(main_frame, 1000, 480, base_folder + "/" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
