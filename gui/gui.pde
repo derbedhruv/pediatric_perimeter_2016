@@ -148,6 +148,18 @@ void setup() {
       .setSize(75, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
+          ;  
+  cp5.addBang("FLAG") //The Bang Clear and the Specifications
+    .setPosition(780, 300)
+      .setSize(75, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
+          ;
+  cp5.addBang("ADD_NOTE") //The Bang Clear and the Specifications
+    .setPosition(780, 330)
+      .setSize(75, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
           ;
 }
   
