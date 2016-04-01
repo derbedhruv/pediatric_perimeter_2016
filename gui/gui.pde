@@ -391,8 +391,12 @@ void clearHemisQuads() {
 
 // KEYPRESS TO STOP A TEST WHICH IS ONGOING
 void keyPressed() {
-  Stop();
-  println("stopped");
+  final int k = keyCode;
+  
+  if(k == 32) {    // 32 is the ASCII code for the space key
+    Stop();
+    println("stopped");
+  }
 }
 
 // ALL THE STUFF THAT HAPPENS WHEN YOU STOP A TEST
