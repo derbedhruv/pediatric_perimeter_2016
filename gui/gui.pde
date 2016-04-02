@@ -67,7 +67,7 @@ int previousMillis = 0, currentMillis = 0;
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
 String base_folder;
-String flag;
+boolean flagged_test = false;
 
 // STATUS VARIABLES
 String status = "idle";
@@ -521,10 +521,8 @@ public void Stop() {
     isopter_text.print((hovered_count)*15 + "\t\t");
     isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
     isopter_text.print(str(reaction_time) + "\t\t\t");
-    isopter_text.print(flag + "\t");
     isopter_text.flush();
   }
-  flag = null;    // reset the flag variable
   // UPDATE STATUS VARIABLES
   last_tested = status;    // last tested thing becomes the previuos value of status
   status = "Test stopped. idle";
@@ -563,7 +561,13 @@ void PATIENT_INFO() {
 
 void FLAG() {
   // just update hte flag variable to "flagged"
-  flag = "flagged"; 
+  if (last_tested == "quadrant" || last_tested == "hemi") {
+       quadHemi_text.print("flagged");
+       quadHemi_text.flush();
+  } else if (last_tested == "sweep") {
+       isopter_text.print("flagged");
+       isopter_text.flush();
+  }
 }
 /**********************************************************************************************************************************/
 
