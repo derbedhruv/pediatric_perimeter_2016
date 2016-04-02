@@ -341,6 +341,8 @@ void mousePressed() {
   // really simple - just send the instruction to the arduino via serial
   // it will be of the form (hovered_object, hovered_count\n)
   if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's') {
+    flagged_test = false;
+    
     print(str(hovered_object) + ",");
     println(str(hovered_count));
     arduino.write(hovered_object);
@@ -561,12 +563,16 @@ void PATIENT_INFO() {
 
 void FLAG() {
   // just update hte flag variable to "flagged"
-  if (last_tested == "quadrant" || last_tested == "hemi") {
-       quadHemi_text.print("flagged");
-       quadHemi_text.flush();
-  } else if (last_tested == "sweep") {
-       isopter_text.print("flagged");
-       isopter_text.flush();
+  if (flagged_test == false) {
+    if (last_tested == "quadrant" || last_tested == "hemi") {
+         quadHemi_text.print("flagged");
+         quadHemi_text.flush();
+         flagged_test = true;
+    } else if (last_tested == "sweep") {
+         isopter_text.print("flagged");
+         isopter_text.flush();
+         flagged_test = true;
+    }
   }
 }
 /**********************************************************************************************************************************/
