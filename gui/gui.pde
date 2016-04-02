@@ -429,12 +429,8 @@ public void Stop() {
   reaction_time = currentMillis - previousMillis;  
   println("Reaction time is " + str(reaction_time) + "ms");
   
-  // UPDATE STATUS VARIABLES
-  last_tested = status;    // last tested thing becomes the previuos value of status
-  status = "Test stopped. idle";
-  
   // SAVE QUADS AND HEMIS TO TEXT FILE IN PROPER FORMAT
-  if (hovered_object == 'q') {
+  if (status == "quad") {
     quadHemi_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
@@ -480,7 +476,7 @@ public void Stop() {
     quadHemi_text.flush();
   }
   
-  if(hovered_object == 'h') {
+  if(status == "hemi") {
     quadHemi_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
@@ -508,7 +504,7 @@ public void Stop() {
   }
   
   // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE  
-  if (hovered_object == 's') {
+  if (status == "sweep") {
     // redraw isopter image to file
     PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
     isopter.save(base_folder + "/isopter.jpg");  // save it to a file in the same folder
@@ -521,13 +517,16 @@ public void Stop() {
     } else {
       isopter_text.print(s + "\t");
     }
-    isopter_text.print((hovered_count - 1)*15 + "\t\t");
+    isopter_text.print((hovered_count)*15 + "\t\t");
     isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
     isopter_text.print(str(reaction_time) + "\t\t\t");
     isopter_text.print(flag + "\t");
     isopter_text.flush();
   }
   flag = null;    // reset the flag variable
+  // UPDATE STATUS VARIABLES
+  last_tested = status;    // last tested thing becomes the previuos value of status
+  status = "Test stopped. idle";
 }
 
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
