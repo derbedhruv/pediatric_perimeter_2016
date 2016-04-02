@@ -430,7 +430,8 @@ public void Stop() {
   println("Reaction time is " + str(reaction_time) + "ms");
   
   // SAVE QUADS AND HEMIS TO TEXT FILE IN PROPER FORMAT
-  if (status == "quad") {
+  if (status == "quadrant") {
+    quadHemi_text.println();
     quadHemi_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
@@ -472,11 +473,11 @@ public void Stop() {
         break;
     } 
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
-    quadHemi_text.print(flag + "\t");
     quadHemi_text.flush();
   }
   
   if(status == "hemi") {
+    quadHemi_text.println();
     quadHemi_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
@@ -499,7 +500,6 @@ public void Stop() {
         break;
     }
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
-    quadHemi_text.print(flag + "\t");
     quadHemi_text.flush();
   }
   
@@ -510,6 +510,7 @@ public void Stop() {
     isopter.save(base_folder + "/isopter.jpg");  // save it to a file in the same folder
   
     // write this to the isopter text file
+    isopter_text.println();
     isopter_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
