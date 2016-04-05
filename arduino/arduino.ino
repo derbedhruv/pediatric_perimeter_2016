@@ -54,7 +54,7 @@
 //  Meridian angle  :
 //  (in terms of the isopter)
 *************************************************************************************************/
-byte pinArduino[] = {15, 3,  16, 22, 21, 20, 30, 32, 42, 44, 46, 48, 34, 52, 50, 36, 38, 40, 28, 19, 26, 24, 18, 17, 11};
+byte pinArduino[] = {15, 3,  16, 22, 21, 20, 30, 32, 42, 44, 46, 48, 50, 52, 34, 36, 38, 40, 28, 19, 26, 24, 18, 17, 11};
 byte numPixels[] =  {23, 23, 23, 23, 19, 12, 11, 12, 19, 23, 23, 23, 23, 23, 23, 23, 12, 10, 10, 10, 12, 24, 23, 23, 72};    // there are 72 in the daisy chain
 
 Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
@@ -187,25 +187,25 @@ void loop() {
              
              // we then switch through WHICH hemisphere
              switch(longit[0]){
-               case 'l': {
+               case '1': {
                  // LEFT hemisphere.. 
                  Serial.println("left hemi");
-                 hemisphere1();
+                 hemisphere3();
                  break;
                }
-               case 'r': {
+               case '2': {
                  // RIGHT hemisphere.. 
                  Serial.println("right hemi");
                  hemisphere2();             
                  break;  
                }
                // 30 degrees and outer case:
-               case 'a': {
+               case '3': {
                  // 30 degrees OFF left hemisphere
-                 hemisphere3();
+                 hemisphere1();
                  break;
                }
-               case 'b': { 
+               case '0': { 
                  hemisphere4();
                  break;  
                }
@@ -220,39 +220,39 @@ void loop() {
              switch(longit[0]) {
                // we shall go anticlockwise. "1" shall start from the bottom right. 
               case '1': {
-                quad1();
+                quad8();
                 break;
               } 
               case '2': {
-                quad2();
+                quad7();
                 break;
               } 
               case '3': {
-                quad3();
+                quad6();
                 break;
               } 
               case '4': {
-                quad4();
+                quad5();
                 break;
               } 
               case '5': {
                 // turn on only the 30 degrees and higher latitudes
-                quad5();
+                quad4();
                 break;
               }
               case '6': {
                 // turn on only the 30 degrees and higher latitudes
-                quad6();
+                quad3();
                 break;
               }
               case '7': {
                 // turn on only the 30 degrees and higher latitudes
-                quad7();
+                quad2();
                 break;
               }
               case '8': {
                 // turn on only the 30 degrees and higher latitudes
-                quad8();
+                quad1();
                 break;
               } 
              }
@@ -317,6 +317,7 @@ void hemisphere1() {
 void hemisphere2() {
   // turn on less than 18 and greater than 8, not including both
   byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7, 19, 20, 21, 22, 23, 24};
+  
   turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 

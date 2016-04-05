@@ -1,174 +1,113 @@
 /***************************************
-THIS IS THE LATEST VERSION AS OF 28-MAR-2016
+THIS IS THE LATEST VERSION AS OF 30-MAR-2016
   Project Name : Pediatric Perimeter v3.x
   Author : Dhruv Joshi
-
   Modifications made:
     - Video capture speed is now much faster (30 fps) though there are dropped frames
     - Removed junk code
-    - Removed the use of a button color map, instead using code to generate image vectors
+    - used ControlP5 frames to add a second window for patient data entry
+    - cleaner and more responsive UI
+    - No image sprites used, all UI elements generated through code
+    - aligned the hemis and quads in the UI w.r.t. the frame of reference of the camera feed
     
   Libraries used (Processing v2.0):
     - controlp5 v2.0.4 https://code.google.com/p/controlp5/downloads/detail?name=controlP5-2.0.4.zip&can=2&q=
     - GSVideo v1.0.0 http://gsvideo.sourceforge.net/#download
     
 */
+ 
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import controlP5.*;
 import processing.serial.*;
-import codeanticode.gsvideo.*;  // Importing GS Video Library 
-import controlP5.*;             // Import Control P5 Library
+import codeanticode.gsvideo.*;
 
+// IMPORTANT: DECLARING A GLOBAL REFERENCE TO THE MAIN PAPPLET 
+PApplet main_frame; 
+
+// DECLARING A CONTROLP5 OBJECT
+private ControlP5 cp5;
+
+// HEMI AND QUAD VARIABLES
+int quad_state[][] = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};    // 1 means the quad has not been done yet, 2 means it has already been done, 3 means it is presently going on, negative means it is being hovered upon
+int hemi_state[][] = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};    // the same thing is used for the hemis
+color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #0000ff}, {#dddddd, #00ff00, #ffff22, #0000ff}};
+color hover_color = #0000ff;
+int quad_center[] = {700, 320}; 
+int hemi_center[] = {935, 320};
+int quad_diameter[] = {90, 60};
+int hemi_hover_code[][] = {{0, 3}, {1, 2}};
+
+// ISOPTER VARIABLES
+// 24 meridians and their present state of testing
+int meridians[] = {28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28};    // negative value means its being hovered over
+color meridian_text_color[] = {};
+int isopter_center[] = {820, 150};
+int isopter_diameter = 250;
+int current_sweep_meridian;
+
+// VARIABLES THAT KEEP TRACK OF WHAT OBJECT (HEMI, QUAD OR ISOPTER) WE ARE HOVERING OVER AND WHICH COUNT IT IS
+// THIS WILL ENABLE SENDING A SERIAL COMM TO THE ARDUINO VERY EASILY ON A MOUSE PRESS EVENT
+char hovered_object;
+int hovered_count;    // the current meridian which has been hovered over
+
+// SERIAL OBJECT/ARDUINO
 Serial arduino;                 // create serial object
-byte kk = 0;                    // This variable keeps track of the millis timer
 
-PrintWriter output;             // The File Writing Object
-byte m = 0;                     // This byte is used to send a slider value to the arduino (brightness choice)
-int me = -1;                    // "me" tracks the meridian number
-String azimuth;                 // converts "me" to the azimuth, which is used for preparing the proper isopter
-boolean detailsEntered = false, videoRecording = false, timeStampDone = true;    // These booleans follow whether information's been entered and when to start the video
-
-// These variables relate to hte ellipses that indicate current LED position.
-int i = 25, xi, yi;             // Store position of the LED, but not for long.
-float theta;                    // This is the azimuthal angle on the perimeter "polar diagram"
-int[] perimeter = 
-{ -1, -1, -1, -1,   
-  -1, -1, -1, -1,   
-  -1, -1, -1, -1,
-  -1, -1, -1, -1,
-  -1, -1, -1, -1,
-  -1, -1, -1, -1};           // THe most imporftant variable in this whole project
-// The perimeter shall store the radial positions (discrete) of the LEDs presently, which wil come from feedback from the arduino as it sweeps. The cardinal order of the elements indicates the azimuthal angle (discrete). There are 24 elements.
-
-int[] hemquad = {0, 0, 0, 0, 0, 0};  // this stores the alpha value of the hemisphere and quadrants. When one is clicked, it just puts that damn value.
-
-int sliderValue = 100;
-// controlp5 related objects
-ControlP5 cp5;                  // Control P5 Object Creation     
-ControlTimer c;
-Textlabel t;
-DropdownList d1;                // Dropdown List creation
-
-String folderName = "";           // Will store the folder name into which shit will be saved
-
-// the following variables shall hold the values that were entered about the patient
-String textValue = "";
-String textFile = "";           
-String textName = "";
-String textAge = "";
-String textSex = "";
-String textVideo="Please Fill the name and click on SAVE.";
-String textDescription = "";
-
-// These will hold the timer variables, for teh realtime clock in the video etc
-String textTimer="";
-String textDate="";
-String textTime="";
-String textMe="";
-
-// button background...
-PImage buttonm;       // image of the buttons (visible)
-
-// movie/video related variables
+// VIDEO FEED AND VIDEO SAVING VARIABLES
 GSCapture cam;        // GS Video Capture Object
-GSMovieMaker mm;      // GS Video Movie Maker Object  
-int droppedFrames = 0, collectedFrames = 0;
-
+GSMovieMaker video_recording;      // GS Video Movie Maker Object
 int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
-int ang = 0;
+boolean startRecording = false;
 
-String textfield=""; // Text field String for display
+// PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
+String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
+int previousMillis = 0, currentMillis = 0;
+int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
+PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
+String base_folder;
+boolean flagged_test = false;
 
+// STATUS VARIABLES
+String status = "idle";
+String last_tested = "Nothing";
+
+/**********************************************************************************************************************************/
+// THIS IS THE MAIN FRAME
 void setup() {
-  // going to initiate serial connection...
+  main_frame = this;
+  
+  // DECLARE THE CONTROLFRAME, WHICH IS THE OTHER FRAME
+  ControlFrame cf1 = addControlFrame( "Patient Information", 200, 480, 40, 40, color(100));
+  cf1.setVisible(true);  // set it to be invisible, so we can give it focus later
+  cf1.setUndecorated(true);    // remove the title bar from this so that someone doesn't accidentally close it and screw everything up
+  
+  // INITIATE SERIAL CONNECTION
   if (Serial.list().length != 0) {
+    String port = Serial.list()[Serial.list().length - 1];
     println("Arduino MEGA connected succesfully.");
-    String port = Serial.list()[0];
-    // then we open up the port.. 9600 bauds
+    
+    // then we open up the port.. 115200 bauds
     arduino = new Serial(this, port, 115200);
     arduino.buffer(1);
+    
+    // send a "clear all" signal to the arduino in case some random LEDs lit up..
+    arduino.write('x');
+    arduino.write('\n');
+  
   } else {
     println("Arduino not connected or detected, please replug"); 
-    // exit();
+    exit();
   }
   
-  size(1300, 600);  //The Size of the entire frame 
-     
-  cp5 = new ControlP5(this);
-  t = new Textlabel(cp5,"--",840,20);
-  buttonm = loadImage("buttonm.png");//Front End
+  // default background colour
+  size(1000, 480);  // the size of the video feed + the side bar with the controls
+  frameRate(fps);
   
-  c = new ControlTimer();
-  c.setSpeedOfTime(1);
-  cp5.setColorLabel(0xff000000);
-  d1 = cp5.addDropdownList("Sex") //The DropDown List With name Se
-    .setPosition(20, 450)
-      ;
-  customize(d1); // customize the first list
-  
-  cp5.addTextfield("Name") //Text Field Name and the Specifications
-    .setPosition(20, 100)
-      .setSize(200, 30)
-        //.setFont(font)
-        .setFocus(true)
-          .setFont(createFont("arial", 16))
-            .setAutoClear(false)
-              //.setColorCursor(0)
-              ;
-  // the next one is the serial no of the patient.. added 30-10-2014 on Sourav's suggestion.
-  // changed on 26-feb-2015 to EMR No.
-  cp5.addTextfield("EMR No")
-    .setPosition(20, 250)
-      .setSize(200, 30)
-          .setFont(createFont("arial", 16))
-            .setAutoClear(false)
-              ;
-
-  cp5.addTextfield("Age") //Text Field Age and the Specifications
-    .setPosition(20, 170)
-      .setSize(200, 30)
-        .setFont(createFont("arial", 16))
-          .setAutoClear(false)
-              ;
-
-  cp5.addTextfield("Description") //Text Field Description and the Specifications
-    .setPosition(20, 340)
-      .setSize(200, 30)
-        .setFont(createFont("arial", 16))
-          .setAutoClear(false)
-           ;
-
-  cp5.addBang("clear") //The Bang Clear and the Specifications
-    .setPosition(110, 20)
-      .setSize(80, 40)
-        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-          ;  
- 
-  cp5.addBang("Save")  //The Bang Save and the Specifications
-    .setPosition(20, 20)
-      .setSize(80, 40)
-        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
-          ;    
-  cp5.addBang("Stop")
-    .setPosition(120, 540)
-      .setSize(80, 40)
-        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
-          //.setColor(0)
-            ;    
-           cp5.addSlider("sliderValue")
-     .setPosition(500,550)
-     .setSize(220,20)
-     .setRange(0,255)
-     .setNumberOfTickMarks(10)
-     ;
-     
-  // the fixation button...
-  cp5.addBang("Fixation") //The Bang Fixation and the Specifications
-    .setPosition(1075, 545)
-      .setSize(40, 40)
-        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-          ; 
-     
-  frameRate(fps);  //The Frames per second of the Video
+  // CONNECT TO THE CAMERA
   String[] cameras = GSCapture.list(); //The avaliable Cameras
+  println(cameras);
      
   // We check if the right camera is plugged in, and if so only then do we proceed, otherwise we exit the program.
   if (cameras.length == 0) {
@@ -177,324 +116,653 @@ void setup() {
   } else {
     println("Checking if correct camera has been plugged in ...");
     
-    for (int i = 0; i < cameras.length; i++) {  //Listing the avalibale Cameras
-      println(cameras[i]);
-      
-      println(cameras[i].length());
-      println(cameras[i].substring(3,6));
+    for (int i = 0; i < cameras.length; i++) {  //Listing the avalibale Cameras      
+      // println(cameras[i].length());
+      // println(cameras[i].substring(3,6));
       if (cameras[i].length() == 13 && cameras[i].substring(3,6).equals("USB")) {
-        print("...success!");
+        println("...success!");
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
         cam.start();      // shall start acquiring video feed from the camera
         break; 
       }
+    }  
+    if (cam == null) {
       println("...NO. Please check the camera connected and try again."); 
       exit();
-    }  
+    }
   }
+  
+  // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
+  cp5 = new ControlP5(this);
+  cp5.setColorForeground(#eeeeee);
+  cp5.setColorActive(#0000ff);
+  
+  // ADD A BUTTON FOR "FINISHING" WHICH WILL CLOSE AND SAVE THE VIDEO AND ALSO MAKE A POPUP APPEAR THAT SHALL ASK FOR USER INPUTS ABOUT THE TEST (NOTES)
+  cp5.addBang("FINISH") //The Bang Clear and the Specifications
+    .setPosition(660, 390)
+      .setSize(75, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
+          ;
+  cp5.addBang("PATIENT_INFO") //The Bang Clear and the Specifications
+    .setPosition(660, 420)
+      .setSize(75, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
+          ;  
+  cp5.addBang("FLAG") //The Bang Clear and the Specifications
+    .setPosition(780, 300)
+      .setSize(75, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
+          ;
+  cp5.addBang("ADD_NOTE") //The Bang Clear and the Specifications
+    .setPosition(780, 330)
+      .setSize(75, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
+          ;
 }
-
+  
 void draw() {
-  // println(frameRate);
-  // The shit that has to be done each time...
-  background(buttonm);//BackgEnd
+  // update the millisecond counter
+  currentMillis = millis();
+  
+  // plain and simple background color
+  background(#cccccc);
+  
+  // draw the video capture here
   fill(0);
-  textFont(createFont("arial", 16), 16);
-  text(textVideo, 320, 530); 
-  text(textValue, 320, 510);
+  rect(0, 0, 640, 480);
+  if (cam.available() == true) {
+    cam.read();
+  } 
+  image(cam, 0, 0);    // display the image, interpolate with the previous image if this one was a dropped frame
+  
+  // draw the crosshair at the center of the video feed
+  stroke(#ff0000);
+  line(315, 240, 325, 240);
+  line(320, 235, 320, 245);
+  
+  // draw the hemis and quads in their present state
+  colorQuads(quad_state, quad_center[0], quad_center[1], 2.5, 2.5);    // quads
+  colorQuads(hemi_state, hemi_center[0], hemi_center[1], 2.5, 0);      // hemis
+  
+  // check if the mouse is hovering over the hemis, quads or isopter - if so, change to hover colour
+  hover(mouseX, mouseY);
+  
+  // draw the isopter/meridians
+  drawIsopter(meridians, isopter_center[0], isopter_center[1], isopter_diameter);
+  
+  // print reaction time and information about what was the last thing tested and the thing presently being tested
   fill(0);
-  // text(textfield, 1050, 440); 
-  // text(textMe, 1110, 440);
-  text(textTimer, 700, 530);
-    
-  // The following is the red ellipse being printed to indicate which LED is on
-  for (int p = 0; p < 24; p++) {
-    if (perimeter[p] > 1) {
-      fill(255,0,0);  // set the color to RED
-      // We will calculate the x,y position that the particular LED is supposed to be at...
-      ang = int(((p + 1)*15));    // we will be re-drawing each time for all meridians. This is due to the refresh-methodology on which processing operates.
-      float multipler = 25 + (perimeter[p] - 2)*22 ;
-      int x = int(1096.00 + cos(radians(ang))* multipler);    
-      int y = int(201.00  - sin(radians(ang))* multipler);
-      ellipse(x, y, 10, 10);                                      // LED PRINT ON THE PERIMETER
+  text("Reaction time is : " + str(reaction_time) + "ms", 750, 400);
+  text("Last thing tested : " + last_tested, 750, 420);
+  text("PRESENT STATUS : " + status, 750, 440);
+  
+  // RECORD THE FRAME, SAVE AS RECORDED VIDEO
+  // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
+  if (startRecording == true) {
+    loadPixels();
+    video_recording.addFrame(pixels);
+  }
+}
+
+// DRAW FOUR QUADRANTS - THE MOST GENERAL FUNCTION
+void colorQuads(int[][] quad_state, int x, int y, float dx, float dy) {
+  // float quad_positions[][] = {{52.5, 52.5}, {50, 52.5}, {50, 50}, {52.5, 50}};
+  byte quad_positions[][] = {{1, 1}, {0, 1}, {0, 0}, {1, 0}};
+  
+  for (int i = 0; i < 4; i++) {  // 4 quadrants
+    for (int j = 0; j < 2; j++) {  // inner and outer
+      if (quad_state[i][j] > 0) {
+        fill(quad_colors[j][quad_state[i][j] - 1]);    // filling the corresponding quadrant
+      } else {
+        fill(hover_color);  // fill the hover colour
+        quad_state[i][j] = abs(quad_state[i][j]);  // revert to earlier thing
+      } 
+      noStroke();
+      // finally, we draw the actual quads x4
+      arc(x + dx*quad_positions[i][0], y + dy*quad_positions[i][1], quad_diameter[j], quad_diameter[j], i*HALF_PI, HALF_PI + i*HALF_PI);
     }
   }
-  // drawing a rectangle on top of the quadrants which are done
-  stroke(195, 195, 195, 255);    // 0 < alpha < 255
-  fill(195, 195, 195, hemquad[2]);
-  rect(923,452,66,62);
-  fill(195, 195, 195, hemquad[1]);
-  rect(991,452,66,62);
-  fill(195, 195, 195, hemquad[3]);
-  rect(923,516,66,62);
-  fill(195, 195, 195, hemquad[0]);
-  rect(991,516,66,62);
-  
-  // drawing a rectangle on top of the hemispheres which are done..
-  stroke(195, 195, 195, 255);
-  fill(195, 195, 195, hemquad[4]);
-  rect(1123,450,66,125);
-  fill(195, 195, 195, hemquad[5]);
-  rect(1192,450,66,125);
-  
-  textName = cp5.get(Textfield.class, "Name").getText();
-  textAge = cp5.get(Textfield.class, "Age").getText();
-  textDescription = cp5.get(Textfield.class, "Description").getText();
+}
 
- 
-  // Here we continuously update the timedate on the screen...
-  t.setValue(day()+ "-" + month() + "-" + year() + "\n" + hour() + ":" + minute() + ":" + second());
-  t.draw(this);
-  t.setPosition(20,480);
-  t.setColorValue(0x000000);
-  t.setFont(createFont("Arial",14));
- 
-  if(kk >= 1){
-    // c.reset();
-    textTimer = c.toString() + " : " + str(c.millis());
-  }
-  
-  if(detailsEntered == true) {    // Has the doctor entered the details which are required?
-        
-    // start showing the camera feed...
-    if (cam.available() == true) {
-      collectedFrames = collectedFrames + 1;
-      cam.read();    // read only if available, otherwise interpolate with previous frame
+// DRAW THE ISOPTER WITH THE UPDATED POSITIONS OF THE RED DOTS
+void drawIsopter(int[] meridians, int x, int y, int diameter) {
+  // first draw the background circle
+  stroke(0);
+  fill(#eeeeee);
+  ellipse(x, y, diameter, diameter);    // the outer circle of the isopter, representing the projection of the whole dome
+  ellipse(x, y, 0.25*diameter, 0.25*diameter);  // the inner daisy chain
+    
+  // Then draw the 24 meridians
+  for (int i = 0; i < 24; i++) {
+    // first calculate the location of the points on the circumference of this circle, given that meridians are at 15 degree (PI/12) intervals
+    stroke(#bbbbbb);
+    float xm = cos(radians(i*15))*diameter/2 + x;
+    float ym = sin(radians(i*15))*diameter/2 + y; 
+    
+    // draw a line from the center to the meridian points (xm, ym)
+    line(x, y, xm, ym);
+    
+    // draw the text at a location near the edge, which is along an imaginary circle of larger diameter - at point (xt, yt)
+    float xt = cos(radians(-i*15))*(diameter + 30)/2 + x - 10;
+    float yt = sin(radians(-i*15))*(diameter + 20)/2 + y + 5;
+    if (meridians[i] < 0) {
+      fill(#ff0000);
     } else {
-      // that's a dropped frame...
-      droppedFrames = droppedFrames + 1;
+      fill(0); 
     }
-    image(cam, 245, 0);    // display the image
+    text(str(i*15), xt, yt);  // draw the label of the meridian (in degrees)
+    
+    // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
+    fill(#ff0000);  // red colour
+    if (abs(meridians[i]) < 28) {
+      float xi = cos(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + x;
+      float yi = sin(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + y;
+      ellipse(xi, yi, 10, 10);
+    }
+  }
+}
+
+// CHECK IF THE MOUSE IS OVER ANYTHING IMPORTANT
+// DO THIS BY FINDING IF THE RADIAL DISTANCE FROM ANY OF THE HEMI, QUAD OR ISOPTER IS SIGNIFICANT
+void hover(float x, float y) {
+  hovered_object = 'c';    // random character which has no meaning to the arduino API
+  if (x > 640) {  // otherwise it's over the video and therefore none of our concern
+    float r_isopter = sqrt(sq(x - isopter_center[0]) + sq(y - isopter_center[1]));
+    float r_quad = sqrt(sq(x - quad_center[0]) + sq(y - quad_center[1]));
+    float r_hemi = sqrt(sq(x - hemi_center[0]) + sq(y - hemi_center[1]));
+    
+    // CHECK FOR ISOPTER, HEMI OR QUAD
+    if (r_isopter < 0.5*(isopter_diameter + 30)) {    // larger diameter, so that the text surrounding the isopter can also be selected
+      hovered_object = 's';
+      // calculate angle at which mouse is from the center
+      float angle = degrees(angleSubtended(x, y, isopter_center[0], isopter_center[1]));
       
-    PImage videoSection = get(245, 0, 1055, 600);    // crop our section of interest of the page
-    videoSection.loadPixels();    // Loads the pixel data for the *CROPPED* display window into the pixels[] array. This function must always be called before reading from or writing to pixels[].
-    
-    if (videoRecording == true) {
-      mm.addFrame(videoSection.pixels);  // Array containing the values for all the pixels in the display window.
-    } 
-  }
-  // println("collected: " + collectedFrames + " ,dropped: " + droppedFrames);
-}
-
-public void clear() {    //Bang Function for the Button Clear
-  // This function deals with what happens when you click on "CLEAR"
-  cp5.get(Textfield.class, "Name").clear();
-  cp5.get(Textfield.class, "Age").clear();
-  //cp5.get(Textfield.class,"Sex").clear();
-  cp5.get(Textfield.class, "Description").clear();
-}
-
-
-public void Save() {//Bang Function for the Button Save
-  // Clicking SAVE
-  if (textName.isEmpty()){//Do not Create a file if there is no name assigned to the File
-    textValue="No File Created" ;
-    textVideo="Please Enter the File Name to see the Video";
-    detailsEntered = false;
-  } else {
-    // First, create the folder name into which everything will be stored (including the subsequent videos)...
-    folderName = year()+"/"+month()+"/"+textName;
-    
-    //Writing the input texts to a .txt file 
-    output = createWriter(folderName + "/" + textName+".txt"); 
-    output.print("Date: " + day() + "/" + month() + "/" + year() + "\t\t\t");
-    output.println("Time: " + hour() + ":" + minute() +":" + second() + "\n\n");
-    output.println("Patient Name :" + textName);
-    output.println("Patient Age :" + textAge);
-    output.println("Patient Sex :" + textSex);
-    output.println("Patient Description :" + textDescription);
-    output.println("\n\r\n\r\n\r" + "##############################" + "\n\r\n\r" + "PATIENT RESULTS" + "\n\r\n\r" + "##############################");
-    output.println("TEST\t\t\tSTART\t\t\tStop\t\t\tDuration\t\tAngle Stopped");
-    output.flush(); // Writes the remaining data to the file
-    // output.close(); // File written, all's well
-    
-    // notify the user..
-    textValue = "File Created with " + textName + ".txt  as the Name";
-    textVideo = "Thank you. Video is ON. Please click on a test..";
-    detailsEntered = true;      // Details have been entered. Awesome. Show the video.
-    
-    mm = new GSMovieMaker(this, width-245, height, folderName + "/" + year() + "" + month() + "" + day() + "_" + textName + ".avi", GSMovieMaker.MJPEG, GSMovieMaker.HIGH, fps); // the Mavie Maker Object
-    mm.setQueueSize(0, 60);
-    videoRecording = true;        // start recording the video.
-    // then we start the video..
-    mm.start();               // Starting the Pictures
-  }
-}
-
-public void Stop() {
-  // this function stops the video taking and also stops the present operation on the arduino.
-  // mm.finish(); // Completes the Video at this Instant
-  int milliseconds_passed = c.millis();    // the milliseconds reading of the timer
-  textVideo = "Test has stopped. All lights OFF.";
-  kk = 0;
-  c.reset();
-  arduino.write('x');
-  arduino.write('\n');
-  
-  if(timeStampDone == false) {
-    output.print("\t\t" + hour() + ":" + minute() +":" + second()); 
-    output.print("\t\t" + textTimer + " : " + milliseconds_passed + "\t");
-    // write the presently completed meridian to the file...
-    if (me > 1) {  // checking if it's a meridian or not...
-      output.print( "\t\t" + (perimeter[me] - 1)*10);
-    } else {  // the case where it's not a meridian
-      output.print( "\t\t-");
+      meridians[hovered_count] = abs(meridians[hovered_count]);    // clear out the previously hovered one
+      hovered_count = int((angle + 5)/15)%24;    // this is the actual angle on which you are hovering
+      meridians[hovered_count] = -1*abs(meridians[hovered_count]);      // set the presently hovered meridian to change state
+      cursor(HAND);     // change cursor to indicate that this thing can be clicked on
+      
+     } else if (r_quad < 0.5*quad_diameter[0]) {
+      hovered_object = 'q';
+      // calculate angle at which mouse is from the center
+      float angle = angleSubtended(x, y, quad_center[0], quad_center[1]);
+      cursor(HAND);
+      
+      if (r_quad < 0.5*quad_diameter[1]) {
+        // inner quads
+        hovered_count = 4 + int((angle + HALF_PI)/HALF_PI);
+        quad_state[abs(8 - hovered_count)][1] *= -1;
+      } else {
+        // outer quads
+        hovered_count = int((angle + HALF_PI)/HALF_PI);
+        quad_state[abs(4 - hovered_count)][0] *= -1;
+      }
+      
+    } else if (r_hemi < 0.5*quad_diameter[0]) {
+      hovered_object = 'h';
+      // calculate angle at which mouse is from the center
+      float angle = angleSubtended(x, y, hemi_center[0], hemi_center[1]);
+      cursor(HAND);
+            
+      // choose inner or outer hemis
+      if (r_hemi < 0.5*quad_diameter[1]) {
+        // inner quads
+        hovered_count = 2 + int((angle + HALF_PI)/PI)%2;
+        hemi_state[hemi_hover_code[hovered_count - 2][0]][1] *= -1;
+        hemi_state[hemi_hover_code[hovered_count - 2][1]][1] *= -1;
+      } else {
+        // outer quads
+        hovered_count = int((angle + HALF_PI)/PI)%2;
+        hemi_state[hemi_hover_code[hovered_count][0]][0] *= -1;
+        hemi_state[hemi_hover_code[hovered_count][1]][0] *= -1;
+      }      
+    } else {
+        cursor(ARROW); 
     }
-    output.println();
-    output.flush();
-    timeStampDone = true;
   }
-  
-  // overwrite the isopter image to reflect what's currently been done...
-  PImage isopter = get(890, 0, 410, 380);     // get that particular section of the screen where the isopter lies.
-  isopter.save(folderName + "/isopter.jpg");  // save it to a file in the same folder
+}
+
+// QUICK FUNCTION TO CALCULATE HTE ANGLE SUBTENDED
+float angleSubtended(float x, float y, int c1, int c2) {
+  // angle subtended by (x,y) to fixed point (c1,c2)
+  float angle = atan((x - c1)/(y - c2));
+  if (y >= c2) {  // if the reference point is in the 3rd or 4th quadrant w.r.t. a circle with (c1,c2) as center
+    angle = PI + angle; 
+  }
+  return angle + HALF_PI;
 }
 
 void mousePressed() {
-  // println(mouseX+" "+mouseY);
-  // This part presumable deals with the LED indication being printed on the screen...
-  // When one clicks on the perimeter sweep diagram, of course...
-  float r_meridian = sqrt(sq(mouseX - 1096) + sq(mouseY - 200));    // radial distance from the center of the perimeter and the mouse
-  float r_quad = sqrt(sq(mouseX - 991) + sq(mouseY - 515));
-  float r_hemi = sqrt(sq(mouseX - 1191) + sq(mouseY - 514));
-  // println(str(r_meridian) + ", " + str(r_hemi) + ", " + str(r_quad));
-  
-  if (r_meridian <= 207 && r_meridian > 25) {  // If the mouse hath clicked in the general sweep region.. remember we're just trying to find theta here
-    // println("chose a semi-meridian");
+  // println(str(mouseX) + "," + str(mouseY));
+  // really simple - just send the instruction to the arduino via serial
+  // it will be of the form (hovered_object, hovered_count\n)
+  if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's') {
+    flagged_test = false;
     
-    // The next 3 lines simply find the azimuthal angle
-    theta = (float(mouseY) - 200)/ (float(mouseX) - 1096);
-    theta = atan(theta);
-    theta = degrees(theta);
-    
-    // Then we choose the sign of theta based on standard polar coordinates convention
-    if(mouseX > 1096  && mouseY < 200) {
-      theta= -1*theta;
-    } else if(mouseX < 1096){
-      theta = 180 - theta; 
-    } else if(mouseX > 1096 && mouseY > 200) {
-      theta = 360 - theta;
+    print(str(hovered_object) + ",");
+    println(str(hovered_count));
+    arduino.write(hovered_object);
+    arduino.write(',');
+    if (hovered_object == 's') {
+     arduino.write(str((24 - hovered_count)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
+    } else {
+      arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
     }
-    
-    // What's next? discretization of theta into a variable that represents which LED is on..  
-    float a = ((theta  - 7.5)/15);    
-     /*
-    me = int(a);    // The variable "me" tracks the meridian number, by discretizing "a"
-    azimuth = str(((me + 1)*15)%360);    // calculate the azimuth angle which has actually been mentioned from the 'me' variable
-    println(azimuth);
-    
-    // Now we know whch meridian's been selected.
-    // println("Meridian" + me);
-    textMe = ("Angle: " + theta + " degrees");    // print to the textfield indicating which meridian was selected
-    */
-        
-  } 
-  
-  if (r_hemi < 68.0) {
-     // this is a hemi, check angle quickly and find out 
-     println("hemi!");
+    arduino.write('\n');
   }
   
-  if (r_quad < 68.0) {
-     // this is a quad 
-     println("quad!");
-  }
-}
-  
-  
-void mouseReleased() {
-  /*
-  // The Mouse event the tests for the Buttons for the Sectors
-      
-      if (detailsEntered == true) {
-        textVideo="The test has Started"; 
+  // change colour of the object to "presently being done"
+  switch(hovered_object) {
+    case 'q': {      
+      previousMillis = millis();      // start the timer from now
+      status = "quadrant";
+      if (hovered_count <= 4) {
+         quad_state[abs(4 - hovered_count)][0] = 3;
+         break;
       } else {
-        textVideo="Please Enter the Patient name";
+         quad_state[abs(8 - hovered_count)][1] = 3;
+         break;
       }
-      
-      // we will check the different cases for i...
-      if (false) {  
-        // the following resets the timer..
-        kk++;
-        if (kk == 1) {
-          c.reset();
-        }
-        
-        // println("sweep");
-        // this is the case of the sweeps..
-
-        textValue = "kinetic perimetry, Meridian " + azimuth + " degrees";
-        if (timeStampDone == true) {
-          output.print("Meridian " + azimuth); 
-          output.print("\t\t"+hour() + ":" + minute() +":" + second());
-          timeStampDone = false;  
-        }
-      } else if (false) {
-        // the following resets the timer..
-        kk++;
-        if (kk == 1) {
-          c.reset();
-        }
-        
-      
-      } else if (int(22) {
-        // the following resets the timer..
-        kk++;
-        if (kk == 1) {
-          c.reset();
-        }
-        
-        // println("quadrant");
-        
     }
-    */
-}
-
-
-void customize(DropdownList ddl) {
-  // This part changes the properties of the MALE/FEMALE dropdown
-  ddl.setBackgroundColor(color(190));
-  ddl.setColorLabel(color(190));
-  ddl.setItemHeight(40);
-  ddl.setBarHeight(35);
-  ddl.captionLabel().set("Sex");
-  ddl.captionLabel().style().marginTop = 3;
-  ddl.captionLabel().style().marginLeft = 3;
-  ddl.valueLabel().style().marginTop = 3;
-  ddl.addItem("Male", 0);
-  ddl.addItem("Female", 1);
-  ddl.scroll(0);
-  ddl.setColorBackground(color(28,59,107));
-  ddl.setColorActive(color(255, 128));
-}
-
-void controlEvent(ControlEvent theEvent) {
-  // This part changes the value of variable textSex based on what's selected on the dropdown
-  if (theEvent.isGroup()) {
-    // check if the Event was triggered from a ControlGroup
-    if (theEvent.getGroup().getValue()==0.0)
-      textSex="Male";
-    else
-      textSex="Female";
-  } else if (theEvent.isController()) {
-    //println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
+    case 'h': {
+      previousMillis = millis();      // start the timer from now
+      status = "hemi";
+      if (hovered_count < 2) {
+        hemi_state[hemi_hover_code[hovered_count][0]][0] = 3;
+        hemi_state[hemi_hover_code[hovered_count][1]][0] = 3;
+        break;
+      } else {
+        hemi_state[hemi_hover_code[hovered_count - 2][0]][1] = 3;
+        hemi_state[hemi_hover_code[hovered_count - 2][1]][1] = 3;
+        break;
+      }
+    }
+    case 's':
+      previousMillis = millis();      // start the timer from now
+      status = "sweep";
+      current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
+      break;
   }
 }
 
-void serialEvent(Serial arduino) { 
-  String inString = arduino.readStringUntil('\n');
-  if (inString != null) {
-    // if (parseInt(inString.substring(0,1)) > 0) {    // we want to reject the last value "9" the arduino spits out from serial
-      perimeter[me] = parseInt(inString.substring(0,1));  // write the number to the perimeter variable.
-    // } 
-  } 
+void clearHemisQuads() {
+ // checks if any hemi_state or quad_state values are == 3, and makes them into 2 (done)
+   for (int i = 0; i < 4; i++) {  // 4 quadrants
+      for (int j = 0; j < 2; j++) {  // inner and outer
+        if (quad_state[i][j] == 3) {
+           quad_state[i][j] = 2;
+        }
+        if (hemi_state[i][j] == 3) {
+           hemi_state[i][j] = 2;
+        }
+      }
+   }
 }
 
-// last but not least: we need to add a keypress functionality which checks if any key has been pressed and stops the test if so...
+
+// KEYPRESS TO STOP A TEST WHICH IS ONGOING
 void keyPressed() {
-  if (detailsEntered == true) {    // after the patient's data's been entered, ofc
-    // println("key pressed");
+  final int k = keyCode;
+  
+  if(k == 32) {    // 32 is the ASCII code for the space key
     Stop();
     println("stopped");
+  }
+}
+
+// ALL THE STUFF THAT HAPPENS WHEN YOU STOP A TEST
+// 1. REACTION TIME CALCULATION
+// 2. SEND SIGNAL TO ARDUINO TO "STOP" ('x\n')
+// 3. DRAW/UPDATE ISOPTER
+// 4. WRITE ISOPTER ANGLE VALUES TO FILE AND ALSO QUAD/HEMI VALUES
+public void Stop() {
+  // SIGNAL ARDUINO TO STOP
+  arduino.write('x');
+  arduino.write('\n'); 
+  
+  // UI UPDATE - MAKE QUADS/HEMIS PRESENTLY IN ACTIVE STATE TO 'DONE' STATE
+  clearHemisQuads();
+  
+  // CALCULATE REACTION TIME AND PRINT IT TO SCREEN
+  reaction_time = currentMillis - previousMillis;  
+  println("Reaction time is " + str(reaction_time) + "ms");
+  
+  // SAVE QUADS AND HEMIS TO TEXT FILE IN PROPER FORMAT
+  if (status == "quadrant") {
+    quadHemi_text.println();
+    quadHemi_text.print(hour() + ":" + minute() + ":");
+    int s = second();
+    if (s < 10) {
+      quadHemi_text.print("0" + str(s) + "\t");      // so that the text formatting is proper
+    } else {
+      quadHemi_text.print(str(s) + "\t\t");
+    }
+    switch (hovered_count) {
+      case 1:
+        quadHemi_text.print("TR Quad Outer");
+        break;
+        
+      case 2:
+        quadHemi_text.print("TL Quad Outer");
+        break;
+        
+      case 3:
+        quadHemi_text.print("BL Quad Outer");
+        break;
+        
+      case 4:
+        quadHemi_text.print("BR Quad Outer");
+        break;
+        
+      case 5:
+        quadHemi_text.print("TR Quad Full");
+        break;
+        
+      case 6:
+        quadHemi_text.print("TL Quad Full");
+        break;
+        
+      case 7:
+        quadHemi_text.print("BL Quad Full");
+        break;
+        
+      case 8:
+        quadHemi_text.print("BR Quad Full");
+        break;
+    } 
+    quadHemi_text.print("\t" + str(reaction_time) + "\t");
+    quadHemi_text.flush();
+  }
+  
+  if(status == "hemi") {
+    quadHemi_text.println();
+    quadHemi_text.print(hour() + ":" + minute() + ":");
+    int s = second();
+    if (s < 10) {
+      quadHemi_text.print("0" + str(s) + "\t");      // so that the text formatting is proper
+    } else {
+      quadHemi_text.print(str(s) + "\t\t");
+    }
+    switch(hovered_count) {
+      case 0:
+        quadHemi_text.print("R Hemi Outer");
+        break;
+      case 1:
+        quadHemi_text.print("L Hemi Outer");
+        break;
+      case 2:
+        quadHemi_text.print("R Hemi Full");
+        break;
+      case 3:
+        quadHemi_text.print("L Hemi Full");
+        break;
+    }
+    quadHemi_text.print("\t" + str(reaction_time) + "\t");
+    quadHemi_text.flush();
+  }
+  
+  // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE  
+  if (status == "sweep") {
+    // redraw isopter image to file
+    PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
+    isopter.save(base_folder + "/isopter.jpg");  // save it to a file in the same folder
+  
+    // write this to the isopter text file
+    isopter_text.println();
+    isopter_text.print(hour() + ":" + minute() + ":");
+    int s = second();
+    if (s < 10) {
+      isopter_text.print("0" + s + "\t");      // so that the text formatting is proper
+    } else {
+      isopter_text.print(s + "\t");
+    }
+    isopter_text.print((hovered_count)*15 + "\t\t");
+    isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
+    isopter_text.print(str(reaction_time) + "\t\t\t");
+    isopter_text.flush();
+  }
+  // UPDATE STATUS VARIABLES
+  last_tested = status;    // last tested thing becomes the previuos value of status
+  status = "Test stopped. idle";
+}
+
+// GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
+void serialEvent(Serial arduino) { 
+  String inString = arduino.readStringUntil('\n');
+  if (inString != null && inString.length() <= 4) {
+    // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
+    meridians[current_sweep_meridian] = parseInt(inString.substring(0, inString.length() - 2));
   } 
+}
+
+// THE BANG FUNCTIONS
+void FINISH() {
+  println("finished everything");
+  // stop the video recording, open up a popup asking for any final notes before closing
+  // String notes = showInputDialog(this, JTextArea, "Any final notes?");
+  video_recording.finish();
+  isopter_text.close();
+  
+  JTextArea textArea = new JTextArea(10, 5);
+  
+  int okCxl = JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(this), textArea, "Completion Notes", JOptionPane.OK_CANCEL_OPTION);
+
+  if (okCxl == JOptionPane.OK_OPTION) {
+    String text = textArea.getText();
+    // Process text.
+  }
+}
+
+void PATIENT_INFO() {
+  getFrame("Patient Information").setVisible( true );
+}
+
+void FLAG() {
+  // just update hte flag variable to "flagged"
+  if (flagged_test == false) {
+    if (last_tested == "quadrant" || last_tested == "hemi") {
+         quadHemi_text.print("flagged");
+         quadHemi_text.flush();
+         flagged_test = true;
+    } else if (last_tested == "sweep") {
+         isopter_text.print("flagged");
+         isopter_text.flush();
+         flagged_test = true;
+    }
+  }
+}
+/**********************************************************************************************************************************/
+
+/* FUNCTIONS BELOW ARE REGARDING CREATING AND DESTROYING CONTROLFRAMES*/
+
+HashMap<String, ControlFrame> frames = new HashMap<String, ControlFrame>();
+
+ControlFrame addControlFrame(String theName, int theWidth, int theHeight) {
+  return addControlFrame(theName, theWidth, theHeight, 100, 100, color( 0 ) );
+}
+
+ControlFrame addControlFrame(final String theName, int theWidth, int theHeight, int theX, int theY, int theColor ) {
+  if (frames.containsKey(theName)) {
+    /* if frame already exist, a RuntimeException is thrown, please adjust to your needs if necessary. */
+    throw new RuntimeException(String.format( "Sorry frame %s already exist.", theName ) );
+  }
+  final Frame f = new Frame( theName );
+  final ControlFrame p = new ControlFrame( this, f, theName, theWidth, theHeight, theColor );
+  f.add( p );
+  p.init();
+  f.setTitle(theName);
+  f.setSize( p.w, p.h );
+  f.setLocation( theX, theY );
+  f.addWindowListener( new WindowAdapter() {
+    @Override
+      public void windowClosing(WindowEvent we) {
+      removeFrame( theName );
+    }
+  });
+  
+  f.setResizable( false );
+  f.setVisible( false );
+  // sleep a little bit to allow p to call setup.
+  // otherwise a nullpointerexception might be caused.
+  try {
+    Thread.sleep( 20 );
+  } 
+  catch(Exception e) {
+  }
+  frames.put( theName, p );
+  return p;
+}
+
+void removeFrame( String theName ) {
+  getFrame( theName ).dispose();
+  frames.remove( theName );
+}
+
+ControlFrame getFrame( String theName ) {
+  if (frames.containsKey( theName )) {
+    return frames.get( theName );
+  }  
+  /* if frame does not exist anymore, a RuntimeException is thrown, please adjust to your needs if necessary. */
+  throw new RuntimeException(String.format( "Sorry frame %s does not exist.", theName ) );
+}
+
+
+// the ControlFrame class extends PApplet, so we are creating a new processing applet inside a new frame with a controlP5 object loaded
+// herein we define our new object
+public class ControlFrame extends PApplet {
+  int w, h;
+
+  public void setup() {
+    size(w, h);
+    frameRate(30);
+    cp5 = new ControlP5( this );
+    cp5.setColorForeground(#eeeeee);
+    cp5.setColorActive(#0000ff);
+    cp5.setColorBackground(#ffffff); 
+  
+    // ADDING CP5 ELEMENTS
+    cp5.addTextfield("Name") //Text Field Name and the Specifications
+    .setPosition(20, 50)
+      .setSize(150, 30)
+        .setFocus(true)
+          .setFont(createFont("arial", 12)).setColor(0)
+            .setAutoClear(false);
+    cp5.addTextfield("MR No")
+    .setPosition(20, 100)
+      .setSize(150, 30)
+          .setFont(createFont("arial", 12)).setColor(0)
+            .setAutoClear(false)
+              ;
+    cp5.addTextfield("Age")
+    .setPosition(20, 150)
+      .setSize(150, 30)
+          .setFont(createFont("arial", 12)).setColor(0)
+            .setAutoClear(false)
+              ;
+    cp5.addTextfield("Description")
+    .setPosition(20, 200)
+      .setSize(150, 30)
+          .setFont(createFont("arial", 12)).setColor(0)
+            .setAutoClear(false)
+              ;
+    cp5.addBang("Save")  //The Bang Save and the Specifications
+    .setPosition(20, 250)
+      .setSize(150, 40)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
+          .setColor(0)
+          ; 
+  
+  }
+
+  public void draw() {
+    background(#cccccc);
+    fill(0);
+    text("PEDIATRIC PERIMETER v3.x", 20, 25);
+    text("Please enter information,", 20, 320);
+    text("then click SAVE", 20, 340);
+  }
+    
+  public void Save() {
+    // save function for the cp5.Bang object "Save"
+    textName = cp5.get(Textfield.class, "Name").getText();
+    if (int(textName) == 0) {
+      textName = "test";    // If you don't enter anything, the default is "test" 
+    }
+    textAge = cp5.get(Textfield.class, "Age").getText();
+    textDescription = cp5.get(Textfield.class, "Description").getText();
+    textMR = cp5.get(Textfield.class, "MR No").getText();
+    
+    // Create files for saving patient details
+    // give them useful header information
+    base_folder = year() + "/" + month() + "/" + day() + "/" + textName + "_" + hour() + "_" + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
+    isopter_text = main_frame.createWriter(base_folder + "/" + textName + "_isopter.txt");
+    isopter_text.println("Isopter angles for patient " + textName);
+    isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
+    isopter_text.println("Timestamp\t|Meridian\t|Angle\t|Reaction Time (ms)\t|Flag\t|Notes\t|");
+    isopter_text.flush();
+    
+    quadHemi_text = main_frame.createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
+    quadHemi_text.println("Meridian and Quad tests for patient " + textName);
+    quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
+    quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
+    quadHemi_text.flush();
+    
+    // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
+    video_recording = new GSMovieMaker(main_frame, 1000, 480, base_folder + "/" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
+    this.setVisible(false);
+    startRecording = true;
+    video_recording.setQueueSize(0, 60);
+    video_recording.start();
+  }
+
+  public ControlFrame(Object theParent, Frame theFrame, String theName, int theWidth, int theHeight, int theColor) {
+    parent = theParent;
+    frame = theFrame;
+    name = theName;
+    w = theWidth;
+    h = theHeight;
+  }
+
+
+  public ControlP5 control() {
+    return this.cp5;
+  }  
+  
+  
+  @Override
+    public void dispose() {
+    frame.dispose();
+    super.dispose();
+  }
+  
+  public boolean isUndecorated() {
+    return isUndecorated;
+  }
+  
+  public void setUndecorated( boolean theFlag ) {
+    if (theFlag != isUndecorated()) {
+      isUndecorated = theFlag;
+      frame.removeNotify();
+      frame.setUndecorated(isUndecorated);
+      setSize(width, height);
+      setBounds(0, 0, width, height);
+      frame.setSize(width, height);
+      frame.addNotify();
+    }
+  }
+  
+  public void setVisible( boolean b) {
+    frame.setVisible(b);
+  }
+  
+  
+  final Object parent;
+  final Frame frame;
+  final String name;
+  private ControlP5 cp5;
+  private boolean isUndecorated;
 }
