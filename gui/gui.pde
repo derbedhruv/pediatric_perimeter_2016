@@ -67,7 +67,7 @@ int previousMillis = 0, currentMillis = 0;
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
 String base_folder;
-String flag;
+boolean flagged_test = false;
 
 // STATUS VARIABLES
 String status = "idle";
@@ -341,6 +341,8 @@ void mousePressed() {
   // really simple - just send the instruction to the arduino via serial
   // it will be of the form (hovered_object, hovered_count\n)
   if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's') {
+    flagged_test = false;
+    
     print(str(hovered_object) + ",");
     println(str(hovered_count));
     arduino.write(hovered_object);
@@ -429,12 +431,9 @@ public void Stop() {
   reaction_time = currentMillis - previousMillis;  
   println("Reaction time is " + str(reaction_time) + "ms");
   
-  // UPDATE STATUS VARIABLES
-  last_tested = status;    // last tested thing becomes the previuos value of status
-  status = "Test stopped. idle";
-  
   // SAVE QUADS AND HEMIS TO TEXT FILE IN PROPER FORMAT
-  if (hovered_object == 'q') {
+  if (status == "quadrant") {
+    quadHemi_text.println();
     quadHemi_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
@@ -476,11 +475,11 @@ public void Stop() {
         break;
     } 
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
-    quadHemi_text.print(flag + "\t");
     quadHemi_text.flush();
   }
   
-  if(hovered_object == 'h') {
+  if(status == "hemi") {
+    quadHemi_text.println();
     quadHemi_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
@@ -503,17 +502,17 @@ public void Stop() {
         break;
     }
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
-    quadHemi_text.print(flag + "\t");
     quadHemi_text.flush();
   }
   
   // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE  
-  if (hovered_object == 's') {
+  if (status == "sweep") {
     // redraw isopter image to file
     PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
     isopter.save(base_folder + "/isopter.jpg");  // save it to a file in the same folder
   
     // write this to the isopter text file
+    isopter_text.println();
     isopter_text.print(hour() + ":" + minute() + ":");
     int s = second();
     if (s < 10) {
@@ -521,13 +520,14 @@ public void Stop() {
     } else {
       isopter_text.print(s + "\t");
     }
-    isopter_text.print((hovered_count - 1)*15 + "\t\t");
+    isopter_text.print((hovered_count)*15 + "\t\t");
     isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
     isopter_text.print(str(reaction_time) + "\t\t\t");
-    isopter_text.print(flag + "\t");
     isopter_text.flush();
   }
-  flag = null;    // reset the flag variable
+  // UPDATE STATUS VARIABLES
+  last_tested = status;    // last tested thing becomes the previuos value of status
+  status = "Test stopped. idle";
 }
 
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
@@ -563,7 +563,17 @@ void PATIENT_INFO() {
 
 void FLAG() {
   // just update hte flag variable to "flagged"
-  flag = "flagged"; 
+  if (flagged_test == false) {
+    if (last_tested == "quadrant" || last_tested == "hemi") {
+         quadHemi_text.print("flagged");
+         quadHemi_text.flush();
+         flagged_test = true;
+    } else if (last_tested == "sweep") {
+         isopter_text.print("flagged");
+         isopter_text.flush();
+         flagged_test = true;
+    }
+  }
 }
 /**********************************************************************************************************************************/
 
