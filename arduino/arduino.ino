@@ -54,7 +54,7 @@
 //  Meridian angle  :
 //  (in terms of the isopter)
 *************************************************************************************************/
-byte pinArduino[] = {15, 3,  16, 22, 21, 20, 30, 32, 42, 44, 46, 48, 34, 52, 50, 36, 38, 40, 28, 19, 26, 24, 18, 17, 11};
+byte pinArduino[] = {15, 3,  16, 22, 21, 20, 30, 32, 42, 44, 46, 48, 50, 52, 34, 36, 38, 40, 28, 19, 26, 24, 18, 17, 11};
 byte numPixels[] =  {23, 23, 23, 23, 19, 12, 11, 12, 19, 23, 23, 23, 23, 23, 23, 23, 12, 10, 10, 10, 12, 24, 23, 23, 72};    // there are 72 in the daisy chain
 
 Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meridians + one daisy-chained central strip
