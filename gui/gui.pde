@@ -3,7 +3,8 @@ THIS IS THE LATEST VERSION AS OF 06-APR-2016
   Project Name : Pediatric Perimeter v3.x
   Author : Dhruv Joshi
   Modifications made:
-    - Video capture speed is now much faster (30 fps) though there are dropped frames
+    - Saving of audio for the duration of the test
+    - Video capture speed is 25 fps, image files being saved at that rate
     - Not using GSMovieMaker for video, instead a workaround "hack"
     - Removed junk code
     - used ControlP5 frames to add a second window for patient data entry
@@ -14,6 +15,11 @@ THIS IS THE LATEST VERSION AS OF 06-APR-2016
   Libraries used (Processing v2.0):
     - controlp5 v2.0.4 https://code.google.com/p/controlp5/downloads/detail?name=controlP5-2.0.4.zip&can=2&q=
     - GSVideo v1.0.0 http://gsvideo.sourceforge.net/#download
+    
+  TODO:
+    - remove the cp5 controlform, replace with the JOptionPane
+    - can the processing of images and audio into a video be done by a java program? This can be called by the Processing sketch as a subprocess (FFMPEG is a good option but needs to be called by java or a java wrapper)
+    - audio saving
     
 */
  
