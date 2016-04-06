@@ -58,7 +58,7 @@ Serial arduino;                 // create serial object
 
 // VIDEO FEED AND VIDEO SAVING VARIABLES
 GSCapture cam;        // GS Video Capture Object
-int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
+int fps = 60;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
 boolean startRecording = false;
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
