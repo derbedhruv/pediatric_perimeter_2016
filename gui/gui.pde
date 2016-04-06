@@ -3,6 +3,7 @@ THIS IS THE LATEST VERSION AS OF 06-APR-2016
   Project Name : Pediatric Perimeter v3.x
   Author : Dhruv Joshi
   Modifications made:
+    - removed the cp5 controlform, replace with the JOptionPane
     - Saving of audio for the duration of the test
     - Video capture speed is 25 fps, image files being saved at that rate
     - Not using GSMovieMaker for video, instead a workaround "hack"
@@ -16,10 +17,10 @@ THIS IS THE LATEST VERSION AS OF 06-APR-2016
     - controlp5 v2.0.4 https://code.google.com/p/controlp5/downloads/detail?name=controlP5-2.0.4.zip&can=2&q=
     - GSVideo v1.0.0 http://gsvideo.sourceforge.net/#download
     
-  TODO:
-    - remove the cp5 controlform, replace with the JOptionPane
+  TODO:    
     - can the processing of images and audio into a video be done by a java program? This can be called by the Processing sketch as a subprocess (FFMPEG is a good option but needs to be called by java or a java wrapper)
     - audio saving
+    - remove CP5 altogether
     
 */
  
@@ -30,9 +31,6 @@ import controlP5.*;
 import processing.serial.*;
 import codeanticode.gsvideo.*;
 import ddf.minim.*;  // the audio recording library
-
-// IMPORTANT: DECLARING A GLOBAL REFERENCE TO THE MAIN PAPPLET 
-PApplet main_frame; 
 
 // DECLARING A CONTROLP5 OBJECT
 private ControlP5 cp5;
@@ -89,13 +87,6 @@ AudioRecorder sound_recording;
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
 void setup() {
-  main_frame = this;
-  
-  // DECLARE THE CONTROLFRAME, WHICH IS THE OTHER FRAME
-  ControlFrame cf1 = addControlFrame( "Patient Information", 200, 480, 40, 40, color(100));
-  cf1.setVisible(true);  // set it to be invisible, so we can give it focus later
-  cf1.setUndecorated(true);    // remove the title bar from this so that someone doesn't accidentally close it and screw everything up
-  
   // INITIATE SERIAL CONNECTION
   if (Serial.list().length != 0) {
     String port = Serial.list()[Serial.list().length - 1];
@@ -209,13 +200,13 @@ void setup() {
         // Create files for saving patient details
         // give them useful header information
         base_folder = year() + "/" + month() + "/" + day() + "/" + patient_name + "_" + hour() + "_" + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
-        isopter_text = main_frame.createWriter(base_folder + "/" + patient_name + "_isopter.txt");
+        isopter_text = this.createWriter(base_folder + "/" + patient_name + "_isopter.txt");
         isopter_text.println("Isopter angles for patient " + patient_name);
         isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
         isopter_text.println("Timestamp\t|Meridian\t|Angle\t|Reaction Time (ms)\t|Flag\t|Notes\t|");
         isopter_text.flush();
         
-        quadHemi_text = main_frame.createWriter(base_folder + "/" + patient_name + "_quads_hemis.txt");
+        quadHemi_text = this.createWriter(base_folder + "/" + patient_name + "_quads_hemis.txt");
         quadHemi_text.println("Meridian and Quad tests for patient " + patient_name);
         quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
         quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
@@ -268,7 +259,7 @@ void draw() {
   
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
-  saveFrame("frames/frame-####.tiff");      //save each frame to disc without compression
+  saveFrame(base_folder + "/frames/frame-####.tiff");      //save each frame to disc without compression
 }
 
 // DRAW FOUR QUADRANTS - THE MOST GENERAL FUNCTION
@@ -622,7 +613,7 @@ void FINISH() {
 }
 
 void PATIENT_INFO() {
-  getFrame("Patient Information").setVisible( true );
+  // TODO: show the option pane again, but populate it with existing values so that they may be changed if needed
 }
 
 void FLAG() {
@@ -640,196 +631,3 @@ void FLAG() {
   }
 }
 /**********************************************************************************************************************************/
-
-/* FUNCTIONS BELOW ARE REGARDING CREATING AND DESTROYING CONTROLFRAMES*/
-
-HashMap<String, ControlFrame> frames = new HashMap<String, ControlFrame>();
-
-ControlFrame addControlFrame(String theName, int theWidth, int theHeight) {
-  return addControlFrame(theName, theWidth, theHeight, 100, 100, color( 0 ) );
-}
-
-ControlFrame addControlFrame(final String theName, int theWidth, int theHeight, int theX, int theY, int theColor ) {
-  if (frames.containsKey(theName)) {
-    /* if frame already exist, a RuntimeException is thrown, please adjust to your needs if necessary. */
-    throw new RuntimeException(String.format( "Sorry frame %s already exist.", theName ) );
-  }
-  final Frame f = new Frame( theName );
-  final ControlFrame p = new ControlFrame( this, f, theName, theWidth, theHeight, theColor );
-  f.add( p );
-  p.init();
-  f.setTitle(theName);
-  f.setSize( p.w, p.h );
-  f.setLocation( theX, theY );
-  f.addWindowListener( new WindowAdapter() {
-    @Override
-      public void windowClosing(WindowEvent we) {
-      removeFrame( theName );
-    }
-  });
-  
-  f.setResizable( false );
-  f.setVisible( false );
-  // sleep a little bit to allow p to call setup.
-  // otherwise a nullpointerexception might be caused.
-  try {
-    Thread.sleep( 20 );
-  } 
-  catch(Exception e) {
-  }
-  frames.put( theName, p );
-  return p;
-}
-
-void removeFrame( String theName ) {
-  getFrame( theName ).dispose();
-  frames.remove( theName );
-}
-
-ControlFrame getFrame( String theName ) {
-  if (frames.containsKey( theName )) {
-    return frames.get( theName );
-  }  
-  /* if frame does not exist anymore, a RuntimeException is thrown, please adjust to your needs if necessary. */
-  throw new RuntimeException(String.format( "Sorry frame %s does not exist.", theName ) );
-}
-
-
-// the ControlFrame class extends PApplet, so we are creating a new processing applet inside a new frame with a controlP5 object loaded
-// herein we define our new object
-public class ControlFrame extends PApplet {
-  int w, h;
-
-  public void setup() {
-    size(w, h);
-    frameRate(fps);
-    cp5 = new ControlP5( this );
-    cp5.setColorForeground(#eeeeee);
-    cp5.setColorActive(#0000ff);
-    cp5.setColorBackground(#ffffff); 
-  
-    // ADDING CP5 ELEMENTS
-    cp5.addTextfield("Name") //Text Field Name and the Specifications
-    .setPosition(20, 50)
-      .setSize(150, 30)
-        .setFocus(true)
-          .setFont(createFont("arial", 12)).setColor(0)
-            .setAutoClear(false);
-    cp5.addTextfield("MR No")
-    .setPosition(20, 100)
-      .setSize(150, 30)
-          .setFont(createFont("arial", 12)).setColor(0)
-            .setAutoClear(false)
-              ;
-    cp5.addTextfield("Age")
-    .setPosition(20, 150)
-      .setSize(150, 30)
-          .setFont(createFont("arial", 12)).setColor(0)
-            .setAutoClear(false)
-              ;
-    cp5.addTextfield("Description")
-    .setPosition(20, 200)
-      .setSize(150, 30)
-          .setFont(createFont("arial", 12)).setColor(0)
-            .setAutoClear(false)
-              ;
-    cp5.addBang("Save")  //The Bang Save and the Specifications
-    .setPosition(20, 250)
-      .setSize(150, 40)
-        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
-          .setColor(0)
-          ; 
-  
-  }
-
-  public void draw() {
-    background(#cccccc);
-    fill(0);
-    text("PEDIATRIC PERIMETER v3.x", 20, 25);
-    text("Please enter information,", 20, 320);
-    text("then click SAVE", 20, 340);
-  }
-    
-  public void Save() {
-    // save function for the cp5.Bang object "Save"
-    /*
-    textName = cp5.get(Textfield.class, "Name").getText();
-    if (int(textName) == 0) {
-      textName = "test";    // If you don't enter anything, the default is "test" 
-    }
-    textAge = cp5.get(Textfield.class, "Age").getText();
-    textDescription = cp5.get(Textfield.class, "Description").getText();
-    textMR = cp5.get(Textfield.class, "MR No").getText();
-    
-    // Create files for saving patient details
-    // give them useful header information
-    base_folder = year() + "/" + month() + "/" + day() + "/" + textName + "_" + hour() + "_" + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
-    isopter_text = main_frame.createWriter(base_folder + "/" + textName + "_isopter.txt");
-    isopter_text.println("Isopter angles for patient " + textName);
-    isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
-    isopter_text.println("Timestamp\t|Meridian\t|Angle\t|Reaction Time (ms)\t|Flag\t|Notes\t|");
-    isopter_text.flush();
-    
-    quadHemi_text = main_frame.createWriter(base_folder + "/" + textName + "_quads_hemis.txt");
-    quadHemi_text.println("Meridian and Quad tests for patient " + textName);
-    quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
-    quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
-    quadHemi_text.flush();
-    */
-    
-    // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
-    this.setVisible(false);
-    startRecording = true;
-    
-    // CREATE A NEW AUDIO OBJECT
-    sound_recording = minim.createRecorder(mic_input, base_folder + "/recording.wav", false);    // the false means that it would save directly to disc rather than in a buffer
-    sound_recording.beginRecord();
-  }
-
-  public ControlFrame(Object theParent, Frame theFrame, String theName, int theWidth, int theHeight, int theColor) {
-    parent = theParent;
-    frame = theFrame;
-    name = theName;
-    w = theWidth;
-    h = theHeight;
-  }
-
-
-  public ControlP5 control() {
-    return this.cp5;
-  }  
-  
-  
-  @Override
-    public void dispose() {
-    frame.dispose();
-    super.dispose();
-  }
-  
-  public boolean isUndecorated() {
-    return isUndecorated;
-  }
-  
-  public void setUndecorated( boolean theFlag ) {
-    if (theFlag != isUndecorated()) {
-      isUndecorated = theFlag;
-      frame.removeNotify();
-      frame.setUndecorated(isUndecorated);
-      setSize(width, height);
-      setBounds(0, 0, width, height);
-      frame.setSize(width, height);
-      frame.addNotify();
-    }
-  }
-  
-  public void setVisible( boolean b) {
-    frame.setVisible(b);
-  }
-  
-  
-  final Object parent;
-  final Frame frame;
-  final String name;
-  private ControlP5 cp5;
-  private boolean isUndecorated;
-}
