@@ -63,7 +63,8 @@ int fps = 60;          // The Number of Frames per second Declaration (used for 
 boolean startRecording = false;
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
-String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
+// String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
+String patient_name, patient_MR, patient_dob, patient_milestone_details, patient_additional_info;
 int previousMillis = 0, currentMillis = 0;
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
@@ -172,6 +173,30 @@ void setup() {
    // AUDIO RECORDING SETTINGS
    minim = new Minim(this);
    mic_input = minim.getLineIn();    // keep this ready. This is the line-in.
+   
+   // TAKE PATIENT DETAILS AS INPUT
+   // String patient_stuff = javax.swing.JOptionPane.showInputDialog(this, "Patient Name:");
+    JTextField pname = new JTextField();
+    JTextField pMR = new JTextField();
+    JTextField pdob = new JTextField();
+    JTextField pmilestone_details = new JTextField();
+    JTextField padditional_info = new JTextField();
+    Object[] message = {
+        "Patient Name:", pname,
+        "MR Number:", pMR,
+        "IDate of Birth:", pdob,
+        "IMilestone details:", pmilestone_details,
+        "Additional Notes:", padditional_info,
+    };
+    int option = JOptionPane.showConfirmDialog(this, message, "Please enter patient information", JOptionPane.OK_CANCEL_OPTION);
+    if (option == JOptionPane.OK_OPTION)
+    {
+        patient_name = pname.getText();
+        patient_MR = pMR.getText();
+        patient_dob = pdob.getText();
+        patient_milestone_details = pmilestone_details.getText();
+        patient_additional_info = padditional_info.getText();
+    }
 }
   
 void draw() {
@@ -552,7 +577,7 @@ void FINISH() {
   println("finished everything");
   // stop the video recording, open up a popup asking for any final notes before closing
   // String notes = showInputDialog(this, JTextArea, "Any final notes?");
-  isopter_text.close();
+  // isopter_text.close();
   
   JTextArea textArea = new JTextArea(10, 5);
   
@@ -562,6 +587,8 @@ void FINISH() {
     String text = textArea.getText();
     // Process text.
   }
+  // stop recording the sound..
+  sound_recording.endRecord();
 }
 
 void PATIENT_INFO() {
@@ -695,6 +722,7 @@ public class ControlFrame extends PApplet {
     
   public void Save() {
     // save function for the cp5.Bang object "Save"
+    /*
     textName = cp5.get(Textfield.class, "Name").getText();
     if (int(textName) == 0) {
       textName = "test";    // If you don't enter anything, the default is "test" 
@@ -717,6 +745,7 @@ public class ControlFrame extends PApplet {
     quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
     quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
     quadHemi_text.flush();
+    */
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
     this.setVisible(false);
