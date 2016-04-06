@@ -1,9 +1,10 @@
 /***************************************
-THIS IS THE LATEST VERSION AS OF 30-MAR-2016
+THIS IS THE LATEST VERSION AS OF 06-APR-2016
   Project Name : Pediatric Perimeter v3.x
   Author : Dhruv Joshi
   Modifications made:
     - Video capture speed is now much faster (30 fps) though there are dropped frames
+    - Not using GSMovieMaker for video, instead a workaround "hack"
     - Removed junk code
     - used ControlP5 frames to add a second window for patient data entry
     - cleaner and more responsive UI
@@ -57,7 +58,6 @@ Serial arduino;                 // create serial object
 
 // VIDEO FEED AND VIDEO SAVING VARIABLES
 GSCapture cam;        // GS Video Capture Object
-GSMovieMaker video_recording;      // GS Video Movie Maker Object
 int fps = 30;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
 boolean startRecording = false;
 
@@ -202,10 +202,7 @@ void draw() {
   
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
-  if (startRecording == true) {
-    loadPixels();
-    video_recording.addFrame(pixels);
-  }
+  saveFrame("frames/frame-####.tiff");      //save each frame to disc without compression
 }
 
 // DRAW FOUR QUADRANTS - THE MOST GENERAL FUNCTION
@@ -544,7 +541,6 @@ void FINISH() {
   println("finished everything");
   // stop the video recording, open up a popup asking for any final notes before closing
   // String notes = showInputDialog(this, JTextArea, "Any final notes?");
-  video_recording.finish();
   isopter_text.close();
   
   JTextArea textArea = new JTextArea(10, 5);
@@ -712,11 +708,8 @@ public class ControlFrame extends PApplet {
     quadHemi_text.flush();
     
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
-    video_recording = new GSMovieMaker(main_frame, 1000, 480, base_folder + "/" + year() + "" + month() + "" + day() + "_" + textName + ".ogg", GSMovieMaker.THEORA, GSMovieMaker.HIGH, fps);
     this.setVisible(false);
     startRecording = true;
-    video_recording.setQueueSize(0, 60);
-    video_recording.start();
   }
 
   public ControlFrame(Object theParent, Frame theFrame, String theName, int theWidth, int theHeight, int theColor) {
