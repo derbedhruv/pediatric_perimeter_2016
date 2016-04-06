@@ -23,6 +23,7 @@ import javax.swing.*;
 import controlP5.*;
 import processing.serial.*;
 import codeanticode.gsvideo.*;
+import ddf.minim.*;  // the audio recording library
 
 // IMPORTANT: DECLARING A GLOBAL REFERENCE TO THE MAIN PAPPLET 
 PApplet main_frame; 
@@ -72,6 +73,11 @@ boolean flagged_test = false;
 // STATUS VARIABLES
 String status = "idle";
 String last_tested = "Nothing";
+
+// AUDIO RECORDING VARIABLES
+Minim minim;
+AudioInput mic_input;
+AudioRecorder sound_recording;
 
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
@@ -162,6 +168,10 @@ void setup() {
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
           ;
+          
+   // AUDIO RECORDING SETTINGS
+   minim = new Minim(this);
+   mic_input = minim.getLineIn();    // keep this ready. This is the line-in.
 }
   
 void draw() {
@@ -199,6 +209,7 @@ void draw() {
   text("Reaction time is : " + str(reaction_time) + "ms", 750, 400);
   text("Last thing tested : " + last_tested, 750, 420);
   text("PRESENT STATUS : " + status, 750, 440);
+  text(str(currentMillis) + "ms", 900, 460);      // milliseconds elapsed since the program began
   
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
@@ -634,7 +645,7 @@ public class ControlFrame extends PApplet {
 
   public void setup() {
     size(w, h);
-    frameRate(30);
+    frameRate(fps);
     cp5 = new ControlP5( this );
     cp5.setColorForeground(#eeeeee);
     cp5.setColorActive(#0000ff);
@@ -710,6 +721,10 @@ public class ControlFrame extends PApplet {
     // CREATE A NEW MOVIEMAKER OBJECT (GLOBAL)
     this.setVisible(false);
     startRecording = true;
+    
+    // CREATE A NEW AUDIO OBJECT
+    sound_recording = minim.createRecorder(mic_input, base_folder + "/recording.wav", false);    // the false means that it would save directly to disc rather than in a buffer
+    sound_recording.beginRecord();
   }
 
   public ControlFrame(Object theParent, Frame theFrame, String theName, int theWidth, int theHeight, int theColor) {
