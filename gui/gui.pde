@@ -19,7 +19,6 @@ THIS IS THE LATEST VERSION AS OF 06-APR-2016
     
   TODO:    
     - can the processing of images and audio into a video be done by a java program? This can be called by the Processing sketch as a subprocess (FFMPEG is a good option but needs to be called by java or a java wrapper)
-    - audio saving
     - remove CP5 altogether
     
 */
@@ -259,7 +258,7 @@ void draw() {
   
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
-  saveFrame(base_folder + "/frames/frame-####.tiff");      //save each frame to disc without compression
+    saveFrame(base_folder + "/frames/frame-####.tiff");      //save each frame to disc without compression
 }
 
 // DRAW FOUR QUADRANTS - THE MOST GENERAL FUNCTION
@@ -395,10 +394,15 @@ void mousePressed() {
   // really simple - just send the instruction to the arduino via serial
   // it will be of the form (hovered_object, hovered_count\n)
   if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's') {
+    // reset flag and start high quality high speed recording
     flagged_test = false;
+    startRecording = true;
     
+    // print to the console what test is going on
     print(str(hovered_object) + ",");
     println(str(hovered_count));
+    
+    // send message to the arduino
     arduino.write(hovered_object);
     arduino.write(',');
     if (hovered_object == 's') {
@@ -559,7 +563,7 @@ public void Stop() {
     quadHemi_text.flush();
   }
   
-  // AND FINALLY, REDRAW AND SAVE THE ISOPTER TO FILE  
+  // REDRAW AND SAVE THE ISOPTER TO FILE  
   if (status == "sweep") {
     // redraw isopter image to file
     PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
@@ -579,9 +583,11 @@ public void Stop() {
     isopter_text.print(str(reaction_time) + "\t\t\t");
     isopter_text.flush();
   }
+  
   // UPDATE STATUS VARIABLES
   last_tested = status;    // last tested thing becomes the previuos value of status
   status = "Test stopped. idle";
+  startRecording = false;  // go back to low quality recording
 }
 
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
