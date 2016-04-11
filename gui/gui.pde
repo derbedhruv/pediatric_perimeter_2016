@@ -258,7 +258,7 @@ void draw() {
   
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
-    saveFrame(base_folder + "/frames/frame-####.tiff");      //save each frame to disc without compression
+    saveFrame(base_folder + "/frames/frame-####.jpg");      //save each frame to disc without compression
 }
 
 // DRAW FOUR QUADRANTS - THE MOST GENERAL FUNCTION
