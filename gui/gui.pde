@@ -201,17 +201,17 @@ void setup() {
         base_folder = year() + "/" + month() + "/" + day() + "/" + patient_name + "_" + hour() + "_" + minute() + "_hrs";    // the folder into which data will be stored - categorized chronologically
         isopter_text = this.createWriter(base_folder + "/" + patient_name + "_isopter.txt");
         isopter_text.println("Isopter angles for patient " + patient_name);
-        isopter_text.println("MR No : " + str(patient_MR));
-        isopter_text.println("Milestone Details : " + str(pmilestone_details));
-        isopter_text.println("Occipital to Corneal Distance (mm) : " + str(padditional_info));
+        isopter_text.println("MR No : " + patient_MR);
+        isopter_text.println("Milestone Details : " + pmilestone_details);
+        isopter_text.println("Occipital to Corneal Distance (mm) : " + padditional_info);
         isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
         isopter_text.println("Timestamp\t|Meridian\t|Angle\t|Reaction Time (ms)\t|Flag\t|Notes\t|");
         isopter_text.flush();
         
         quadHemi_text = this.createWriter(base_folder + "/" + patient_name + "_quads_hemis.txt");
         quadHemi_text.println("Meridian and Quad tests for patient " + patient_name);
-        quadHemi_text.println("MR No : " + str(patient_MR));
-        quadHemi_text.println("Milestone Details : " + str(pmilestone_details));
+        quadHemi_text.println("MR No : " + patient_MR);
+        quadHemi_text.println("Milestone Details : " + pmilestone_details);
         quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
         quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
         quadHemi_text.flush();
