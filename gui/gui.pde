@@ -180,9 +180,9 @@ void setup() {
     Object[] message = {
         "Patient Name:", pname,
         "MR Number:", pMR,
-        "IDate of Birth:", pdob,
-        "IMilestone details:", pmilestone_details,
-        "Additional Notes:", padditional_info,
+        "Date of Birth:", pdob,
+        "Milestone Notes:", pmilestone_details,
+        "Occipital to Corneal Distance (mm):", padditional_info,
     };
     
     // TODO: change showconfirmDialog to something else that only shows an OK option
