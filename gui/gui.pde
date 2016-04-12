@@ -194,7 +194,7 @@ void setup() {
         patient_MR = pMR.getText();
         patient_dob = pdob.getText();
         patient_milestone_details = pmilestone_details.getText();
-        patient_additional_info = padditional_info.getText();
+        patient_OTC = padditional_info.getText();
         
         // Create files for saving patient details
         // give them useful header information
@@ -202,8 +202,8 @@ void setup() {
         isopter_text = this.createWriter(base_folder + "/" + patient_name + "_isopter.txt");
         isopter_text.println("Isopter angles for patient " + patient_name);
         isopter_text.println("MR No : " + patient_MR);
-        isopter_text.println("Milestone Details : " + pmilestone_details);
-        isopter_text.println("Occipital to Corneal Distance (mm) : " + padditional_info);
+        isopter_text.println("Milestone Details : " + patient_milestone_details);
+        isopter_text.println("Occipital to Corneal Distance (mm) : " + patient_OTC);
         isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
         isopter_text.println("Timestamp\t|Meridian\t|Angle\t|Reaction Time (ms)\t|Flag\t|Notes\t|");
         isopter_text.flush();
@@ -211,7 +211,7 @@ void setup() {
         quadHemi_text = this.createWriter(base_folder + "/" + patient_name + "_quads_hemis.txt");
         quadHemi_text.println("Meridian and Quad tests for patient " + patient_name);
         quadHemi_text.println("MR No : " + patient_MR);
-        quadHemi_text.println("Milestone Details : " + pmilestone_details);
+        quadHemi_text.println("Milestone Details : " + patient_milestone_details);
         quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
         quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
         quadHemi_text.flush();
