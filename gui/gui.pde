@@ -628,7 +628,17 @@ void FINISH() {
   sound_recording.endRecord();
   
   // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
+  String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe", "-framerate","11.5", "-start_number", "0001", "-i", base_folder, "/frames/frame-%04d.jpg", "-i", base_folder, "/recording.wav video.mp4"};
+  // handling the exception IOException - which happens when the command cannot find a file 
+  try {
+    Runtime.getRuntime().exec(ffmpeg_command);
+  } catch (IOException e) {
+    e.printStackTrace(); 
+    exit();
+  }
   
+  // THEN EXIT THE PROGRAM
+  exit();
 }
 
 void PATIENT_INFO() {
