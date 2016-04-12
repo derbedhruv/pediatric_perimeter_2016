@@ -22,7 +22,6 @@ THIS IS THE LATEST VERSION AS OF 06-APR-2016
     - remove CP5 altogether
     
 */
- 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -67,7 +66,7 @@ boolean startRecording = false;
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 // String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
-String patient_name, patient_MR, patient_dob, patient_milestone_details, patient_additional_info;
+String patient_name, patient_MR, patient_dob, patient_milestone_details, patient_OTC;
 int previousMillis = 0, currentMillis = 0;
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
