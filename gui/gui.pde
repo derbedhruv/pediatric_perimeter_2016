@@ -620,10 +620,15 @@ void FINISH() {
 
   if (okCxl == JOptionPane.OK_OPTION) {
     String text = textArea.getText();
-    // Process text.
+    // Save notes in the text files and then close the text file objects
+    
   }
+  
   // stop recording the sound..
   sound_recording.endRecord();
+  
+  // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
+  
 }
 
 void PATIENT_INFO() {
@@ -645,3 +650,8 @@ void FLAG() {
   }
 }
 /**********************************************************************************************************************************/
+
+// CODE TO MAKE THE SKETCH FULLSCREEN BY DEFAULT
+boolean sketchFullScreen() {
+  return true;
+}
