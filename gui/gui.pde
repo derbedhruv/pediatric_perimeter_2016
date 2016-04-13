@@ -26,6 +26,7 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import static javax.swing.JOptionPane.*;
 import controlP5.*;
 import processing.serial.*;
 import codeanticode.gsvideo.*;
@@ -69,7 +70,7 @@ boolean startRecording = false;
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 // String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
 String patient_name, patient_MR, patient_dob, patient_milestone_details, patient_OTC;
-int previousMillis = 0, currentMillis = 0;
+int previousMillis = 0, currentMillis = 0, initialMillis, finalMillis;    // initial and final are used to calculate the FPS for the video at the verry end
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
 String base_folder;
@@ -232,6 +233,10 @@ void setup() {
 void draw() {
   // update the millisecond counter
   currentMillis = millis();
+  
+  if (frameCount == 1) {
+    initialMillis = currentMillis; 
+  }
   
   // plain and simple background color
   background(#cccccc);
@@ -612,10 +617,14 @@ void serialEvent(Serial arduino) {
 // THE BANG FUNCTIONS
 void FINISH() {
   println("finished everything");
+  finalMillis = currentMillis;
+  
+  float final_fps = 1000/((finalMillis - initialMillis)/frameCount);
+  print("The final fps is : ");
+  println(final_fps);
+  
   noLoop();    // stop drawing to the window!!
   // stop the video recording, open up a popup asking for any final notes before closing
-  // String notes = showInputDialog(this, JTextArea, "Any final notes?");
-  // isopter_text.close();
   
   JTextArea textArea = new JTextArea(10, 5);
   /*
@@ -624,6 +633,7 @@ void FINISH() {
   if (okCxl == JOptionPane.OK_OPTION) {
     String text = textArea.getText();
     // Save notes in the text files and then close the text file objects
+    isopter_text.close();
     
   }
   */
@@ -632,8 +642,9 @@ void FINISH() {
   sound_recording.endRecord();
   
   // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
-  // TODO: CALCULATE FRAMERATE FOR EACH TEST SEPERATELY AND SEND TO THE PROCESS AS A STRING!
-  String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe", "-framerate", "11.5", "-start_number", "0001", "-i", sketchPath("") + base_folder + "/frames/frame-%04d.jpg", "-i", sketchPath("") + base_folder + "/recording.wav", sketchPath("") + base_folder + "/video.mp4"};
+  // send a popup message giving a message to the user
+  
+  String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe", "-framerate", str(final_fps), "-start_number", "0001", "-i", sketchPath("") + base_folder + "/frames/frame-%04d.jpg", "-i", sketchPath("") + base_folder + "/recording.wav", sketchPath("") + base_folder + "/video.mp4"};
   
   // handling the exception IOException - which happens when the command cannot find a file
   // Using Processbuilder to call the ffmpeg process
