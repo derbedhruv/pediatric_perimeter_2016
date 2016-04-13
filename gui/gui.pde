@@ -632,16 +632,17 @@ void FINISH() {
   sound_recording.endRecord();
   
   // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
-  
-  String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe", "-framerate","11.5", "-start_number", "0001", "-i", sketchPath("") + base_folder + "/frames/frame-%04d.jpg", "-i", sketchPath("") + base_folder + "/recording.wav", sketchPath("") + base_folder + "video.mp4"};
+  // TODO: CALCULATE FRAMERATE FOR EACH TEST SEPERATELY AND SEND TO THE PROCESS AS A STRING!
+  String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe", "-framerate", "11.5", "-start_number", "0001", "-i", sketchPath("") + base_folder + "/frames/frame-%04d.jpg", "-i", sketchPath("") + base_folder + "/recording.wav", sketchPath("") + base_folder + "/video.mp4"};
   
   // handling the exception IOException - which happens when the command cannot find a file
+  // Using Processbuilder to call the ffmpeg process
   try {
-    // Process p = Runtime.getRuntime().exec(ffmpeg_command);
     ProcessBuilder p = new ProcessBuilder(ffmpeg_command).redirectErrorStream(true);
-    Process pr = p.start(); 
-    // p.waitFor();
+    Process pr = p.start();
     
+    
+    // printing the output of the process to the console of processing
     String line = null;
     BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
     while((line=input.readLine()) != null){
@@ -651,17 +652,10 @@ void FINISH() {
   } catch (IOException e) {
     e.printStackTrace(); 
     exit();
-  } 
-  /*catch (InterruptedException e) {
-    e.printStackTrace(); 
-    exit();
   }
-  */
   
-
-  
-  // THEN EXIT THE PROGRAM
-  // exit();
+  // THEN EXIT THE PROGRAM ONCE DONE
+  exit();
 }
 
 void PATIENT_INFO() {
