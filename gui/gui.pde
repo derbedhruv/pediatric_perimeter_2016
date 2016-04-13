@@ -665,7 +665,17 @@ void FINISH() {
     exit();
   }
   
+  // ONCE THIS IS DONE, DELETE THE 'FRAME' DIRECTORY
+  println("video created succesfully, now deleting remaining files...");
+  File frames_folder = new File(sketchPath("") + base_folder + "/frames/");
+  File[] frames_list = frames_folder.listFiles();
+  for (int i = 0; i < frames_list.length; i++) {
+    frames_list[i].delete();
+  }
+  frames_folder.delete();    // delete the folder as well after that
+  
   // THEN EXIT THE PROGRAM ONCE DONE
+  println("everything sucessful, closing");
   exit();
 }
 
