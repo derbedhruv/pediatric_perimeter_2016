@@ -22,6 +22,7 @@ THIS IS THE LATEST VERSION AS OF 06-APR-2016
     - remove CP5 altogether
     
 */
+import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -29,6 +30,7 @@ import controlP5.*;
 import processing.serial.*;
 import codeanticode.gsvideo.*;
 import ddf.minim.*;  // the audio recording library
+
 
 // DECLARING A CONTROLP5 OBJECT
 private ControlP5 cp5;
@@ -610,12 +612,13 @@ void serialEvent(Serial arduino) {
 // THE BANG FUNCTIONS
 void FINISH() {
   println("finished everything");
+  noLoop();    // stop drawing to the window!!
   // stop the video recording, open up a popup asking for any final notes before closing
   // String notes = showInputDialog(this, JTextArea, "Any final notes?");
   // isopter_text.close();
   
   JTextArea textArea = new JTextArea(10, 5);
-  
+  /*
   int okCxl = JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(this), textArea, "Completion Notes", JOptionPane.OK_CANCEL_OPTION);
 
   if (okCxl == JOptionPane.OK_OPTION) {
@@ -623,22 +626,43 @@ void FINISH() {
     // Save notes in the text files and then close the text file objects
     
   }
+  */
   
   // stop recording the sound..
   sound_recording.endRecord();
   
   // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
-  String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe", "-framerate","11.5", "-start_number", "0001", "-i", base_folder, "/frames/frame-%04d.jpg", "-i", base_folder, "/recording.wav video.mp4"};
-  // handling the exception IOException - which happens when the command cannot find a file 
+  
+  // String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe", "-framerate","11.5", "-start_number", "0001", "-i", base_folder, "/frames/frame-%04d.jpg", "-i", base_folder, "/recording.wav", base_folder, "video.mp4"};
+  String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe"};
+  
+  // handling the exception IOException - which happens when the command cannot find a file
   try {
-    Runtime.getRuntime().exec(ffmpeg_command);
+    // Process p = Runtime.getRuntime().exec(ffmpeg_command);
+    ProcessBuilder p = new ProcessBuilder(ffmpeg_command).redirectErrorStream(true);
+    Process pr = p.start(); 
+    // p.waitFor();
+    
+    String line = null;
+    BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+    while((line=input.readLine()) != null){
+        System.out.println(line);
+    }
+    
   } catch (IOException e) {
     e.printStackTrace(); 
     exit();
+  } 
+  /*catch (InterruptedException e) {
+    e.printStackTrace(); 
+    exit();
   }
+  */
+  
+
   
   // THEN EXIT THE PROGRAM
-  exit();
+  // exit();
 }
 
 void PATIENT_INFO() {
@@ -662,6 +686,8 @@ void FLAG() {
 /**********************************************************************************************************************************/
 
 // CODE TO MAKE THE SKETCH FULLSCREEN BY DEFAULT
+/*
 boolean sketchFullScreen() {
   return true;
 }
+*/
