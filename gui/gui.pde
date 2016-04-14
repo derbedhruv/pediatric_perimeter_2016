@@ -644,21 +644,22 @@ void FINISH() {
   // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
   // send a popup message giving a message to the user
   
-  String[] ffmpeg_command = {"C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe", "-framerate", str(final_fps), "-start_number", "0001", "-i", sketchPath("") + base_folder + "/frames/frame-%04d.jpg", "-i", sketchPath("") + base_folder + "/recording.wav", sketchPath("") + base_folder + "/video.mp4"};
+  String[] ffmpeg_command = {"C:\\Windows\\System32\\cmd.exe", "/c", "start", "ffmpeg", "-framerate", str(final_fps), "-start_number", "0001", "-i", sketchPath("") + base_folder + "/frames/frame-%04d.jpg", "-i", sketchPath("") + base_folder + "/recording.wav", sketchPath("") + base_folder + "/video.mp4"};
   
   // handling the exception IOException - which happens when the command cannot find a file
   // Using Processbuilder to call the ffmpeg process
   try {
-    ProcessBuilder p = new ProcessBuilder(ffmpeg_command).redirectErrorStream(true);
+    ProcessBuilder p = new ProcessBuilder(ffmpeg_command);
     Process pr = p.start();
     
-    
+    /*
     // printing the output of the process to the console of processing
     String line = null;
     BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
     while((line=input.readLine()) != null){
         System.out.println(line);
     }
+    */
     
   } catch (IOException e) {
     e.printStackTrace(); 
@@ -666,6 +667,8 @@ void FINISH() {
   }
   
   // ONCE THIS IS DONE, DELETE THE 'FRAME' DIRECTORY
+  // TODO: DO THIS IS A BAT FILE OR THROUGH THE CMD - OTHERWISE YOU'LL DELETE THEM BEFORE THEY'RE USED
+  /*
   println("video created succesfully, now deleting remaining files...");
   File frames_folder = new File(sketchPath("") + base_folder + "/frames/");
   File[] frames_list = frames_folder.listFiles();
@@ -673,6 +676,7 @@ void FINISH() {
     frames_list[i].delete();
   }
   frames_folder.delete();    // delete the folder as well after that
+  */
   
   // THEN EXIT THE PROGRAM ONCE DONE
   println("everything sucessful, closing");
