@@ -32,7 +32,7 @@
 #include <avr/power.h>
 #endif
 
-#define Br 25      // This is where you define the brightness of the LEDs - this is constant for all
+#define Br 2      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
@@ -79,6 +79,12 @@ void setup() {
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
   clearAll();  
+  
+  meridians[24].setBrightness(Br);
+  meridians[24].setPixelColor(55, r, g, b);
+  meridians[24].setPixelColor(54, r, g, b);
+  meridians[24].show();
+  
 }
 
 void loop() {
