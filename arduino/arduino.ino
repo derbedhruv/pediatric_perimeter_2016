@@ -78,13 +78,7 @@ void setup() {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
-  clearAll();  
-  
-  meridians[24].setBrightness(Br);
-  meridians[24].setPixelColor(55, r, g, b);
-  meridians[24].setPixelColor(54, r, g, b);
-  meridians[24].show();
-  
+  clearAll();    
 }
 
 void loop() {
