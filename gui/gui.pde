@@ -700,8 +700,6 @@ void FLAG() {
 /**********************************************************************************************************************************/
 
 // CODE TO MAKE THE SKETCH FULLSCREEN BY DEFAULT
-/*
 boolean sketchFullScreen() {
   return true;
 }
-*/
