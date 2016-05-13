@@ -248,7 +248,7 @@ void draw() {
     cam.read();
   } 
   image(cam, 0, 0);    // display the image, interpolate with the previous image if this one was a dropped frame
-  
+  // Checkin
   // draw the crosshair at the center of the video feed
   stroke(#ff0000);
   line(315, 240, 325, 240);
