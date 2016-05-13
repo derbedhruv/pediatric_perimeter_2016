@@ -217,7 +217,7 @@ void setup() {
         quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
         quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
         quadHemi_text.flush();
-        
+        // 
         // CREATE A NEW AUDIO OBJECT
         sound_recording = minim.createRecorder(mic_input, base_folder + "/recording.wav", false);    // the false means that it would save directly to disc rather than in a buffer
         sound_recording.beginRecord();
