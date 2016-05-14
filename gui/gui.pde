@@ -1,3 +1,4 @@
+
 /***************************************
 THIS IS THE LATEST VERSION AS OF 14-APR-2016
   Project Name : Pediatric Perimeter v3.x
@@ -39,7 +40,9 @@ private ControlP5 cp5;
 // HEMI AND QUAD VARIABLES
 int quad_state[][] = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};    // 1 means the quad has not been done yet, 2 means it has already been done, 3 means it is presently going on, negative means it is being hovered upon
 int hemi_state[][] = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};    // the same thing is used for the hemis
+int meridian_state[] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; 
 color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #0000ff}, {#dddddd, #00ff00, #ffff22, #0000ff}};
+color meridian_color[] = {#bbbbbb,#bbbbbb,#00ff00,#ffff22};
 color hover_color = #0000ff;
 int quad_center[] = {700, 320}; 
 int hemi_center[] = {935, 320};
@@ -307,10 +310,20 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
   // Then draw the 24 meridians
   for (int i = 0; i < 24; i++) {
     // first calculate the location of the points on the circumference of this circle, given that meridians are at 15 degree (PI/12) intervals
-    stroke(#bbbbbb);
-    float xm = cos(radians(i*15))*diameter/2 + x;
-    float ym = sin(radians(i*15))*diameter/2 + y; 
+   // stroke(#bbbbbb);
+    float xm = cos(radians(-i*15))*diameter/2 + x;
+    float ym = sin(radians(-i*15))*diameter/2 + y; 
     
+      if (meridian_state[i] < 0) {  //Notify That the mouse is hovering on the Meridians
+      stroke(hover_color);
+      meridian_state[i] = abs(meridian_state[i]);  // revert to earlier thing
+      } else if (meridian_state[i] > 0 && meridian_state[i] <= 3) { //Color The Meridian If It Is Done 
+      stroke(meridian_color[meridian_state[i]]); 
+      }
+      else  {
+      stroke(#bbbbbb); 
+      }
+ 
     // draw a line from the center to the meridian points (xm, ym)
     line(x, y, xm, ym);
     
@@ -345,13 +358,22 @@ void hover(float x, float y) {
     
     // CHECK FOR ISOPTER, HEMI OR QUAD
     if (r_isopter < 0.5*(isopter_diameter + 30)) {    // larger diameter, so that the text surrounding the isopter can also be selected
-      hovered_object = 's';
+
       // calculate angle at which mouse is from the center
       float angle = degrees(angleSubtended(x, y, isopter_center[0], isopter_center[1]));
       
       meridians[hovered_count] = abs(meridians[hovered_count]);    // clear out the previously hovered one
       hovered_count = int((angle + 5)/15)%24;    // this is the actual angle on which you are hovering
-      meridians[hovered_count] = -1*abs(meridians[hovered_count]);      // set the presently hovered meridian to change state
+      
+      if (r_isopter < 0.5*(isopter_diameter)) {   //Check On Meridians
+      hovered_object = 'm';
+      meridian_state[hovered_count] *=  -1;
+      }
+     else {
+      hovered_object = 's';
+          meridians[hovered_count] = -1*abs(meridians[hovered_count]);      // set the presently hovered meridian to change state
+     }
+  
       cursor(HAND);     // change cursor to indicate that this thing can be clicked on
       
      } else if (r_quad < 0.5*quad_diameter[0]) {
@@ -408,7 +430,7 @@ void mousePressed() {
   // println(str(mouseX) + "," + str(mouseY));
   // really simple - just send the instruction to the arduino via serial
   // it will be of the form (hovered_object, hovered_count\n)
-  if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's') {
+  if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm') {
     // reset flag and start high quality high speed recording
     flagged_test = false;
     startRecording = true;
@@ -420,7 +442,7 @@ void mousePressed() {
     // send message to the arduino
     arduino.write(hovered_object);
     arduino.write(',');
-    if (hovered_object == 's') {
+    if (hovered_object == 's' || hovered_object == 'm') {
      arduino.write(str((24 - hovered_count)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
     } else {
       arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
@@ -454,6 +476,14 @@ void mousePressed() {
         break;
       }
     }
+      case 'm':
+      previousMillis = millis();      // start the timer from now
+      status = "Meridian";
+      meridian_state[hovered_count] = 3;
+      current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
+      break;
+      
+      
     case 's':
       previousMillis = millis();      // start the timer from now
       status = "sweep";
@@ -474,6 +504,13 @@ void clearHemisQuads() {
         }
       }
    }
+   
+   for (int i = 0; i < 24; i++) {  // 24 Meridians 
+   if (meridian_state[i] == 3) {
+           meridian_state[i] = 2;
+        }
+   }
+   
 }
 
 
@@ -629,7 +666,6 @@ void FINISH() {
   JTextArea textArea = new JTextArea(10, 5);
   /*
   int okCxl = JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(this), textArea, "Completion Notes", JOptionPane.OK_CANCEL_OPTION);
-
   if (okCxl == JOptionPane.OK_OPTION) {
     String text = textArea.getText();
     // Save notes in the text files and then close the text file objects
