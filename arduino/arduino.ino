@@ -65,8 +65,9 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 // the variable 'breakOut' is a boolean which is used to communicate to the loop() that we need to immedietely shut everything off
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
-unsigned long previousMillis, currentMillis, sweep_interval = 500;  // the interval for the sweep in kinetic perimetry (in ms)
+unsigned long previousMillis, currentMillis, sweep_interval = 1750;  // the interval for the sweep in kinetic perimetry (in ms)
 byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
+byte meridians_turnOn[24];
 
 void setup() {
   // setup serial connection
@@ -101,7 +102,7 @@ void loop() {
              // clear all previous meridian stuff...
              meridians[sweepStrip-1].clear();
              meridians[sweepStrip-1].show();
-             sweep_interval = 1;      // infinitely short so that we just zap off the longer strip
+             sweep_interval = 1750;      // infinitely short so that we just zap off the longer strip
              meridians[24].setBrightness(Br);  // set this here to avoid wasting steps later
              
            } else if (currentSweepLED < 3) {
@@ -111,15 +112,17 @@ void loop() {
              meridians[24].show(); // This sends the updated pixel color to the hardware.
              
              // reduce sweep interval because now we're slowing down the interrupt due to the neopixels stuff
-             sweep_interval = 250;    // this figure should be properly calibrated
+             sweep_interval = 1750;    // this figure should be properly calibrated
            }
            
            // stop everything when the currentSweepLED is 0.
-           if (currentSweepLED == 255) {
+           if (currentSweepLED == 0) {
+             // To Notify The Last LED In The Daisy
+             Serial.println(currentSweepLED);  
              previousMillis = 0; 
              clearAll();
              sweep = false;
-             sweep_interval = 500;
+             sweep_interval = 1750;
            }
          } else {           // what to do when its within the interval
            Serial.println(currentSweepLED);    // That's the iteration of the LED that's ON 
@@ -147,17 +150,28 @@ void loop() {
          // reset everything again..
          inputString = "";
         
-          // we deal with 3 cases: sweeps, hemispheres and quadrants
+          // we deal with 3 cases: sweeps, hemispheres and quadrants, Meridians
          switch(lat[0]) {  // use only the first character, the rest is most likely garbage
              
            // this is the case of setting brightness of the LEDs
-           case 'm':{
+           case 'm':{  // Choosen Meridian Will Turn On 
+             // Based on the number entered as longit[0], we will turn on that particular LED.
+             byte chosenStrip = longit.toInt();
+             if (chosenStrip <= 24 && chosenStrip > 0) {
+               sweep = false;
+               //Set The Sweep Interval 
+              
+               sweepStrip = chosenStrip;
+             
+              meridians_turnOn [0] =  sweepStrip;
+             turnThemOn(meridians_turnOn, true, 1);
+             }
              // brightness = String(longit).toInt();
              break;
            }
            
            // change sweep time
-           case 't':{
+         case 't':{
              // interval= longit.toInt();
              break;
            }
@@ -169,6 +183,8 @@ void loop() {
              byte chosenStrip = longit.toInt();
              if (chosenStrip <= 24 && chosenStrip > 0) {
                sweep = true;
+               //Set The Sweep Interval 
+               sweep_interval = 1750;
                sweepStrip = chosenStrip;
                daisyStrip = daisyConverter(sweepStrip);
                currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain
