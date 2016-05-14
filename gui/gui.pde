@@ -132,6 +132,7 @@ void setup() {
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
         cam.start();      // shall start acquiring video feed from the camera
         break; 
+        
       }
     }  
     if (cam == null) {
@@ -152,6 +153,7 @@ void setup() {
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
           ;
+
   cp5.addBang("PATIENT_INFO") //The Bang Clear and the Specifications
     .setPosition(660, 420)
       .setSize(75, 25)
@@ -166,6 +168,12 @@ void setup() {
           ;
   cp5.addBang("ADD_NOTE") //The Bang Clear and the Specifications
     .setPosition(780, 330)
+      .setSize(75, 25)
+        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+          .setColor(0)
+          ;
+  cp5.addBang("CAPTURE") //The Bang Clear and the Specifications
+    .setPosition(780, 360)
       .setSize(75, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
@@ -250,6 +258,7 @@ void draw() {
   if (cam.available() == true) {
     cam.read();
   } 
+  // cam.save(base_folder + "/isopter.jpg");  
   image(cam, 0, 0);    // display the image, interpolate with the previous image if this one was a dropped frame
   // Checkin
   // draw the crosshair at the center of the video feed
@@ -368,11 +377,14 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     
     // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
     fill(#ff0000);  // red colour
-    if (abs(meridians[i]) < 28) {
+    // println(abs(meridians[i]));
+    if (abs(meridians[i]) < 28 ) {
       float xi = cos(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + x;
       float yi = sin(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + y;
       ellipse(xi, yi, 10, 10);
+ 
     }
+
   }
 }
 
@@ -696,9 +708,14 @@ void serialEvent(Serial arduino) {
   if (inString != null && inString.length() <= 4) {
     // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
     meridians[current_sweep_meridian] = parseInt(inString.substring(0, inString.length() - 2));
+    println(meridians[current_sweep_meridian] );
   } 
 }
 
+
+void CAPTURE() {
+ cam.save(base_folder + "/ScaleReading/Scale.jpg");
+}
 // THE BANG FUNCTIONS
 void FINISH() {
   println("finished everything");

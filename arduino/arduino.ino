@@ -115,25 +115,25 @@ void loop() {
              sweep_interval = 1750;    // this figure should be properly calibrated
            }
            
-           if (currentSweepLED == 0) {
-             // To Notify The Last LED In The Daisy
+         } else {           // what to do when its within the interval
+               // stop everything when the currentSweepLED is 0.
+             if (currentSweepLED == 0) {
+             // To Notify That The We Are Doone With LED Strip;
+             currentSweepLED = 28; // 28 value is to Reinitailze The Value in GUI 
              Serial.println(currentSweepLED);  
-             currentSweepLED = 255;    // update the LED that has to be on
-             previousMillis = currentMillis; 
-           }
-           // stop everything when the currentSweepLED is 255.
-           if (currentSweepLED == 255) {
              previousMillis = 0; 
              clearAll();
              sweep = false;
              sweep_interval = 1750;
            }
-         } else {           // what to do when its within the interval
+           else
+           {
            Serial.println(currentSweepLED);    // That's the iteration of the LED that's ON 
            currentSweepLED = currentSweepLED - 1;    // update the LED that has to be on
            previousMillis = currentMillis;   
            // We notify over serial (to processing), that the next LED has come on.
          }
+       }
   }
 
   if (Serial.available() > 0) {
