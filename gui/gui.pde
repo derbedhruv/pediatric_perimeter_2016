@@ -305,8 +305,37 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
   stroke(0);
   fill(#eeeeee);
   ellipse(x, y, diameter, diameter);    // the outer circle of the isopter, representing the projection of the whole dome
-  ellipse(x, y, 0.25*diameter, 0.25*diameter);  // the inner daisy chain
+  // ellipse(x, y, 0.25*diameter, 0.25*diameter);  // the inner daisy chain
+ // ellipse(x, y, 0.75*diameter, 0.75*diameter);  // the inner daisy chain
+ 
+  
+ /* float r_IsopterRange1 = abs(cos(radians(30)))*diameter/2;
+      stroke(#bbbbbb);
+    ellipse(x, y, r_IsopterRange1, r_IsopterRange1); */
+    // Concentric Circles For different ranges of the visual field  
     
+   //  fill(0);
+  // fill(#eeeeee);
+  for (int i = 4; i >=1; i--) {
+      // float xc = cos(radians(-i*30))*diameter/2 + x;
+    // float yc = sin(radians(-i*30))*diameter/2 + y; 
+    float r_IsopterRange = sin(radians(i*15))*diameter;// Finding the diameter for the range
+   // float xc = sin(radians(i*15))*(r_IsopterRange)/2 + x + 5;
+    float yc = sin(radians(-90))*(r_IsopterRange+20)/2 + y + 15 ;
+    if (i==1) {
+      stroke(0);
+    }
+    else {
+       stroke(#bbbbbb);
+    }
+   // stroke(#bbbbbb);
+    ellipse(x, y, r_IsopterRange, r_IsopterRange); 
+    fill(#bbbbbb);
+    text(str(i*30), x-5, yc);
+    fill(#eeeeee);
+  }
+
+      // stroke(#bbbbbb);
   // Then draw the 24 meridians
   for (int i = 0; i < 24; i++) {
     // first calculate the location of the points on the circumference of this circle, given that meridians are at 15 degree (PI/12) intervals
@@ -614,6 +643,25 @@ public void Stop() {
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
     quadHemi_text.flush();
   }
+  
+  //Save Meridians to a Text File in a Proper Format
+  if(status == "Meridian") {
+    quadHemi_text.println();
+    quadHemi_text.print(hour() + ":" + minute() + ":");
+    int s = second();
+    if (s < 10) {
+      quadHemi_text.print("0" + str(s) + "\t");      // so that the text formatting is proper
+    } else {
+      quadHemi_text.print(str(s) + "\t\t");
+    }
+    quadHemi_text.print("Meridian "+(hovered_count)*15 );
+   
+    quadHemi_text.print("\t" + str(reaction_time) + "\t");
+    quadHemi_text.flush();
+  }
+  
+  
+  
   
   // REDRAW AND SAVE THE ISOPTER TO FILE  
   if (status == "sweep") {
