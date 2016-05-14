@@ -115,10 +115,14 @@ void loop() {
              sweep_interval = 1750;    // this figure should be properly calibrated
            }
            
-           // stop everything when the currentSweepLED is 0.
            if (currentSweepLED == 0) {
              // To Notify The Last LED In The Daisy
              Serial.println(currentSweepLED);  
+             currentSweepLED = 255;    // update the LED that has to be on
+             previousMillis = currentMillis; 
+           }
+           // stop everything when the currentSweepLED is 255.
+           if (currentSweepLED == 255) {
              previousMillis = 0; 
              clearAll();
              sweep = false;
