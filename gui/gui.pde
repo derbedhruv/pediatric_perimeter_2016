@@ -48,6 +48,7 @@ int quad_center[] = {700, 320};
 int hemi_center[] = {935, 320};
 int quad_diameter[] = {90, 60};
 int hemi_hover_code[][] = {{0, 3}, {1, 2}};
+int SpaceKey_State = 0; // 0 means it is not pressed , 1 means it is pressed 
 
 // ISOPTER VARIABLES
 // 24 meridians and their present state of testing
@@ -73,7 +74,8 @@ boolean startRecording = false;
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 // String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
 String patient_name, patient_MR, patient_dob, patient_milestone_details, patient_OTC;
-int previousMillis = 0, currentMillis = 0, initialMillis, finalMillis;    // initial and final are used to calculate the FPS for the video at the verry end
+int previousMillis = 0, currentMillis = 0, initialMillis, finalMillis, Sent_Time = 0, Recieve_Time = 0, z = 0;    // initial and final are used to calculate the FPS for the video at the verry end
+int Delay_Store []={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
 String base_folder;
@@ -82,6 +84,7 @@ boolean flagged_test = false;
 // STATUS VARIABLES
 String status = "idle";
 String last_tested = "Nothing";
+int Ardiuno_Response;
 
 // AUDIO RECORDING VARIABLES
 Minim minim;
@@ -110,7 +113,7 @@ void setup() {
   }
   
   // default background colour
-  size(1000, 480);  // the size of the video feed + the side bar with the controls
+  size(1000, 540);  // the size of the video feed + the side bar with the controls
   frameRate(fps);
   
   // CONNECT TO THE CAMERA
@@ -179,6 +182,45 @@ void setup() {
           .setColor(0)
           ;
           
+   
+    cp5.addSlider("SWEEP") // Time Interval For LEDs Sweep
+     .setPosition(765,485)
+     .setSize(150,15)
+     .setRange(0,2000)
+     .setColorValue(255) 
+     // .setLabel("Sweep")
+     .setValue(1167)
+     // .setNumberOfTickMarks(10)
+     .setSliderMode(Slider.FLEXIBLE)
+     .setLabelVisible(false) 
+     .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+     ;        
+   cp5.addTextlabel("Time Interval")
+      .setText("Sweep Interval :")
+      .setPosition(660,483)
+      .setColorValue(0x00000000)
+      .setFont(createFont("Georgia",13))
+      ;        
+     cp5.addTextlabel("Low Range")
+      .setText("0")
+      .setPosition(760,498)
+      .setColorValue(0x00000000)
+      .setFont(createFont("Georgia",12))
+      ;     
+       cp5.addTextlabel("High Range")
+      .setText("2000")
+      .setPosition(900,498)
+      .setColorValue(0x00000000)
+      .setFont(createFont("Georgia",12))
+      ;     
+       cp5.addTextlabel("Label")
+      .setText("time (ms)")
+      .setPosition(915,485)
+      .setColorValue(0x00000000)
+      .setFont(createFont("Georgia",10))
+      ;  
+      
+      
    // AUDIO RECORDING SETTINGS
    minim = new Minim(this);
    mic_input = minim.getLineIn();    // keep this ready. This is the line-in.
@@ -370,6 +412,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     float yt = sin(radians(-i*15))*(diameter + 20)/2 + y + 5;
     if (meridians[i] < 0) {
       fill(#ff0000);
+      meridians[i] = abs(meridians[i]);
     } else {
       fill(0); 
     }
@@ -537,17 +580,17 @@ void clearHemisQuads() {
  // checks if any hemi_state or quad_state values are == 3, and makes them into 2 (done)
    for (int i = 0; i < 4; i++) {  // 4 quadrants
       for (int j = 0; j < 2; j++) {  // inner and outer
-        if (quad_state[i][j] == 3) {
+        if (abs(quad_state[i][j]) == 3) {
            quad_state[i][j] = 2;
         }
-        if (hemi_state[i][j] == 3) {
+        if (abs(hemi_state[i][j]) == 3) {
            hemi_state[i][j] = 2;
         }
       }
    }
    
    for (int i = 0; i < 24; i++) {  // 24 Meridians 
-   if (meridian_state[i] == 3) {
+   if (abs(meridian_state[i]) == 3) {
            meridian_state[i] = 2;
         }
    }
@@ -560,10 +603,42 @@ void keyPressed() {
   final int k = keyCode;
   
   if(k == 32) {    // 32 is the ASCII code for the space key
+  SpaceKey_State = 1;
+   /// println(Delay_Store);
+  println("Space Bar Pressed Now");
+    arduino.write('x');
+    arduino.write('\n'); 
+  //  Sent_Time = millis();
+       println("Request sent to Ardiuno @ :" + millis());
+    //delay(100);
+    int Init_Time = millis();
+  int interval = 0;
+  // Wait For The Serial Port  
+   while (interval <= 10){  // Wait For The response From Ardiuno 
+   interval = millis() - Init_Time; 
+   }
+  println(Ardiuno_Response);
+ // while (Ardiuno_Response != 99 && interval <= 1000) {
+   if ( Ardiuno_Response != 99 ) {
+      println("Request repeated to Ardiuno");
+    arduino.write('x');
+    arduino.write('\n'); 
+     // Wait For The Serial Port  
+   while (interval <= 10){  // Wait For The response From Ardiuno 
+   interval = millis() - Init_Time; 
+   }
+   }
+   //  else {               //  interval = millis() - Init_Time;
+      // Reset The Values 
+   if ( Ardiuno_Response == 99 ) { 
+   SpaceKey_State = 0;
+    Ardiuno_Response = 0;
+  //  }
+   }
     Stop();
     println("stopped");
+ }
   }
-}
 
 // ALL THE STUFF THAT HAPPENS WHEN YOU STOP A TEST
 // 1. REACTION TIME CALCULATION
@@ -572,8 +647,9 @@ void keyPressed() {
 // 4. WRITE ISOPTER ANGLE VALUES TO FILE AND ALSO QUAD/HEMI VALUES
 public void Stop() {
   // SIGNAL ARDUINO TO STOP
-  arduino.write('x');
-  arduino.write('\n'); 
+ // arduino.write('x');
+//  arduino.write('\n'); 
+//  println("Clear All Command Sent To Ardiuno");
   
   // UI UPDATE - MAKE QUADS/HEMIS PRESENTLY IN ACTIVE STATE TO 'DONE' STATE
   clearHemisQuads();
@@ -666,7 +742,7 @@ public void Stop() {
     } else {
       quadHemi_text.print(str(s) + "\t\t");
     }
-    quadHemi_text.print("Meridian "+(hovered_count)*15 );
+    quadHemi_text.print("Meridian "+(current_sweep_meridian)*15 );
    
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
     quadHemi_text.flush();
@@ -705,17 +781,50 @@ public void Stop() {
 // GET FEEDBACK FROM THE ARDUINO ABOUT THE ISOPTER
 void serialEvent(Serial arduino) { 
   String inString = arduino.readStringUntil('\n');
+  println("Time in ms :" + millis());
+  println("Serial Port Value Recieved from Arduino : " + inString + " @ " + millis());
+  // Wait For The Response When Space Bar Is Pressed
+ // // if (SpaceKey_State != 1) {
+
   if (inString != null && inString.length() <= 4) {
-    // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
-    meridians[current_sweep_meridian] = parseInt(inString.substring(0, inString.length() - 2));
-    println(meridians[current_sweep_meridian] );
+     // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
+  int temp_Val = parseInt(inString.substring(0, inString.length() - 2));
+     if (temp_Val == 99 && SpaceKey_State == 1) {  // Response For Clear All Command
+   // Recieve_Time = millis ();
+  //  Delay_Store [z] = Recieve_Time - Sent_Time;
+  //  z= z+1;
+     Ardiuno_Response = temp_Val;
+     SpaceKey_State = 0; 
+     println("Ardiuno Value Populated\n");
+     } else if (temp_Val != 99 && SpaceKey_State == 0) {  // Data For The LED No. In Sweep
+     meridians[current_sweep_meridian] = parseInt(inString.substring(0, inString.length() - 2));
+     println(meridians[current_sweep_meridian] );
+     } 
   } 
+  
 }
 
 
 void CAPTURE() {
  cam.save(base_folder + "/ScaleReading/Scale.jpg");
 }
+
+
+// Send The Sweep Interval Value To Ardiuno 
+/*void SWEEP() {
+// cam.save(base_folder + "/ScaleReading/Scale.jpg");
+arduino.write("t");
+    arduino.write(',');
+    int  sweepValue = int (cp5.getController("SWEEP").getValue());
+   arduino.write( sweepValue);
+   println("Sweep Value Sent to Ardiuno :" + sweepValue);
+}*/
+
+
+
+
+
+
 // THE BANG FUNCTIONS
 void FINISH() {
   println("finished everything");
