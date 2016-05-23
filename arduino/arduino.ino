@@ -67,6 +67,7 @@ String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
 unsigned long previousMillis, currentMillis, sweep_interval = 1750;  // the interval for the sweep in kinetic perimetry (in ms)
 byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
+byte Respose_ClearAll;
 byte meridians_turnOn[24];
 
 void setup() {
@@ -163,7 +164,7 @@ void loop() {
              byte chosenStrip = longit.toInt();
              if (chosenStrip <= 24 && chosenStrip > 0) {
                sweep = false;
-               //Set The Sweep Interval 
+               //Set The Sweep Interval to False
               
                sweepStrip = chosenStrip;
              
@@ -284,7 +285,9 @@ void loop() {
           // put everything off, but put the fixation back on
           // digitalWrite(fixationLED, HIGH);
           // breakOut = true;  // break out of the loops yo
-          Serial.println("clear all");
+         //  Serial.println("clear all");
+         Respose_ClearAll = 99;
+         Serial.println(Respose_ClearAll);  // Response To The Request Clear All 
           clearAll();
           delay(1);
           // reset everything...
