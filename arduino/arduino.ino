@@ -65,10 +65,12 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 // the variable 'breakOut' is a boolean which is used to communicate to the loop() that we need to immedietely shut everything off
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
-unsigned long previousMillis, currentMillis, sweep_interval = 1750;  // the interval for the sweep in kinetic perimetry (in ms)
+unsigned long previousMillis, currentMillis, sweep_interval= 1367 ;  // the interval for the sweep in kinetic perimetry (in ms)
+unsigned long sweepIntervals [] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // sweep intervals for a particular meridian/strip in kinetic mode 
 byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
 byte Respose_ClearAll;
 byte meridians_turnOn[24];
+char temp[25] = "";
 
 void setup() {
   // setup serial connection
@@ -85,11 +87,20 @@ void setup() {
 
 void loop() {
   if (sweep == true) {
-    // we will poll for this variable and then sweep the same LED
+
+   // Decide the Sweep Interval corresponding to each LED 
+   // "sweepIntervals" Will Have The time intervals for the current chosen strip 
+   // This will change for every strip 
+    if (currentSweepLED > 0) {
+    sweep_interval =sweepIntervals[currentSweepLED - 1];
+    }
+
+   // we will poll for this variable and then sweep the same LED
     currentMillis = millis();
-    // Serial.println(currentMillis - previousMillis);
+   // Serial.println(currentMillis - previousMillis);
     if(currentMillis - previousMillis <= sweep_interval) {
-           // update the LED to be put on. Check if the current LED is less than the length of the sweeping strip
+           
+   // update the LED to be put on. Check if the current LED is less than the length of the sweeping strip
            if (currentSweepLED > 3) {
              // Writing this part in direct neopixel code because function calls are expensive and freeze the serialEvent interrupt
              meridians[sweepStrip-1].setBrightness(Br);
@@ -103,7 +114,7 @@ void loop() {
              // clear all previous meridian stuff...
              meridians[sweepStrip-1].clear();
              meridians[sweepStrip-1].show();
-             sweep_interval = 1750;      // infinitely short so that we just zap off the longer strip
+            // sweep_interval = 1750;      // infinitely short so that we just zap off the longer strip
              meridians[24].setBrightness(Br);  // set this here to avoid wasting steps later
              
            } else if (currentSweepLED < 3) {
@@ -113,7 +124,7 @@ void loop() {
              meridians[24].show(); // This sends the updated pixel color to the hardware.
              
              // reduce sweep interval because now we're slowing down the interrupt due to the neopixels stuff
-             sweep_interval = 1750;    // this figure should be properly calibrated
+          //   sweep_interval = 1750;    // this figure should be properly calibrated
            }
            
          } else {           // what to do when its within the interval
@@ -125,7 +136,7 @@ void loop() {
              previousMillis = 0; 
              clearAll();
              sweep = false;
-             sweep_interval = 1750;
+            // sweep_interval = 1750;
            }
            else
            {
@@ -175,9 +186,43 @@ void loop() {
              break;
            }
            
-           // change sweep time
+           // change sweep time according to the LEDs placement in the Device
          case 't':{
              // interval= longit.toInt();
+             // sweepTimeIntervals
+             int meridian = longit.toInt();
+             int n = numPixels[meridian - 1] + 3; // No. Of LEDs 
+
+             // Get The Time Intervals in the form of a string 
+             if (Serial.available()>0) {
+               // sweepIntervals  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // clear the prev sweep interval values 
+               for (int i = 0 ; i< 28; i++) {
+                sweepIntervals[i] =0;
+               }
+              // Get The Concated String of Time intervals 
+                String inStr = Serial.readStringUntil('\n');
+              
+              // Populate the array with the time intervals for the particular meridian 
+                int len = int (inStr.length());
+                int index = 0, prevIndex;
+
+                for ( int i =0 ; i < n-1 ; i++) {
+                  prevIndex = index;
+                  index = inStr.indexOf(',', index+1); // Scan For ',' one by one from the starting of te string 
+
+               // For the last time interval 
+                  if (index == 0){
+                    index = len+1; // point to the last letter 
+                  }
+
+              // Populate The Time intervals
+              //  sweepIntervals [i] = atol(inStr.substring(prevIndex,index-1));
+                  
+                  inStr.substring(prevIndex,index-1).toCharArray(temp, sizeof(temp)); // Convert into Chaecter Array Before converting to Long Int 
+                  sweepIntervals [i] = atol(temp);
+              
+                 }
+                }
              break;
            }
            
@@ -189,7 +234,7 @@ void loop() {
              if (chosenStrip <= 24 && chosenStrip > 0) {
                sweep = true;
                //Set The Sweep Interval 
-               sweep_interval = 1750;
+              //  sweep_interval = 1750;
                sweepStrip = chosenStrip;
                daisyStrip = daisyConverter(sweepStrip);
                currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain

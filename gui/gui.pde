@@ -13,12 +13,29 @@ THIS IS THE LATEST VERSION AS OF 14-APR-2016
     - cleaner and more responsive UI
     - No image sprites used, all UI elements generated through code
     - aligned the hemis and quads in the UI w.r.t. the frame of reference of the camera feed
-    
+    - Added Concentric Circles to estimate the visual angles
+    - Feature Added to Light up the whole LED strip / cardinial meridian 
+    - hovering on meridians also included
+    - slider to change the angular velocity of the LEDs in kinetic mode 
+  
+  Serial Communication :  [Because Adafruit Neopixel Library disables all the interrupts in Arduino When communicating to LEDs]
+                 Request <--> Response 
+    - Space Bar :  'x'   <-->   99
+    - slider    :  't'   <-->   98
   Libraries used (Processing v2.0):
     - controlp5 v2.0.4 https://code.google.com/p/controlp5/downloads/detail?name=controlP5-2.0.4.zip&can=2&q=
     - GSVideo v1.0.0 http://gsvideo.sourceforge.net/#download
+
+
+/**************************************************************************************************
+//
+//  MERIDIAN numbering of Device/in Arduino  and No.of LEDs on each Meridian  
+//  Meridian Label  :  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  
+//  No. of LEDs     : 25 25 25 25 21 14 13 14 21  25  25  25  25  25  25  25  14  12  12  12  14  26  25  25
+//  
+*************************************************************************************************/
     
-  TODO:    
+/*  TODO:    
     - can the processing of images and audio into a video be done by a java program? This can be called by the Processing sketch as a subprocess (FFMPEG is a good option but needs to be called by java or a java wrapper)
     - remove CP5 altogether
     
@@ -32,6 +49,7 @@ import controlP5.*;
 import processing.serial.*;
 import codeanticode.gsvideo.*;
 import ddf.minim.*;  // the audio recording library
+import org.apache.poi.ss.usermodel.Sheet;  // For Importing The Data From EXcel Sheet 
 
 
 // DECLARING A CONTROLP5 OBJECT
@@ -41,6 +59,8 @@ private ControlP5 cp5;
 int quad_state[][] = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};    // 1 means the quad has not been done yet, 2 means it has already been done, 3 means it is presently going on, negative means it is being hovered upon
 int hemi_state[][] = {{1, 1}, {1, 1}, {1, 1}, {1, 1}};    // the same thing is used for the hemis
 int meridian_state[] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; 
+int meridian_label [] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24};
+int No_of_LEDs[]     = {25, 25, 25, 25, 21, 14, 13, 14, 21,  25,  25,  25,  25,  25,  25,  25,  14,  12,  12,  12,  14,  26,  25,  25}; //including Daisy Disc for time interval calculation
 color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #0000ff}, {#dddddd, #00ff00, #ffff22, #0000ff}};
 color meridian_color[] = {#bbbbbb,#bbbbbb,#00ff00,#ffff22};
 color hover_color = #0000ff;
@@ -74,8 +94,8 @@ boolean startRecording = false;
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 // String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
 String patient_name, patient_MR, patient_dob, patient_milestone_details, patient_OTC;
-int previousMillis = 0, currentMillis = 0, initialMillis, finalMillis, Sent_Time = 0, Recieve_Time = 0, z = 0;    // initial and final are used to calculate the FPS for the video at the verry end
-int Delay_Store []={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int previousMillis = 0, currentMillis = 0, initialMillis, finalMillis, Sent_Time = 0,time_taken,prev_time, Recieve_Time = 0, z = 0;    // initial and final are used to calculate the FPS for the video at the verry end
+// int Delay_Store []={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
 String base_folder;
@@ -85,6 +105,14 @@ boolean flagged_test = false;
 String status = "idle";
 String last_tested = "Nothing";
 int Ardiuno_Response;
+
+// Variables For Excel Sheet Importing
+SXSSFWorkbook swb=null;
+Sheet sh=null;
+InputStream inp=null;
+Workbook wb= null;
+float d;
+String[][] saving;
 
 // AUDIO RECORDING VARIABLES
 Minim minim;
@@ -144,6 +172,10 @@ void setup() {
     }
   }
   
+  //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
+  saving = importExcel("C:/Users/Koteswar/Desktop/Data.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye 
+  
+  
   // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
   cp5 = new ControlP5(this);
   cp5.setColorForeground(#eeeeee);
@@ -182,25 +214,27 @@ void setup() {
           .setColor(0)
           ;
           
-   
+     // To Define The Slider To Vary The LED Sweep Interval 
     cp5.addSlider("SWEEP") // Time Interval For LEDs Sweep
-     .setPosition(765,485)
+     .setPosition(740,485)
      .setSize(150,15)
-     .setRange(0,2000)
+     .setRange(0,4)
      .setColorValue(255) 
      // .setLabel("Sweep")
-     .setValue(1167)
-     // .setNumberOfTickMarks(10)
+     .setValue(3)
+     .setNumberOfTickMarks(20)
      .setSliderMode(Slider.FLEXIBLE)
      .setLabelVisible(false) 
      .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-     ;        
+     ;       
+     // To Label The Slider  
    cp5.addTextlabel("Time Interval")
-      .setText("Sweep Interval :")
+      .setText("LED Speed :")
       .setPosition(660,483)
       .setColorValue(0x00000000)
       .setFont(createFont("Georgia",13))
-      ;        
+      ;    
+  // To Indicate The Lower Range     
      cp5.addTextlabel("Low Range")
       .setText("0")
       .setPosition(760,498)
@@ -208,14 +242,14 @@ void setup() {
       .setFont(createFont("Georgia",12))
       ;     
        cp5.addTextlabel("High Range")
-      .setText("2000")
+      .setText("3")
       .setPosition(900,498)
       .setColorValue(0x00000000)
       .setFont(createFont("Georgia",12))
       ;     
        cp5.addTextlabel("Label")
-      .setText("time (ms)")
-      .setPosition(915,485)
+      .setText("Ang. Velocity (deg/sec)")
+      .setPosition(900,485)
       .setColorValue(0x00000000)
       .setFont(createFont("Georgia",10))
       ;  
@@ -523,11 +557,17 @@ void mousePressed() {
     print(str(hovered_object) + ",");
     println(str(hovered_count));
     
+    
+     // Send The time intervals before initiating the kinetic mode 
+    if (hovered_object == 's') {
+      sendTimeIntervals((24 - current_sweep_meridian)%24 + 1);  // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)     
+    } 
+    
     // send message to the arduino
     arduino.write(hovered_object);
     arduino.write(',');
     if (hovered_object == 's' || hovered_object == 'm') {
-     arduino.write(str((24 - hovered_count)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
+     arduino.write(str((24 - hovered_count)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)     
     } else {
       arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
     }
@@ -596,7 +636,51 @@ void clearHemisQuads() {
    }
    
 }
+// Mouse released To Notify The Slider To Update The Time Intervals And Send It To Arduino 
+void mouseReleased() {
+ 
+//Check Only The Status Of The Slider 
+if ((mouseX >= 740 && mouseX <= 890) && (mouseY >= 485 && mouseY <= 500))
+{
+  
+ // Get The Value Of The Slider 
+ float angularVelocity =  int(cp5.getController("SWEEP").getValue());
 
+//Update The time intervals meridian by meridian in the array
+for (int i =1; i<=24; i++) {    
+
+// Get The index of the last entry corresponding to a meridian in the EXCEL sheet
+// Last Entry Corresponds to 180 deg visual field 
+int index = 0;  // Initialse The Value For the next Meridian 
+for (int j = 0; j <= i-1 ; j++) {
+index = index + No_of_LEDs[j]; 
+} 
+
+// Update The Time Intervals For The corresponding Meridian 
+int timeTaken = 0; // Initialise The Value For The Next Meridian 
+int preceedTimeTaken;
+for (int k = No_of_LEDs[i-1]; k>0 ; k--) {
+
+if (saving [index][5] != null){ // Do NOt Consider The NUll Values in the EXCEL sheet 
+// int prevTimeTaken = timeTaken;
+
+   timeTaken = int(((round(degrees(HALF_PI - (float(saving[index ][5]))))/angularVelocity))*1000);
+
+// timeTaken = int(degrees(HALF_PI - radians(float(saving[index][5])))/angularVelocity*1000); // Calculate The Time At which this LED gets ON from the start
+   if (k != 1) {
+   preceedTimeTaken      = int(((round(degrees(HALF_PI - (float(saving[index-1][5]))))/angularVelocity))*1000);
+   } else {
+   preceedTimeTaken =  int((((round(degrees(HALF_PI )))/angularVelocity))*1000);               // Time taken for the preceeding LED to turn ON from The start
+   }
+ saving[index][6]  =  str(timeTaken - preceedTimeTaken);                             // Update The Time Interval for an LED to be in ON state 
+index = index - 1;                      
+}
+}
+
+}
+  
+}
+}
 
 // KEYPRESS TO STOP A TEST WHICH IS ONGOING
 void keyPressed() {
@@ -821,7 +905,49 @@ arduino.write("t");
 }*/
 
 
-
+void  sendTimeIntervals(int ChosenStrip) {
+   //Sending the Object details to arduino to recognise the action to be performed 
+     arduino.write('t'); 
+     arduino.write(',');
+   //arduino.write(str(No_of_LEDs[ChosenStrip-1]));     // No. of LEDs to corresponding to the Meridian 
+     arduino.write(str(ChosenStrip));                      // Send The chosen Meridian to process  
+     arduino.write('\n');  
+     
+     
+     // wait For the response 
+  // //   delay(10);
+     
+     // Repeat  updating the The time intervals before initiating the kinetic mode 
+  /*   if(Arduino_Response != 98) {  
+     arduino.write('t');  
+     arduino.write(',');
+     arduino.write(Pixels[ChosenStrip]);     // No. of LEDs to corresponding to the Meridian 
+     arduino.write('\n'); 
+     delay(10); 
+     // 
+     }*/
+     
+     //Check For The response from Arduino and Send the time intervals 
+     // // if(Arduino_Response == 98) {
+     // Send The Time intervals from the array 
+     // Get The index of the last entry corresponding to a meridian in the EXCEL sheet
+    // Last Entry for a chosen  Corresponds to a value nearer to 180 deg visual field 
+    int index1 = 0;  // Initialse The Value For the next Meridian 
+    for (int j = 0; j < ChosenStrip-1 ; j++) {
+      index1 = index1 + No_of_LEDs[j]; 
+     } 
+     
+     // Write the time intervales into the serial port 
+     for (int k = 1 ; k<= No_of_LEDs[ChosenStrip-1] ; k++) {
+     arduino.write(saving[index1][6]);
+     if(k!=No_of_LEDs[ChosenStrip-1]) {
+     arduino.write(",");
+     }
+     }
+     arduino.write("\n");  // Notify The End Of The String 
+   // //  }
+     
+}
 
 
 
@@ -842,7 +968,7 @@ void FINISH() {
   int okCxl = JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(this), textArea, "Completion Notes", JOptionPane.OK_CANCEL_OPTION);
   if (okCxl == JOptionPane.OK_OPTION) {
     String text = textArea.getText();
-    // Save notes in the text files and then close the text file objects
+    // Save notes in the text files and then close the text file objectsd
     isopter_text.close();
     
   }
@@ -910,6 +1036,109 @@ void FLAG() {
          flagged_test = true;
     }
   }
+}
+
+
+
+// This Function Imports The Values From Excel Sheet And Calculates The Angle Subtedted by Each LED 
+String[][] importExcel(String filepath) {
+   String[][] temp;
+  try {
+    inp = new FileInputStream(filepath);
+  }
+  catch(Exception e) {
+  }
+  try {
+    //Opens The Workbook
+    wb = WorkbookFactory.create(inp);
+    
+  }
+  catch(Exception e) {
+  }
+  // Opens The First Sheet 
+  Sheet sheet = wb.getSheetAt(0);
+  int sizeX = sheet.getLastRowNum(); // Get The Number of rows in the sheet 
+
+  int sizeY = 5;                    // 5 columns : Meridian <-> LED No. <-> X_value <-> Y_value <-> Z_value
+  /*
+  for (int i=0;i<sizeX;++i) {
+    Row row = sheet.getRow(i);
+    for (int j=0;j<sizeY;++j) {
+      try {
+        Cell cell = row.getCell(j);
+      }
+      catch(Exception e) {
+        if (j>sizeY) {
+          sizeY = j;
+        }
+      }
+    }
+  }*/
+  temp = new String[sizeX][sizeY+2];
+  for (int i=0;i<sizeX;++i) {
+    for (int j=0;j<sizeY;++j) {
+    //  for (int j=0;j< 1;++j) { 
+      // Get The Row (Reading The Row) 
+     Row row = sheet.getRow(i);
+      try {
+        Cell cell = row.getCell(j);
+         if (cell.getCellType()==0 || cell.getCellType()==2 || cell.getCellType()==3)cell.setCellType(1);
+        temp[i][j] = cell.getStringCellValue();
+        // Get The Cell Values And Populate Them Into An Array 
+       /* Cell cell0 = row.getCell(0);
+        if (cell0.getCellType()==0 || cell0.getCellType()==2 || cell0.getCellType()==3)cell0.setCellType(1);
+        temp[i][0] = cell0.getStringCellValue();
+        Cell cell1 = row.getCell(1);
+        if (cell1.getCellType()==0 || cell1.getCellType()==2 || cell1.getCellType()==3)cell1.setCellType(1);
+        temp[i][1] = cell1.getStringCellValue();
+        Cell cell2 = row.getCell(2);
+        if (cell2.getCellType()==0 || cell2.getCellType()==2 || cell2.getCellType()==3)cell2.setCellType(1);
+        temp[i][2] = cell2.getStringCellValue();
+        Cell cell3 = row.getCell(3);
+        if (cell3.getCellType()==0 || cell3.getCellType()==2 || cell3.getCellType()==3)cell3.setCellType(1);
+        temp[i][3] = cell3.getStringCellValue();
+        Cell cell4 = row.getCell(4);
+        if (cell4.getCellType()==0 || cell4.getCellType()==2 || cell4.getCellType()==3)cell4.setCellType(1);
+        temp[i][4] = cell4.getStringCellValue();*/
+        
+        // Calculate The Angle Subtended 
+      /*  float x= float (cell2.getStringCellValue());
+        // println("x :" + x);
+        float y= float (cell3.getStringCellValue());
+        float z= float (cell4.getStringCellValue());
+        d= 550; // Distance Calculated From The ForeHead To The Center Of The Camera 
+        
+        // Substitute In The Formulae To Calculate The Angle Subtended to The Y-axis   
+        float  Val = (y-d)/ sqrt(sq(x) + sq(y-d) + sq(z));
+        float  Deg = acos(Val);
+        
+        //Populate The Angle Calculated In to The Array
+        temp[i][5] = str(Deg);
+        println( "Angle Subtended :"+ Deg);*/
+     /*   if (cell.getCellType()==0 || cell.getCellType()==2 || cell.getCellType()==3)cell.setCellType(1);
+        temp[i][j] = cell.getStringCellValue();*/
+      }
+      catch(Exception e) {
+      }
+    }
+        float x= float (temp[i][2]);
+        // println("x :" + x);
+        float y= float (temp[i][3]);
+        float z= float (temp[i][4]);
+        d= 550; // Distance Calculated From The ForeHead To The Center Of The Camera 
+        
+        // Substitute In The Formulae To Calculate The Angle Subtended to The Y-axis   
+        float  Val = (y+d)/ sqrt(sq(x) + sq(y+d) + sq(z));
+        float  Deg = acos(Val);
+        
+        //Populate The Angle Calculated In to The Array
+        temp[i][5] = str(Deg);
+        println( "Angle Subtended :"+ Deg);
+  }
+    println("No. Of Rows:" + sizeX);
+  println("Excel file imported: " + filepath + " successfully!");
+  // println(temp);
+   return temp;
 }
 /**********************************************************************************************************************************/
 
