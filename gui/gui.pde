@@ -58,6 +58,8 @@ int isopter_center[] = {820, 150};
 int isopter_diameter = 250;
 int current_sweep_meridian;
 
+
+
 // VARIABLES THAT KEEP TRACK OF WHAT OBJECT (HEMI, QUAD OR ISOPTER) WE ARE HOVERING OVER AND WHICH COUNT IT IS
 // THIS WILL ENABLE SENDING A SERIAL COMM TO THE ARDUINO VERY EASILY ON A MOUSE PRESS EVENT
 char hovered_object;

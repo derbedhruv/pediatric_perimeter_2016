@@ -77,7 +77,7 @@ void setup() {
   Serial.println("starting..");
   
   for(int i = 0; i < 25; i++) {
-    // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
+    // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals. 
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
   clearAll();    
