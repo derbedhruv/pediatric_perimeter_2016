@@ -1,4 +1,4 @@
-  /**************************************************************
+      /**************************************************************
   //  PEDIATRIC PERIMETER ARDUINO SEGMENT FOR ADDRESSABLE LEDs
   //  SRUJANA CENTER FOR INNOVATION, LV PRASAD EYE INSTITUTE
   //
@@ -65,7 +65,7 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
 unsigned long previousMillis, currentMillis, sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
-int sweepIntervals [] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // sweep intervals for a particular meridian/strip in kinetic mode
+//int sweepIntervals [] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // sweep intervals for a particular meridian/strip in kinetic mode // DEPRECATED
 int fixationStrength = 100;  // brightness of the fixation
 byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
 byte Respose_ClearAll;
@@ -91,14 +91,16 @@ void loop() {
     // Decide the Sweep Interval corresponding to each LED
     // "sweepIntervals" Will Have The time intervals for the current chosen strip
     // This will change for every strip
+    
+    /* DEPRECATED *************************************************************************************
     if (currentSweepLED > 0) {
       /*
        * BottomMost LED is where we start the sweep from, but it's pixelNumber is the last, i.e highest,
        * while its sweepDelay comes at the very beginning
        * The below formula adjusts for that, setting the sweepInterval of LED as it should be, from the array
-       */
-      sweep_interval = sweepIntervals[numPixels[sweepStrip - 1] - currentSweepLED - 1];
-    }
+       *
+      //sweep_interval = sweepIntervals[numPixels[sweepStrip - 1] - currentSweepLED];
+    } * DEPRECATED ************************************************************************************/
 
     // we will poll for this variable and then sweep the same LED
     currentMillis = millis();
@@ -197,14 +199,15 @@ void loop() {
                * Indicates that GUI is ready to send Sweep interval times   
                * The format sent is t, strip number (chosenStrip)
                */
-              delay(30);  //Wait some time so it can write everything
-              int chosenStrip = longit.toInt();
-              readSweepIntervals(chosenStrip); //Start reading sweep intervals
+              //delay(30);  //Wait some time so it can write everything //DEPRECATED
+              //int chosenStrip = longit.toInt(); //DEPRECATED
+              //readSweepIntervals(chosenStrip); //Start reading sweep intervals  //DEPRECATED
+              sweep_interval = longit.toInt();  //every LED has same time interval
               break;
               /*// interval= longit.toInt();
                 // sweepTimeIntervals
                 int meridian = longit.toInt();
-                int n = numPixels[meridian - 1] + 3; // No. Of LEDs
+                int n = numPixels[meridian - 1] + 3; // No. Of LEDs 
 
                 // Get The Time Intervals in the form of a string
                 if (Serial.available()>0) {
@@ -255,6 +258,8 @@ void loop() {
                 daisyStrip = daisyConverter(sweepStrip);
                 currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain
               }
+              //byte acknowledgement = 97;
+              //Serial.write(acknowledgement);
               break;
             }
 
@@ -520,7 +525,7 @@ void turnThemOn (byte meridian_range[], boolean daisy_on, byte number_of_meridia
   }
 }
 
-
+/* DEPRECATED ********************************************************************************************
 void readSweepIntervals(int chosenStrip) {
 
   /*
@@ -528,29 +533,71 @@ void readSweepIntervals(int chosenStrip) {
    * It reads until it reaches '\n' i.e. endOfLine;
    * A comma is a delimiter, hence, it stores the value from before the comma and then continues to read;
    * At the end, it sends 98 to acknowledge that it has recieved the required number of elements
-   */
-  inputString = "";
-  char inputCharacter;
+   *
   int pixelNumber = 0;
   byte acknowledgement;
-  boolean endOfString = false;
-  while(!endOfString) {
-    if(Serial.available() <= 0) {
-      while(Serial.available()<=0);
-      continue;
+  while (pixelNumber != numPixels[chosenStrip - 1]) {
+    inputString = "";
+    pixelNumber = 0;
+    char inputCharacter;
+    byte acknowledgement;
+    boolean endOfString = false;
+    while(!endOfString) {
+      if(Serial.available() <= 0) {
+        while(Serial.available()<=0);
+        continue;
+      }
+      inputCharacter = (char)Serial.read();
+      if(inputCharacter == ',') {
+        sweepIntervals[pixelNumber++] = inputString.toInt();
+        inputString = "";
+      } else if(inputCharacter == '\n') {
+        sweepIntervals[pixelNumber++] = inputString.toInt();
+        inputString = "";
+        endOfString = true;
+      } else {
+        inputString+=inputCharacter;
+      }
     }
-    inputCharacter = (char)Serial.read();
-    if(inputCharacter == ',') {
-      sweepIntervals[pixelNumber++] = inputString.toInt();
-      inputString = "";
-    } else if(inputCharacter == '\n') {
-      sweepIntervals[pixelNumber++] = inputString.toInt();
-      inputString = "";
-      endOfString = true;
+    if(pixelNumber == numPixels[chosenStrip - 1]){
+      acknowledgement = 98;
+      Serial.println(acknowledgement);
     } else {
-      inputString+=inputCharacter;
+      acknowledgement = 97;
+      Serial.println(acknowledgement);
     }
+  } 
+  
+  inputString = Serial.readStringUntil('\n');
+
+  int len = inputString.length();
+
+  String numString = "";
+  
+  for(int characterNumber = 0; characterNumber < len; characterNumber++ ) {
+
+    if(inputString.charAt(characterNumber) == '\n') {
+      sweepIntervals[pixelNumber++] = numString.toInt();
+      numString = ""; 
+      break;
+    }
+    else if(inputString.charAt(characterNumber) == ',') {
+      sweepIntervals[pixelNumber++] = numString.toInt();
+      numString = "";
+    }
+    else {
+      numString+=inputString.charAt(characterNumber);
+    }
+    
   }
-  acknowledgement = 98;
-  Serial.println(98);
-}
+
+  if(!numString.equals("")) {
+    sweepIntervals[pixelNumber++] = numString.toInt();
+  }
+
+  if(pixelNumber >= (numPixels[chosenStrip - 1])){
+    acknowledgement = 98;
+    Serial.println(acknowledgement);
+  }
+  
+} DEPRECATED ******************************************************************************/

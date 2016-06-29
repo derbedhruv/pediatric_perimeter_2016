@@ -1,4 +1,3 @@
- 
 /***************************************
  THIS IS THE LATEST VERSION AS OF 14-APR-2016
  Project Name : Pediatric Perimeter v3.x
@@ -154,9 +153,11 @@ boolean startRecording = false;
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 // String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
 String patient_name, patient_MR, patient_dob, patient_milestone_details, patient_OTC;
+int occipitalDistance; //To store int version of patient_OTC
 int previousMillis = 0, currentMillis = 0, initialMillis, finalMillis, Sent_Time = 0, time_taken, prev_time, Recieve_Time = 0, z = 0;    // initial and final are used to calculate the FPS for the video at the verry end
 int previousTime = 0, currentTime = 0;
 // int Delay_Store []={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+float[] bottomMostAngle =new float[30];
 int reaction_time = 0;    // intialize reaction_time to 0 otherwise it gets a weird value which will confuse the clinicians
 PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to save information to text files
 String base_folder;
@@ -166,7 +167,7 @@ boolean flagged_test = false;
 String status = "idle";
 String last_tested = "Nothing";
 int Arduino_Response;
-boolean allPreviousReadFlag = false, allDataSentFlag = false;
+boolean serialEventFlag = false, allDataSentFlag = false;
 
 // Variables For Excel Sheet Importing
 SXSSFWorkbook swb=null;
@@ -231,10 +232,6 @@ void setup() {
       exit();
     }
   }
-
-  //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
-  angleData = importExcel("I:/LVPEI/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye 
-
 
   // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
   cp5 = new ControlP5(this);
@@ -390,6 +387,7 @@ void setup() {
     patient_dob = pdob.getText();
     patient_milestone_details = pmilestone_details.getText();
     patient_OTC = padditional_info.getText();
+    occipitalDistance = Integer.parseInt(patient_OTC.trim());
 
     // Create files for saving patient details
     // give them useful header information
@@ -420,6 +418,10 @@ void setup() {
   } else {
     exit();    // quit the program
   }
+    
+  //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
+  angleData = importExcel("I:/LVPEI/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye 
+
 }
 
 void draw() {
@@ -994,8 +996,9 @@ void serialEvent(Serial arduino) {
   //if (SpaceKey_State != 1) {
 
   if (inString != null && inString.length() <= 4) {
+    serialEventFlag = true;
     // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
-    int temp_Val = parseInt(inString.substring(0, inString.length() - 2));
+    int temp_Val = Integer.parseInt(inString.substring(0, inString.length() - 2));
     if (temp_Val == 99 && SpaceKey_State == 1) {  // Response For Clear All Command
       // Recieve_Time = millis ();
       //  Delay_Store [z] = Recieve_Time - Sent_Time;
@@ -1003,12 +1006,17 @@ void serialEvent(Serial arduino) {
       Arduino_Response = temp_Val;
       SpaceKey_State = 0; 
       //println("Ardiuno Value Populated\n");
-    } else if (temp_Val == 98) {
-      //println("All Data Recieved");
-      //Indicates 
-      allDataSentFlag = true;
     } else if (temp_Val != 99 && SpaceKey_State == 0) {  // Data For The LED No. In Sweep
-      meridians[current_sweep_meridian] = parseInt(inString.substring(0, inString.length() - 2));
+      if(previousTime == 0) {
+        println("Serial Port Value Recieved from Arduino : " + inString + " @ " + previousTime + " ms");
+        previousTime = millis();
+      }
+      else {
+        currentTime = millis();
+        println("Serial Port Value Recieved from Arduino : " + inString + " in " + (currentTime - previousTime) + " ms");
+        previousTime = currentTime;
+      }
+      meridians[current_sweep_meridian] = Integer.parseInt(inString.substring(0, inString.length() - 2));
       //println(meridians[current_sweep_meridian] );
     }
   }
@@ -1061,52 +1069,52 @@ void  sendTimeIntervals(int chosenStrip) {
    * @param chosenStrip - meridian Numberon which sweep is to be performed. 
    */
 
-  println("Before");
-  for (int i= 0; i<24; i++) {
-    println(i + " " + meridians[i]);
-  }
-  int[] sweepIntervals = new int[numberOfLEDs[chosenStrip-1]];
-  calculateSweepIntervalsForStrip(chosenStrip, sweepIntervals);
+  //int[] sweepIntervals = new int[numberOfLEDs[chosenStrip-1]];
+  //calculateSweepIntervalsForStrip(chosenStrip, sweepIntervals);
   println("Sending data");
-  allDataSentFlag = false;
-  allPreviousReadFlag = false;
-  while (!allDataSentFlag) {
-    //Sending the Object details to arduino to recognise the action to be performed 
-    arduino.write('t'); 
-    arduino.write(',');
-    //arduino.write(str(numberOfLEDs[chosenStrip-1]));     // No. of LEDs to corresponding to the Meridian 
-    arduino.write(str(chosenStrip));                      // Send The chosen Meridian to process  
-    arduino.write('\n');
-    String valuesToBeSent = "";
-    for (int pixelNumber = 0; pixelNumber< numberOfLEDs[chosenStrip - 1]; pixelNumber++) {
-      valuesToBeSent+=sweepIntervals[pixelNumber];
-      if (pixelNumber <numberOfLEDs[chosenStrip-1] - 1) {
-        valuesToBeSent+=",";
-      } else {
-        valuesToBeSent+="\n";
-      }
-    }
-    int count = 0;
-    int len = valuesToBeSent.length();
-    println(valuesToBeSent);
-    int index = 0;
-    while (index<len) {
-      char characterToBeWritten = valuesToBeSent.charAt(index);
-      arduino.write(characterToBeWritten);
-      count++;
-      index++;
-      if (count >= 30) {
-        println("One batch sent");
-        delay(60);
-        allPreviousReadFlag = false;
-        count = 0;
-      }
+  //Sending the Object details to arduino to recognise the action to be performed 
+  arduino.write('t'); 
+  arduino.write(',');
+  println("bottomMostAngle[chosenStrip - 1] " + bottomMostAngle[chosenStrip - 1] + " Sweep value " + cp5.getController("SWEEP").getValue() + " Quotient " + bottomMostAngle[chosenStrip - 1]/cp5.getController("SWEEP").getValue());  
+  int valueToBeSent = round(((bottomMostAngle[chosenStrip - 1]/cp5.getController("SWEEP").getValue())/numberOfLEDs[chosenStrip - 1])*1000);  
+  arduino.write(str(valueToBeSent));
+  println(valueToBeSent);
+  arduino.write('\n');
+  //arduino.write(str(numberOfLEDs[chosenStrip-1]));     // No. of LEDs to corresponding to the Meridian 
+  /* DEPRECATED *************************************************************************************  
+  arduino.write(str(chosenStrip));                      // Send The chosen Meridian to process  
+  arduino.write('\n');
+  String valuesToBeSent = "";
+  for (int pixelNumber = 0; pixelNumber< numberOfLEDs[chosenStrip - 1]; pixelNumber++) {
+    valuesToBeSent+=sweepIntervals[pixelNumber];
+    if (pixelNumber <numberOfLEDs[chosenStrip-1] - 1) {
+      valuesToBeSent+=",";
+    } else {
+      valuesToBeSent+="\n";
     }
   }
-  println("After");
-  for (int i= 0; i<24; i++) {
-    println(i + " " + meridians[i]);
-  }
+  int count = 0;
+  int len = valuesToBeSent.length();
+  println(valuesToBeSent);
+  int index = 0;
+  arduino.write(valuesToBeSent);
+  //delay(10);
+//    while (index<len) {
+//      char characterToBeWritten = valuesToBeSent.charAt(index);
+//      arduino.write(characterToBeWritten);
+//      count++;
+//      index++;
+//      if (count >= 30) {
+//        println("One batch sent");
+//        delay(100);
+//        count = 0;
+//      }
+//    }
+//    delay(100);
+//    int numberOfPixelsToBeSent = numberofLEDs[chosenStrip - 1];
+//    for(int pixelNumber = 0; pixelNumber<numberOfPixelsToBeSent; pixelNumber++) {
+//      arduino.write(str())
+//    }
   /*
   // wait For the response 
    // //   delay(10);
@@ -1139,10 +1147,12 @@ void  sendTimeIntervals(int chosenStrip) {
    }
    }
    arduino.write("\n");  // Notify The End Of The String 
-   // //  }*/
-  println("All data sent");
+   // //  }
+  println("All data sent"); 
+  DEPRECATED*************************************************************************/
 }
 
+/* DEPRECATED *************************************************************************
 //Function to calculate delays for pixels;
 void calculateSweepIntervalsForStrip(int chosenStrip, int sweepInterval[]) {
 
@@ -1153,7 +1163,7 @@ void calculateSweepIntervalsForStrip(int chosenStrip, int sweepInterval[]) {
    * degreesPerSecond value is obtained from the slider "SWEEP".
    * @param chosenStrip - number of meridian chosen
    * @param sweepInterval[] - array to store calculated values
-   */
+   
 
   //Number of rows in excel sheet
   int numberOfRows = angleData.length;
@@ -1173,7 +1183,7 @@ void calculateSweepIntervalsForStrip(int chosenStrip, int sweepInterval[]) {
   sweepInterval[pixelNumber] = (int) round(((90.00 - angleData[chosenStrip-1][pixelNumber])/degreesPerSecond)*1000);  //Calculate delay value for last LED; x1000 for milliseconds
   println(sweepInterval[pixelNumber]);
   println("All data calculated");
-}
+} DERECATED ************************************************************************************/
 
 // THE BANG FUNCTIONS
 void FINISH() {
@@ -1393,22 +1403,56 @@ float[][] importExcel(String filepath) {
    ********************************************/
 
   data = new float[30][30];
-
+  println("OccipitalDistance: " + occipitalDistance);
   for (int rowNumber = 1; rowNumber <=numberOfRows; rowNumber++) {
     Row row = sheet.getRow(rowNumber);
     Cell cell = row.getCell(0);
     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
     int meridianNumber = (int)(cell.getNumericCellValue());
-    cell = row.getCell(1);
-    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-    int pixelNumber = (int)(cell.getNumericCellValue());
     cell = row.getCell(2);
     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+    int pixelNumber = (int)(cell.getNumericCellValue());
+    cell = row.getCell(3);
+    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
     float angleValue = (float)(cell.getNumericCellValue());
-    //println(meridianNumber + " " + pixelNumber + " " + angleValue);
-    data[meridianNumber-1][pixelNumber-1] = angleValue;
+    
+    cell = row.getCell(10);
+    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+    float x = (float)(cell.getNumericCellValue());
+    
+    cell = row.getCell(11);
+    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+    float y = (float)(cell.getNumericCellValue());
+    
+    cell = row.getCell(12);
+    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+    float z = (float)(cell.getNumericCellValue());
+    
+    float zdash = z-(7+occipitalDistance);
+    boolean flag = (zdash < 0)?true:false;
+    zdash = Math.abs(zdash);
+    float finalAngleValue = (float)Math.toDegrees(Math.atan(zdash/((float)Math.sqrt(x*x + y*y))));
+    if(pixelNumber == 1) {
+      if(flag) {
+        bottomMostAngle[meridianNumber - 1] = finalAngleValue + 90;
+      }
+      else {
+        bottomMostAngle[meridianNumber - 1] = 90 - finalAngleValue;
+      }
+      println((meridianNumber - 1) + " " + bottomMostAngle[meridianNumber - 1]);
+    }
+    data[meridianNumber-1][pixelNumber-1] = finalAngleValue;
   }
+  
+
   //println("Data input done");
+//  for(int i = 0; i<30; i++) {
+//    print(i + " ");
+//    for(int j =0; j<30; j++) {
+//      print(data[i][j] + " ");
+//    }
+//    println("");
+//  }
   return data;
 }
 /**********************************************************************************************************************************/
