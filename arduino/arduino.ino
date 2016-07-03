@@ -250,6 +250,7 @@ void loop() {
                * Refer case 't' for sweep intervals;
                */
               byte chosenStrip = longit.toInt();
+              
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = true;
                 //Set The Sweep Interval
@@ -258,6 +259,7 @@ void loop() {
                 daisyStrip = daisyConverter(sweepStrip);
                 currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain
               }
+              analogWrite(fixationLED, 0);
               //byte acknowledgement = 97;
               //Serial.write(acknowledgement);
               break;
@@ -502,6 +504,7 @@ void turnThemOn (byte meridian_range[], boolean daisy_on, byte number_of_meridia
   // It also turns on particular "meridians" in the daisy, but only if the daisy_on is set to true, default false
 
   // First the meridians
+  analogWrite(fixationLED, 0);
   for (int ii = 0; ii < number_of_meridians; ii++) {
     int meridian_to_be_turned_on = meridian_range[ii] - 1;
 

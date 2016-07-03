@@ -134,7 +134,8 @@ color meridian_text_color[] = {
 int isopter_center[] = {
   820, 150
 };
-int isopter_diameter = 250;
+// CKR int isopter_diameter = 250;
+int isopter_diameter = 360;
 int current_sweep_meridian;
 
 // VARIABLES THAT KEEP TRACK OF WHAT OBJECT (HEMI, QUAD OR ISOPTER) WE ARE HOVERING OVER AND WHICH COUNT IT IS
@@ -418,10 +419,9 @@ void setup() {
   } else {
     exit();    // quit the program
   }
-    
-  //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
-  angleData = importExcel("I:/LVPEI/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye 
 
+  //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
+  angleData = importExcel("I:/LVPEI/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
 }
 
 void draw() {
@@ -522,10 +522,11 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
 
   //  fill(0);
   // fill(#eeeeee);
-  for (int i = 4; i >=1; i--) {
+  for (int i = 12; i >=1; i--) {
     // float xc = cos(radians(-i*30))*diameter/2 + x;
     // float yc = sin(radians(-i*30))*diameter/2 + y; 
-    float r_IsopterRange = sin(radians(i*15))*diameter;// Finding the diameter for the range
+    // CKR float r_IsopterRange = sin(radians(i*15))*diameter;// Finding the diameter for the range
+    float r_IsopterRange = (i*1/12))*diameter;
     // float xc = sin(radians(i*15))*(r_IsopterRange)/2 + x + 5;
     float yc = sin(radians(-90))*(r_IsopterRange+20)/2 + y + 15 ;
     if (i==1) {
@@ -536,7 +537,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     // stroke(#bbbbbb);
     ellipse(x, y, r_IsopterRange, r_IsopterRange); 
     fill(#bbbbbb);
-    text(str(i*30), x-5, yc);
+    text(str(i*10), x-5, yc);
     fill(#eeeeee);
   }
 
@@ -569,15 +570,41 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     } else {
       fill(0);
     }
-    text(str(i*15), xt, yt);  // draw the label of the meridian (in degrees)
+    // CKR text(str(i7*15), xt, yt);  // draw the label of the meridian (in degrees)
+    text(str((23-i)*15), xt, yt);  // draw the label of the meridian (in degrees)
 
     // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
     fill(#ff0000);  // red colour
     // println(abs(meridians[i]));
+    /*if (abs(meridians[i]) < 28 ) {
+     float xi = cos(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + x;
+     float yi = sin(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + y;
+     ellipse(xi, yi, 10, 10);
+     }*/
     if (abs(meridians[i]) < 28 ) {
-      float xi = cos(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + x;
-      float yi = sin(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + y;
-      ellipse(xi, yi, 10, 10);
+      // Get The Angle of the LED 
+      //  angleData[meridianNumber-1][pixelNumber-1] = finalAngleValue;
+      // Check whether it is obtuse or not
+      int pixelNumber = abs(meridians[i]);
+      int numberOfPixels = numberOfLEDs[i]; 
+      if (pixelNumber <= numberOfPixels) {
+        if (angleData[i][numberOfPixels - pixelNumber + 1] > 120) {
+          fill(#00ffff);// Use  different color to indicate it
+          // Indicate the dot on the periphery of the circle 
+          // CKR float xi = cos(radians(-i*15))*(10 + (diameter - 10)/2) + x;
+          // CKR float yi = sin(radians(-i*15))*(10 + (diameter - 10)/2) + y;
+          float xi = cos(radians(i*15))*(10 + (diameter - 10)/2) + x; //CKR
+          float yi = sin(radians(i*15))*(10 + (diameter - 10)/2) + y; //CKR
+          println("wait... ");
+          ellipse(xi, yi, 10, 10);
+        } else {
+          //CKR float xi = cos(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + x;
+          //CKR float yi = sin(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + y;
+          float xi = cos(radians(i*15))*(10 + (diameter - 10)*((angleData[i][numberOfPixels - pixelNumber + 1] ))/2*120) + x;
+          float yi = sin(radians(i*15))*(10 + (diameter - 10)*((angleData[i][numberOfPixels - pixelNumber + 1] ))/2*120) + y;
+          ellipse(xi, yi, 10, 10);
+        }
+      }
     }
   }
 }
@@ -648,7 +675,7 @@ void hover(float x, float y) {
   }
 }
 
-// QUICK FUNCTION TO CALCULATE HTE ANGLE SUBTENDED
+// QUICK FUNCTION TO CALCULATE THE ANGLE SUBTENDED
 float angleSubtended(float x, float y, int c1, int c2) {
   // angle subtended by (x,y) to fixed point (c1,c2)
   float angle = atan((x - c1)/(y - c2));
@@ -1007,11 +1034,10 @@ void serialEvent(Serial arduino) {
       SpaceKey_State = 0; 
       //println("Ardiuno Value Populated\n");
     } else if (temp_Val != 99 && SpaceKey_State == 0) {  // Data For The LED No. In Sweep
-      if(previousTime == 0) {
+      if (previousTime == 0) {
         println("Serial Port Value Recieved from Arduino : " + inString + " @ " + previousTime + " ms");
         previousTime = millis();
-      }
-      else {
+      } else {
         currentTime = millis();
         println("Serial Port Value Recieved from Arduino : " + inString + " in " + (currentTime - previousTime) + " ms");
         previousTime = currentTime;
@@ -1082,41 +1108,41 @@ void  sendTimeIntervals(int chosenStrip) {
   arduino.write('\n');
   //arduino.write(str(numberOfLEDs[chosenStrip-1]));     // No. of LEDs to corresponding to the Meridian 
   /* DEPRECATED *************************************************************************************  
-  arduino.write(str(chosenStrip));                      // Send The chosen Meridian to process  
-  arduino.write('\n');
-  String valuesToBeSent = "";
-  for (int pixelNumber = 0; pixelNumber< numberOfLEDs[chosenStrip - 1]; pixelNumber++) {
-    valuesToBeSent+=sweepIntervals[pixelNumber];
-    if (pixelNumber <numberOfLEDs[chosenStrip-1] - 1) {
-      valuesToBeSent+=",";
-    } else {
-      valuesToBeSent+="\n";
-    }
-  }
-  int count = 0;
-  int len = valuesToBeSent.length();
-  println(valuesToBeSent);
-  int index = 0;
-  arduino.write(valuesToBeSent);
-  //delay(10);
-//    while (index<len) {
-//      char characterToBeWritten = valuesToBeSent.charAt(index);
-//      arduino.write(characterToBeWritten);
-//      count++;
-//      index++;
-//      if (count >= 30) {
-//        println("One batch sent");
-//        delay(100);
-//        count = 0;
-//      }
-//    }
-//    delay(100);
-//    int numberOfPixelsToBeSent = numberofLEDs[chosenStrip - 1];
-//    for(int pixelNumber = 0; pixelNumber<numberOfPixelsToBeSent; pixelNumber++) {
-//      arduino.write(str())
-//    }
+   arduino.write(str(chosenStrip));                      // Send The chosen Meridian to process  
+   arduino.write('\n');
+   String valuesToBeSent = "";
+   for (int pixelNumber = 0; pixelNumber< numberOfLEDs[chosenStrip - 1]; pixelNumber++) {
+   valuesToBeSent+=sweepIntervals[pixelNumber];
+   if (pixelNumber <numberOfLEDs[chosenStrip-1] - 1) {
+   valuesToBeSent+=",";
+   } else {
+   valuesToBeSent+="\n";
+   }
+   }
+   int count = 0;
+   int len = valuesToBeSent.length();
+   println(valuesToBeSent);
+   int index = 0;
+   arduino.write(valuesToBeSent);
+   //delay(10);
+   //    while (index<len) {
+   //      char characterToBeWritten = valuesToBeSent.charAt(index);
+   //      arduino.write(characterToBeWritten);
+   //      count++;
+   //      index++;
+   //      if (count >= 30) {
+   //        println("One batch sent");
+   //        delay(100);
+   //        count = 0;
+   //      }
+   //    }
+   //    delay(100);
+   //    int numberOfPixelsToBeSent = numberofLEDs[chosenStrip - 1];
+   //    for(int pixelNumber = 0; pixelNumber<numberOfPixelsToBeSent; pixelNumber++) {
+   //      arduino.write(str())
+   //    }
   /*
-  // wait For the response 
+   // wait For the response 
    // //   delay(10);
    
    // Repeat  updating the The time intervals before initiating the kinetic mode 
@@ -1148,42 +1174,42 @@ void  sendTimeIntervals(int chosenStrip) {
    }
    arduino.write("\n");  // Notify The End Of The String 
    // //  }
-  println("All data sent"); 
-  DEPRECATED*************************************************************************/
+   println("All data sent"); 
+   DEPRECATED*************************************************************************/
 }
 
 /* DEPRECATED *************************************************************************
-//Function to calculate delays for pixels;
-void calculateSweepIntervalsForStrip(int chosenStrip, int sweepInterval[]) {
-
-  /*
-   * Function to calculate Sweep intervals for a strip.
-   * It uses the data we've taken from the Excel sheet
-   * The formula used: (angleOfNextPixel - angleOfCurrentPixel)/degreesPerSecond
-   * degreesPerSecond value is obtained from the slider "SWEEP".
-   * @param chosenStrip - number of meridian chosen
-   * @param sweepInterval[] - array to store calculated values
-   
-
-  //Number of rows in excel sheet
-  int numberOfRows = angleData.length;
-  //index counter
-  int valueNumber = 0;
-  //degrees to move per second as per Slider
-  float degreesPerSecond = cp5.getController("SWEEP").getValue();
-
-  int rowNumber;
-  int pixelNumber;
-
-  for (pixelNumber = 0; pixelNumber < numberOfLEDs[chosenStrip-1] - 1; pixelNumber++) {
-    sweepInterval[pixelNumber] = (int) round(((angleData[chosenStrip-1][pixelNumber + 1] - angleData[chosenStrip-1][pixelNumber])/degreesPerSecond)*1000);
-    //println(angleData[chosenStrip-1][pixelNumber + 1] + " " + angleData[chosenStrip-1][pixelNumber] + " " + sweepInterval[pixelNumber]);
-  }
-
-  sweepInterval[pixelNumber] = (int) round(((90.00 - angleData[chosenStrip-1][pixelNumber])/degreesPerSecond)*1000);  //Calculate delay value for last LED; x1000 for milliseconds
-  println(sweepInterval[pixelNumber]);
-  println("All data calculated");
-} DERECATED ************************************************************************************/
+ //Function to calculate delays for pixels;
+ void calculateSweepIntervalsForStrip(int chosenStrip, int sweepInterval[]) {
+ 
+/*
+ * Function to calculate Sweep intervals for a strip.
+ * It uses the data we've taken from the Excel sheet
+ * The formula used: (angleOfNextPixel - angleOfCurrentPixel)/degreesPerSecond
+ * degreesPerSecond value is obtained from the slider "SWEEP".
+ * @param chosenStrip - number of meridian chosen
+ * @param sweepInterval[] - array to store calculated values
+ 
+ 
+ //Number of rows in excel sheet
+ int numberOfRows = angleData.length;
+ //index counter
+ int valueNumber = 0;
+ //degrees to move per second as per Slider
+ float degreesPerSecond = cp5.getController("SWEEP").getValue();
+ 
+ int rowNumber;
+ int pixelNumber;
+ 
+ for (pixelNumber = 0; pixelNumber < numberOfLEDs[chosenStrip-1] - 1; pixelNumber++) {
+ sweepInterval[pixelNumber] = (int) round(((angleData[chosenStrip-1][pixelNumber + 1] - angleData[chosenStrip-1][pixelNumber])/degreesPerSecond)*1000);
+ //println(angleData[chosenStrip-1][pixelNumber + 1] + " " + angleData[chosenStrip-1][pixelNumber] + " " + sweepInterval[pixelNumber]);
+ }
+ 
+ sweepInterval[pixelNumber] = (int) round(((90.00 - angleData[chosenStrip-1][pixelNumber])/degreesPerSecond)*1000);  //Calculate delay value for last LED; x1000 for milliseconds
+ println(sweepInterval[pixelNumber]);
+ println("All data calculated");
+ } DERECATED ************************************************************************************/
 
 // THE BANG FUNCTIONS
 void FINISH() {
@@ -1334,7 +1360,7 @@ float[][] importExcel(String filepath) {
    if (cell.getCellType()==0 || cell.getCellType()==2 || cell.getCellType()==3)cell.setCellType(1);
    temp[i][j] = cell.getStringCellValue();
    // Get The Cell Values And Populate Them Into An Array 
-                     /* Cell cell0 = row.getCell(0);
+                       /* Cell cell0 = row.getCell(0);
    if (cell0.getCellType()==0 || cell0.getCellType()==2 || cell0.getCellType()==3)cell0.setCellType(1);
    temp[i][0] = cell0.getStringCellValue();
    Cell cell1 = row.getCell(1);
@@ -1415,44 +1441,44 @@ float[][] importExcel(String filepath) {
     cell = row.getCell(3);
     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
     float angleValue = (float)(cell.getNumericCellValue());
-    
+
     cell = row.getCell(10);
     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
     float x = (float)(cell.getNumericCellValue());
-    
+
     cell = row.getCell(11);
     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
     float y = (float)(cell.getNumericCellValue());
-    
+
     cell = row.getCell(12);
     cell.setCellType(Cell.CELL_TYPE_NUMERIC);
     float z = (float)(cell.getNumericCellValue());
-    
+
     float zdash = z-(7+occipitalDistance);
     boolean flag = (zdash < 0)?true:false;
     zdash = Math.abs(zdash);
     float finalAngleValue = (float)Math.toDegrees(Math.atan(zdash/((float)Math.sqrt(x*x + y*y))));
-    if(pixelNumber == 1) {
-      if(flag) {
-        bottomMostAngle[meridianNumber - 1] = finalAngleValue + 90;
-      }
-      else {
-        bottomMostAngle[meridianNumber - 1] = 90 - finalAngleValue;
-      }
+    if (flag) {
+      finalAngleValue += 90;
+    } else {
+      finalAngleValue = 90 - finalAngleValue;
+    }
+    if (pixelNumber == 1) {
+      bottomMostAngle[meridianNumber - 1] = finalAngleValue;
       println((meridianNumber - 1) + " " + bottomMostAngle[meridianNumber - 1]);
     }
     data[meridianNumber-1][pixelNumber-1] = finalAngleValue;
   }
-  
+
 
   //println("Data input done");
-//  for(int i = 0; i<30; i++) {
-//    print(i + " ");
-//    for(int j =0; j<30; j++) {
-//      print(data[i][j] + " ");
-//    }
-//    println("");
-//  }
+  for (int i = 0; i<30; i++) {
+    print(i + " ");
+    for (int j =0; j<30; j++) {
+      print(data[i][j] + " ");
+    }
+    println("");
+  }
   return data;
 }
 /**********************************************************************************************************************************/
