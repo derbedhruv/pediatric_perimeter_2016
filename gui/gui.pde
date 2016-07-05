@@ -134,8 +134,7 @@ color meridian_text_color[] = {
 int isopter_center[] = {
   820, 150
 };
-// CKR int isopter_diameter = 250;
-int isopter_diameter = 360;
+int isopter_diameter = 250;
 int current_sweep_meridian;
 
 // VARIABLES THAT KEEP TRACK OF WHAT OBJECT (HEMI, QUAD OR ISOPTER) WE ARE HOVERING OVER AND WHICH COUNT IT IS
@@ -522,11 +521,10 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
 
   //  fill(0);
   // fill(#eeeeee);
-  for (int i = 12; i >=1; i--) {
+  for (int i = 4; i >=1; i--) {
     // float xc = cos(radians(-i*30))*diameter/2 + x;
     // float yc = sin(radians(-i*30))*diameter/2 + y; 
-    // CKR float r_IsopterRange = sin(radians(i*15))*diameter;// Finding the diameter for the range
-    float r_IsopterRange = (i*1/12))*diameter;
+    float r_IsopterRange = sin(radians(i*15))*diameter;// Finding the diameter for the range
     // float xc = sin(radians(i*15))*(r_IsopterRange)/2 + x + 5;
     float yc = sin(radians(-90))*(r_IsopterRange+20)/2 + y + 15 ;
     if (i==1) {
@@ -537,7 +535,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     // stroke(#bbbbbb);
     ellipse(x, y, r_IsopterRange, r_IsopterRange); 
     fill(#bbbbbb);
-    text(str(i*10), x-5, yc);
+    text(str(i*30), x-5, yc);
     fill(#eeeeee);
   }
 
@@ -570,8 +568,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     } else {
       fill(0);
     }
-    // CKR text(str(i7*15), xt, yt);  // draw the label of the meridian (in degrees)
-    text(str((23-i)*15), xt, yt);  // draw the label of the meridian (in degrees)
+    text(str(i*15), xt, yt);  // draw the label of the meridian (in degrees)
 
     // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
     fill(#ff0000);  // red colour
@@ -588,20 +585,16 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
       int pixelNumber = abs(meridians[i]);
       int numberOfPixels = numberOfLEDs[i]; 
       if (pixelNumber <= numberOfPixels) {
-        if (angleData[i][numberOfPixels - pixelNumber + 1] > 120) {
+        if (angleData[i][numberOfPixels - pixelNumber + 1] > 90) {
           fill(#00ffff);// Use  different color to indicate it
           // Indicate the dot on the periphery of the circle 
-          // CKR float xi = cos(radians(-i*15))*(10 + (diameter - 10)/2) + x;
-          // CKR float yi = sin(radians(-i*15))*(10 + (diameter - 10)/2) + y;
-          float xi = cos(radians(i*15))*(10 + (diameter - 10)/2) + x; //CKR
-          float yi = sin(radians(i*15))*(10 + (diameter - 10)/2) + y; //CKR
+          float xi = cos(radians(-i*15))*(10 + (diameter - 10)/2) + x;
+          float yi = sin(radians(-i*15))*(10 + (diameter - 10)/2) + y;
           println("wait... ");
           ellipse(xi, yi, 10, 10);
         } else {
-          //CKR float xi = cos(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + x;
-          //CKR float yi = sin(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + y;
-          float xi = cos(radians(i*15))*(10 + (diameter - 10)*((angleData[i][numberOfPixels - pixelNumber + 1] ))/2*120) + x;
-          float yi = sin(radians(i*15))*(10 + (diameter - 10)*((angleData[i][numberOfPixels - pixelNumber + 1] ))/2*120) + y;
+          float xi = cos(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + x;
+          float yi = sin(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + y;
           ellipse(xi, yi, 10, 10);
         }
       }
