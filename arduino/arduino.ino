@@ -32,7 +32,7 @@
 #include <avr/power.h>
 #endif
 
-#define Br 3      // This is where you define the brightness of the LEDs - this is constant for all
+#define Br 2      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
@@ -64,7 +64,7 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 // the variable 'breakOut' is a boolean which is used to communicate to the loop() that we need to immedietely shut everything off
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
-unsigned long previousMillis, currentMillis, sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
+unsigned long previousMillis, currentMillis, sweep_interval = 1367,Recieved_sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
 //int sweepIntervals [] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // sweep intervals for a particular meridian/strip in kinetic mode // DEPRECATED
 int fixationStrength = 100;  // brightness of the fixation
 byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
@@ -84,6 +84,8 @@ void setup() {
   }
   clearAll();
 }
+
+boolean valuesSet = false;
 
 void loop() {
   if (sweep == true) {
@@ -121,15 +123,15 @@ void loop() {
         // clear all previous meridian stuff...
         meridians[sweepStrip - 1].clear();
         meridians[sweepStrip - 1].show();
-        // sweep_interval = 1750;      // infinitely short so that we just zap off the longer strip
+        sweep_interval = 1;      // infinitely short so that we just zap off the longer strip 
         meridians[24].setBrightness(Br);  // set this here to avoid wasting steps later
-
+        
       } else if (currentSweepLED < 3) {
         // only need to light the daisy
-        meridians[24].setPixelColor(3 * daisyStrip + 2 - currentSweepLED - 1, 0, 0, 0);
-        meridians[24].setPixelColor(3 * daisyStrip + 2 - currentSweepLED, r, g, b);
-        meridians[24].show(); // This sends the updated pixel color to the hardware.
-
+          meridians[24].setPixelColor(3 * daisyStrip + 2 - currentSweepLED - 1, 0, 0, 0);
+          meridians[24].setPixelColor(3 * daisyStrip + 2 - currentSweepLED, r, g, b);
+          meridians[24].show(); // This sends the updated pixel color to the hardware.
+         sweep_interval = Recieved_sweep_interval/2; // For Daisy The delay is doubled So to maintain constat through out meridian 
         // reduce sweep interval because now we're slowing down the interrupt due to the neopixels stuff
         //   sweep_interval = 1750;    // this figure should be properly calibrated
       }
@@ -202,7 +204,7 @@ void loop() {
               //delay(30);  //Wait some time so it can write everything //DEPRECATED
               //int chosenStrip = longit.toInt(); //DEPRECATED
               //readSweepIntervals(chosenStrip); //Start reading sweep intervals  //DEPRECATED
-              sweep_interval = longit.toInt();  //every LED has same time interval
+              Recieved_sweep_interval = longit.toInt();  //every LED has same time interval
               break;
               /*// interval= longit.toInt();
                 // sweepTimeIntervals
@@ -254,7 +256,7 @@ void loop() {
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = true;
                 //Set The Sweep Interval
-                //  sweep_interval = 1750;
+                sweep_interval = Recieved_sweep_interval;
                 sweepStrip = chosenStrip;
                 daisyStrip = daisyConverter(sweepStrip);
                 currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain

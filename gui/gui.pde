@@ -149,6 +149,7 @@ Serial arduino;                 // create serial object
 GSCapture cam;        // GS Video Capture Object
 int fps = 60;          // The Number of Frames per second Declaration (used for the processing sketch framerate as well as the video that is recorded
 boolean startRecording = false;
+float xi, yi;
 
 // PATIENT INFORMATION VARIABLES - THESE ARE GLOBAL
 // String textName = "test", textAge, textMR, textDescription;  // the MR no is used to name the file, hence this cannot be NULL. If no MR is entered, 'test' is used
@@ -521,11 +522,12 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
 
   //  fill(0);
   // fill(#eeeeee);
-  for (int i = 4; i >=1; i--) {
+  for (int i = 5; i >=1; i--) {
     // float xc = cos(radians(-i*30))*diameter/2 + x;
     // float yc = sin(radians(-i*30))*diameter/2 + y; 
-    float r_IsopterRange = sin(radians(i*15))*diameter;// Finding the diameter for the range
-    // float xc = sin(radians(i*15))*(r_IsopterRange)/2 + x + 5;
+    //float r_IsopterRange = sin(radians(i*10))*diameter;// Finding the diameter for the range
+    // float xc = sin(radians(i*15))*(r_IsopterRange)/02 + x + 5;
+    float r_IsopterRange = diameter * ((i*20.0)/120);
     float yc = sin(radians(-90))*(r_IsopterRange+20)/2 + y + 15 ;
     if (i==1) {
       stroke(0);
@@ -535,7 +537,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     // stroke(#bbbbbb);
     ellipse(x, y, r_IsopterRange, r_IsopterRange); 
     fill(#bbbbbb);
-    text(str(i*30), x-5, yc);
+    text(str(i*20), x-5, yc);
     fill(#eeeeee);
   }
 
@@ -560,7 +562,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     line(x, y, xm, ym);
 
     // draw the text at a location near the edge, which is along an imaginary circle of larger diameter - at point (xt, yt)
-    float xt = cos(radians(-i*15))*(diameter + 30)/2 + x - 10;
+    float xt = -1.0 * cos(radians(-i*15))*(diameter + 20)/2 + x - 10;
     float yt = sin(radians(-i*15))*(diameter + 20)/2 + y + 5;
     if (meridians[i] < 0) {
       fill(#ff0000);
@@ -583,20 +585,30 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
       //  angleData[meridianNumber-1][pixelNumber-1] = finalAngleValue;
       // Check whether it is obtuse or not
       int pixelNumber = abs(meridians[i]);
-      int numberOfPixels = numberOfLEDs[i]; 
-      if (pixelNumber <= numberOfPixels) {
-        if (angleData[i][numberOfPixels - pixelNumber + 1] > 90) {
+      int meridianNumber = (24 - (((24 - i)%24) + 12) % 24)%24;
+      int numberOfPixels = numberOfLEDs[meridianNumber];
+      //println(((25 - i)%24) + " " + numberOfPixels);
+      if (pixelNumber > 0 && pixelNumber <= numberOfPixels + 1) {
+        /*if (angleData[i][numberOfPixels - pixelNumber + 1] > 90) {
           fill(#00ffff);// Use  different color to indicate it
           // Indicate the dot on the periphery of the circle 
           float xi = cos(radians(-i*15))*(10 + (diameter - 10)/2) + x;
           float yi = sin(radians(-i*15))*(10 + (diameter - 10)/2) + y;
-          println("wait... ");
           ellipse(xi, yi, 10, 10);
         } else {
           float xi = cos(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + x;
           float yi = sin(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + y;
           ellipse(xi, yi, 10, 10);
+        }*/
+          if(pixelNumber > 3) { // For Meridian LEDs
+          xi = (cos(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber +1  ]/120) + x;
+          yi = (sin(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber +1  ]/120) + y;
         }
+        else if(pixelNumber <= 3 ){ // For Daisy LEDs
+          xi = (cos(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + x;
+          yi = (sin(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + y;
+        }
+        ellipse(xi, yi, 10, 10);
       }
     }
   }
@@ -625,7 +637,7 @@ void hover(float x, float y) {
         meridian_state[hovered_count] *=  -1;
       } else {
         hovered_object = 's';
-        meridians[hovered_count] = -1*abs(meridians[hovered_count]);      // set the presently hovered meridian to change state
+        meridians[(24 - (hovered_count + 12)%24)%24] = -1*abs(meridians[(24 - (hovered_count + 12)%24)%24]);      // set the presently hovered meridian to change state
       }
 
       cursor(HAND);     // change cursor to indicate that this thing can be clicked on
@@ -701,7 +713,7 @@ void mousePressed() {
     arduino.write(hovered_object);
     arduino.write(',');
     if (hovered_object == 's' || hovered_object == 'm') {
-      arduino.write(str((24 - hovered_count)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
+      arduino.write(str((hovered_count+12)%24 + 1));    // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
     } else {
       arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
     }
@@ -973,7 +985,7 @@ public void Stop() {
   // REDRAW AND SAVE THE ISOPTER TO FILE  
   if (status == "sweep") {
     // redraw isopter image to file
-    PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies.
+    PImage isopter = get(640, 0, 360, 300);     // get that particular section of the screen where the isopter lies. 
     isopter.save(base_folder + "/isopter.jpg");  // save it to a file in the same folder
 
     // write this to the isopter text file
