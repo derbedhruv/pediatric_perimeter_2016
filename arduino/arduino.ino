@@ -75,7 +75,6 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
 unsigned long previousMillis, currentMillis, sweep_interval = 1367,Recieved_sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
-//int sweepIntervals [] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // sweep intervals for a particular meridian/strip in kinetic mode // DEPRECATED
 int fixationStrength = 100;  // brightness of the fixation
 byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
 byte Respose_ClearAll;
@@ -88,6 +87,7 @@ byte patternNumber;
 int memoryAvailable;
 unsigned long patterns_interval = 500;
 boolean patterns;
+
 // Pattern - One : Fountai Model
 int riseCounter = 0;
 int fixedCounter = 0;
@@ -181,14 +181,12 @@ void loop() {
           meridians[24].setPixelColor(3 * daisyStrip + 2 - currentSweepLED, r, g, b);
           meridians[24].show(); // This sends the updated pixel color to the hardware.
          sweep_interval = Recieved_sweep_interval/2; // For Daisy The delay is doubled So to maintain constat through out meridian 
-        // reduce sweep interval because now we're slowing down the interrupt due to the neopixels stuff
-        //   sweep_interval = 1750;    // this figure should be properly calibrated
-      }
+         }
 
-    } else {           // what to do when its within the interval
+    } else {           // ToDo when its within the interval
       // stop everything when the currentSweepLED is 0.
       if (currentSweepLED == 0) {
-        // To Notify That The We Are Done With LED Strip;
+        // To Notify That We Are Done With LED Strip;
         currentSweepLED = 28; // 28 value is to Reinitailze The Value in GUI
         Serial.println(currentSweepLED);
         previousMillis = 0;
@@ -257,16 +255,9 @@ void loop() {
           currentMillis = millis();
           break;
 
-        //for Pattern Two
+        //for Pattern Two : Spiral / Rotation Model
         case 2:
-          /*          if(startPixelRM <= endPixelRM - numOfPixRM -1){
-                    verifyTestRM =  rotationModel(int startPixelNumberRM,int startMeridianNumberRM,numOfPixelsInSetRM, int numOfMeridiansInSetRM,int endMeridianNumberRM, String wayImplementRM, int  stepSizeRM ) {
-                    if(verifyTestRM == true){
-                    startPixelRM += 1;
-                    }
-                    }*/
-          if (startPixelRM >= endPixelRM - numOfPixRM - 1) {
-            //CKR     Serial.println("pattern - 2 Started");
+           if (startPixelRM >= endPixelRM - numOfPixRM - 1) {
             wayImplementRM = riseFixedFall;
             verifyTestRM =  rotationModel(startPixelRM, 4, 3, 6, 27, endPixelRM, 2 );
             if (verifyTestRM == true) {
@@ -274,24 +265,19 @@ void loop() {
               if (startPixelRM == 0) {
                 startPixelRM = 12;
               }
-              //CKR
-              //CKR Serial.print("Verified Test - 2  ");Serial.println(startPixelRM);
-            }
+             }
           }
           currentMillis = millis();
           break;
 
-        //for Pattern Three
+        //for Pattern Three : "The CHAKRA"
         case 3:
 
           switch (patternThreeIndex) {
 
             case 1:
               wayImplementFM = fixed;
-              /*  for (int l =0; l <20; l++){
-                  Serial.println(meridianNumbersCKR[l]);
-                }*/
-              verifyTest = fountainModel(5, 5, 1, meridianNumbersCKR  , 20, 2);
+               verifyTest = fountainModel(5, 5, 1, meridianNumbersCKR  , 20, 2);
               if (verifyTest == true) {
                 counterCKR += 1;
                 counterCKR %= 6;
@@ -324,8 +310,7 @@ void loop() {
     // for historical reasons we will store this as variables (lat, long)
     if (inChar == ',') {
       breakOut = false;
-      // Serial.println(inputString);
-      lat = inputString;
+       lat = inputString;
       // reset the variable
       inputString = "";
     } else {
@@ -736,47 +721,25 @@ void turnThemOn (byte meridian_range[], boolean daisy_on, byte number_of_meridia
 
 
 boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPixelNumberFM,   byte meridiansToBeOnFM[], byte numOfMeridians, int  stepSizeFM ) {
-
+//The generalised function where you can address each and every LED at a particular instance on the Specified Meridians 
+//This function is like a goto statement where it makes LEDs travel from the Start Pixel to End Pixel with Rising LED by LED to a set and travel with the set 
+// towards End Pixel and Finally falls LED by LED. At the end it returns true when the patternis completed for the parameters given
 
   boolean fountainModelDone = false;
-  //  byte daisyPixelsTurnOn [75];
   byte pixelIndex ;
 
-  Serial.print("FM Started"); Serial.print(" "); Serial.println(freeRam());
-  /*
-    if((riseCounter == 0) && (fixedCounter == 0) && (fallCounter == 0)){
-    clearAll();
-    Serial.println("All Cleared");
-    }
-  */
-  //CKR Serial.println(startPixelNumberFM);
-
-  //CKR Serial.println(endPixelNumberFM);
-
-  //CKR Serial.println(numOfPixelsInSetFM);
-  // Set the riseCounter value based on the "wayImplemented"
-  // Serial.println(wayImplementFM.substring(0,4));
-  // if (riseCounter == 0){
-
+  // To Skip RISE if not required
   if (wayImplementFM == fixed || wayImplementFM == fixedFall) {
     riseCounter = numOfPixelsInSetFM - 1;
     riseDone = true;
-    // Serial.println("No Rise");
   }
-  //  }
-  //CKR  Serial.print("FM :"); Serial.println(wayImplementFM);
-  //Set the fallCounter value based on the "wayImplemented"
 
-  // if (fallCounter == 0 ) {
+ // To skip FALL if not required  
   if (wayImplementFM == fixed || wayImplementFM == riseFixed) { // Dont Use Substring because program might crash here.
     fallCounter = numOfPixelsInSetFM - 1;
     fallDone = true;
-    //   Serial.println(fallDone);
   }
-  // }
-
-
-  Serial.print("RC :"); Serial.println(riseCounter);
+  
   //Set whether Rise is completed/Not Required
   if ((riseCounter == numOfPixelsInSetFM - 1)) {
     riseDone = true;
@@ -785,8 +748,6 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
   }
 
   //Set Whether Fixed is Not Required/ Completed
-
-  Serial.print("FC :"); Serial.println(fixedCounter);
   if ((fixedCounter == (startPixelNumberFM - endPixelNumberFM - numOfPixelsInSetFM + 2)) ) {
     fixedDone = true;
   } else {
@@ -794,9 +755,7 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
   }
 
   //Set  whether Fall is completed / Not required {This is here to maintain uniform delay through out the sequence]
-
-  Serial.print("FlC :"); Serial.println(fallCounter);
-  if (fallCounter == numOfPixelsInSetFM - 1) {
+if (fallCounter == numOfPixelsInSetFM - 1) {
     fallDone = true;
   } else {
     fallDone = false;
@@ -832,8 +791,7 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
     }
 
     if (pixelIndex > 0) {
-      //CKR  Serial.println(pixelIndex);
-      turnOnDaisy(daisyPixelsTurnOn, pixelIndex);
+       turnOnDaisy(daisyPixelsTurnOn, pixelIndex);
     }
 
     riseCounter = riseCounter + 1;
@@ -930,13 +888,13 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
     fountainModelDone = false;
   }
 
-
+/*
   Serial.print("FM  :");
   Serial.print(riseCounter); Serial.print(",");
   Serial.print(fixedCounter); Serial.print(",");
   Serial.println(fallCounter);
 
-  Serial.print("ToBeReturned  "); Serial.println(freeRam());
+  Serial.print("ToBeReturned  "); Serial.println(freeRam()); */
   return fountainModelDone;
 }
 
@@ -959,30 +917,18 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
 
   boolean rotationModelDone = false;
 
-  Serial.println("RM Started");
-  Serial.print("RM start : "); Serial.println(freeRam());
-  // Serial.print(wayImplementRM);
-  //CKR   Serial.print("Mem RM Start : ");Serial.println(memoryAvailable);
-
-  // Set the riseCounter value based on the "wayImplemented"
-  //  if (riseCounterRM == 0) {
-  if (wayImplementRM == fixed) {
+   if (wayImplementRM == fixed || wayImplementRM == fixedFall) {
 
     riseCounterRM = numOfMeridiansInSetRM - 1;
     riseDoneRM = true;
-    // Serial.println("No Rise");
-  }
+   }
   // }
   //Set the fallCounter value based on the "wayImplemented"
-  // if (fallCounterRM == 0 ) {
-  if (wayImplementRM == fixed || wayImplementRM == riseFixed) { // Donot Use Substring because the program might crash
+   if (wayImplementRM == fixed || wayImplementRM == riseFixed) { // Donot Use Substring because the program might crash
     fallCounterRM = numOfMeridiansInSetRM - 1;
     fallDoneRM = true;
-    //   Serial.println(fallDone);
-  }
-
-  // }
-
+   }
+ 
   //Set whether Rise is completed/Not Required
   if ((riseCounterRM == numOfMeridiansInSetRM - 1)) {
     riseDoneRM = true;
@@ -1004,12 +950,7 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
     fallDoneRM = false;
   }
 
-
-  //CKR    Serial.print("Mem RM Rise Start : ");Serial.println(memoryAvailable);
-
   // Code for RISE
-  // Serial.print("RiseCounterRM , ");Serial.println(riseCounterRM);
-  Serial.print("Before RC : "); Serial.println(freeRam());
   if (riseCounterRM < numOfMeridiansInSetRM - 1 ) {
     int j;
     //Get the Meridian Number to be turned ON
@@ -1022,15 +963,12 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
       verifyTest = fountainModel(startPixelNumberRM, numOfPixelsInSetRM, startPixelNumberRM - numOfPixelsInSetRM + 1, meridianNumbersRM, j, 2);
 
       if (verifyTest == true) {
-        // Serial.println("Fine ");
         riseCounterRM = riseCounterRM + 1;
       }
     }
   }
 
-  //CKR  Serial.print("Mem  Fixed Start : ");Serial.println(memoryAvailable);
-  Serial.print("Before FC : "); Serial.println(freeRam());
-  //Code for Fixed
+ //Code for Fixed
   if (fixedCounterRM < ((endMeridianNumberRM % 24) + 24 - startMeridianNumberRM  - numOfMeridiansInSetRM + 2) && riseDoneRM == true) {
 
     int j;
@@ -1055,8 +993,6 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
     }
   }
 
-  //CKR   Serial.print("Mem Fall Start : ");Serial.println(memoryAvailable);
-  Serial.print("Before FlC : "); Serial.println(freeRam());
   //Code for Fall
   if (fallCounterRM  < numOfMeridiansInSetRM - 1  && fixedDoneRM == true) {
 
@@ -1070,7 +1006,6 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
     }
 
     for (int k = 0; k < j ; k++) {
-      //CKR  Serial.println( meridianNumbersRM [k ]);
     }
 
     if (j > 0) {
@@ -1084,9 +1019,7 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
     }
   }
 
-  //CKR   Serial.print("Mem end RM : ");Serial.println(memoryAvailable);
-
-  //Reset the counters and different variables used to run the function
+   //Reset the counters and different variables used to run the function
   if (riseDoneRM == true && fixedDoneRM == true && fallDoneRM == true) {
 
     rotationModelDone = true;
@@ -1101,23 +1034,25 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
   } else {
     rotationModelDone = false;
   }
-  Serial.print("RM ended & to be Returned");
+ // Serial.print("RM ended & to be Returned");
 
   //CKR  Serial.print("RM  :");
   //CKR  Serial.print(riseCounterRM);Serial.print(",");
   //CKR Serial.print(fixedCounterRM);Serial.print(",");
   // CKR Serial.println(fallCounterRM);
-  Serial.print("RM End : "); Serial.println(freeRam());
+ // Serial.print("RM End : "); Serial.println(freeRam());
   return rotationModelDone;
 }
 
-
+/*
 int freeRam () {
   extern int __heap_start, *__brkval;
   int v;
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 
+*/
+//function that Updates Meridian numbers to be turned ON in pattern - 3
 void  updateMeridianNumbersCKR() {
 
   int k = 0;
