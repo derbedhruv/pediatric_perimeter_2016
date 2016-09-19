@@ -80,10 +80,10 @@ int quad_state[][]     = {
 };    // 1 means the quad has not been done yet, 2 means it has already been done, 3 means it is presently going on, negative means it is being hovered upon
 color quad_colors[][]  = { 
   { 
-    #eeeeee, #00ff00, #ffff22, #06564C
+    #eeeeee, #00ff00, #ffff22, #08BFC4
   }
   , { 
-    #dddddd, #00ff00, #ffff22, #06564C
+    #dddddd, #00ff00, #ffff22, #08BFC4
   }
 };  // Color Changes depending on the state 
 int quad_center[]      = { 
@@ -141,13 +141,14 @@ color meridian_text_color[] = {
 
 
 // Patterns Variables
-int pattern_state = 1;
-
+int pattern_state [] = {1,1,1};
+int posPatternImage [][] = {{105,540},{255,540}, {385,540}};
 // VARIABLES THAT KEEP TRACK OF WHAT OBJECT (HEMI, QUAD OR ISOPTER) WE ARE HOVERING OVER AND WHICH COUNT IT IS
 // THIS WILL ENABLE SENDING A SERIAL COMM TO THE ARDUINO VERY EASILY ON A MOUSE PRESS EVENT
 char hovered_object;
 int hovered_count;    // the current meridian which has been hovered over
-color hover_color = #06564C; //  Color When hovering on Clickable objects
+color hover_color = #08BFC4; //  Color When hovering on Clickable objects
+color backgroundColor = #5f6171;
 
 
 // VIDEO FEED AND VIDEO SAVING VARIABLES
@@ -232,7 +233,7 @@ void setup() {
   }
 
   // default background colour
-  size(1300, 640);  // the size of the video feed + the side bar with the controls
+  size(1200, 640);  // the size of the video feed + the side bar with the controls
   frameRate(fps);
 
   // CONNECT TO THE CAMERA
@@ -262,10 +263,6 @@ void setup() {
     }
   }
 
-myAnimation = new Gif(this, "x.gif");
-myAnimation.play();
-
-imageNumber = 1; // default Value
  //Get the Working Directory of the sketch 
   workingDirectory = sketchPath("");
   
@@ -273,7 +270,7 @@ imageNumber = 1; // default Value
   // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
   cp5 = new ControlP5(this);
   cp5.setColorForeground(#eeeeee);
-  cp5.setColorActive(#99B8B8);
+  cp5.setColorActive(hover_color);
 
   // ADD A BUTTON FOR "FINISHING" WHICH WILL CLOSE AND SAVE THE VIDEO AND ALSO MAKE A POPUP APPEAR THAT SHALL ASK FOR USER INPUTS ABOUT THE TEST (NOTES)
   cp5.addBang("FINISH") //The Bang Clear and the Specifications
@@ -289,26 +286,52 @@ imageNumber = 1; // default Value
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
             ;  
-  cp5.addBang("FLAG") //The Bang Clear and the Specifications
+  
+  PImage[] flagImage = {loadImage("flagW.png"),loadImage("flagB.png"),loadImage("flagW.png")};
+  cp5.addButton("FLAG")
+    .setValue(128)
+      .setPosition(730, 60)
+        .setImages(flagImage)
+          .updateSize()
+          ;
+          
+/*  cp5.addBang("FLAG") //The Bang Clear and the Specifications
     .setPosition(925, 400)
       .setSize(75, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
-            ;
-  cp5.addBang("ADD_NOTE") //The Bang Clear and the Specifications
+            ;*/  
+            
+  PImage[] notesImage = {loadImage("noteW.png"),loadImage("noteB.png"),loadImage("noteW.png")};
+  cp5.addButton("ADD_NOTE")
+    .setValue(128)
+      .setPosition(730,100)
+        .setImages(notesImage)
+          .updateSize()
+             ;   
+/*  cp5.addBang("ADD_NOTE") //The Bang Clear and the Specifications
     .setPosition(925, 430)
       .setSize(75, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
-            ;
+            ; */
+  PImage[] captureImage = {loadImage("captureW.png"),loadImage("captureB.png"),loadImage("captureW.png")};
+  cp5.addButton("CAPTURE")
+    .setValue(128)
+      .setPosition(730,140)
+        .setImages(captureImage)
+          .updateSize()
+             ;      
+  
+  /*
   cp5.addBang("CAPTURE") //The Bang Clear and the Specifications
     .setPosition(925, 460)
       .setSize(75, 25)
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
-            ;
+            ;*/
   
-  println(workingDirectory);
+ /* println(workingDirectory);
   backwardImage = loadImage(workingDirectory + "backward.jpg");
   cp5.addButton("BACKWARD")
     .setValue(128)
@@ -321,10 +344,35 @@ imageNumber = 1; // default Value
   cp5.addButton("FORWARD")
     .setValue(128)
       .setPosition(235, 542)
-        .setImage(forwardImage)
+        .setImages(forwardImage)
           .updateSize()
-            ;
+            ; */
 
+  PImage[] patternOne = {loadImage("pattern1W.png"),loadImage("pattern1B.png"),loadImage("pattern1W.png")};
+  cp5.addButton("PATTERNONE")
+    .setValue(128)
+      .setPosition(posPatternImage[0][0],posPatternImage[0][1])
+        .setImages(patternOne)
+          .updateSize()
+             ;
+             
+  PImage[] patternTwo = {loadImage("pattern2W.png"),loadImage("pattern2B.png"),loadImage("pattern2W.png")};
+  cp5.addButton("PATTERNTWO")
+    .setValue(128)
+      .setPosition(posPatternImage[1][0],posPatternImage[1][1])
+        .setImages(patternTwo)
+          .updateSize()
+             ;
+             
+  PImage[] patternThree = {loadImage("pattern3W.png"),loadImage("pattern3B.png"),loadImage("pattern3W.png")};
+  cp5.addButton("PATTERNTHREE")
+    .setValue(128)
+      .setPosition(posPatternImage[2][0],posPatternImage[2][1])
+        .setImages(patternThree)
+          .updateSize()
+             ;
+             
+             
   // To Define The Slider To Vary The LED Sweep Interval 
   cp5.addSlider("SWEEP") // Time Interval For LEDs Sweep
     .setPosition(750, 510)
@@ -465,6 +513,14 @@ imageNumber = 1; // default Value
   angleData = importExcel("E:/GitRepositories/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
   // angleData stores the values according to device numbering
 
+// Initialize the pattern_state 
+pattern_state [0] = 1;
+pattern_state [1] = 1;
+pattern_state [2] = 1;
+
+
+arduino.write('x');
+arduino.write('\n');
  
 }
 
@@ -477,7 +533,7 @@ void draw() {
   }
 
   // plain and simple background color
-  background(#4A5CA3);//4B66A8
+  background(backgroundColor);//4B66A8
 
   // draw the video capture here
   fill(0);
@@ -487,28 +543,36 @@ void draw() {
   } 
   // cam.save(base_folder + "/isopter.jpg");  
   image(cam, 80, 50);    // display the image, interpolate with the previous image if this one was a dropped frame
-  image(myAnimation, 1180,30);// Baby's Animation
   
-  eyeDirection = loadImage(workingDirectory + "/Images/" + imageNumber + ".jpg");
+  // Overlay a protractor on the live feed 
+  PImage protractor = loadImage("protractor.png");
+  image(protractor, 309, 203);
   
-  image(eyeDirection,1180, 200);
+//  image(myAnimation, 1180,30);// Baby's Animation
+  
+ // eyeDirection = loadImage(workingDirectory + "/Images/" + imageNumber + ".jpg");
+  
+ // image(eyeDirection,1180, 200);
   //Draw the picture to show the patterns
   //String path ="E:/GitRepositories/pediatric_perimeter_2016/gui/";
-  String path = workingDirectory;
-  displayImage = loadImage(path+"pattern"+str(imageCount + 1)+ ".png");
+//  String path = workingDirectory;
+ // displayImage = loadImage(path+"pattern"+str(imageCount + 1)+ ".png");
   // println(pattern_state);
-  if (pattern_state < 0) {
-    fill(#99B8B8);
-    pattern_state = abs(pattern_state);
-  } else if (pattern_state == 2) {
-    fill(#ffff00);
-  } else if (pattern_state == 1) {
-    fill(#4A5CA3);
+  
+  for (int i =0; i < 3; i++){
+  if (pattern_state[i] < 0) {
+    fill(hover_color);
+    pattern_state[i] = abs(pattern_state[i]);
+  } else if (pattern_state[i] == 2) {
+    fill(#ffff00); // In Progress
+  } else if (pattern_state[i] == 1) {
+    fill(backgroundColor);
   } 
-  stroke(#4A5CA3);
-  rect(125, 535, 90, 90 );
-  image(displayImage, 130, 540);
-
+ // stroke(backgroundColor);
+//  rect(125, 535, 90, 90 );
+ // image(displayImage, 130, 540);
+ ellipse(posPatternImage[i][0] - 25, posPatternImage[i][1] + 60, 10, 10);
+  }
   // Checkin
   // draw the crosshair at the center of the video feed
   stroke(#ff0000);
@@ -528,9 +592,9 @@ void draw() {
   textFont(textView, 15);
   // print reaction time and information about what was the last thing tested and the thing presently being tested
   fill(0);
-  text("Reaction time is  : " + str(reaction_time) + "ms", 460, 565);
-  text("Last thing tested : " + last_tested, 460, 595);
-  text("Present Status    : " + status, 460, 625);
+  text("Reaction time is  : " + str(reaction_time) + "ms", 520, 565);
+  text("Last thing tested : " + last_tested, 520, 595);
+  text("Present Status    : " + status, 520, 625);
   textFont(textView, 25);
   text(str(currentMillis) + "ms", 1075, 625);      // milliseconds elapsed since the program began
   textFont(textView, 15);
@@ -837,8 +901,9 @@ public class SecondApplet extends PApplet {
       line(x, y, xm, ym);
 
       // draw the text at a location near the edge, which is along an imaginary circle of larger diameter - at point (xt, yt)
-      float xt = cos(radians(-mappingIndex*15))*(diameter + 30)/2 + x - 10;
-      float yt = sin(radians(-mappingIndex*15))*(diameter + 20)/2 + y + 5;
+      // No Change in the position of the text 
+      float xt = cos(radians(-i*15))*(diameter + 30)/2 + x - 10;
+      float yt = sin(radians(-i*15))*(diameter + 20)/2 + y + 5;
 
       /*cartesianCoordinates[mappingIndex][0] = xt;
        cartesianCoordinates[mappingIndex][1] = yt;*/
@@ -1017,7 +1082,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     float xt = cos(radians(-i*15))*(diameter + 30)/2 + x - 10;
     float yt = sin(radians(-i*15))*(diameter + 20)/2 + y + 5;
     if (meridians[i] < 0) {
-      fill(#ff0000);
+      fill(hover_color);
       meridians[i] = abs(meridians[i]);
     } else {
       fill(0);//#DADEDE
@@ -1139,13 +1204,19 @@ void hover(float x, float y) {
     } else {
       cursor(ARROW);
     }
-  } else if ((x >= 115 && x<= 215 ) && (y>= 550 && y<= 630)) {  // Hovering on the Image 
+  } else if ((x >= posPatternImage[0][0] && x<= posPatternImage[0][0] + 80 ) && (y>= posPatternImage[0][1] && y<= posPatternImage[0][1] + 80)) {  // Hovering on the Image Pattern -1 
     cursor(HAND);
-    hovered_object = 'p';
-    hovered_count = imageCount+1;
-    pattern_state *= -1;
-    // println("hover " + pattern_state);
-  } else {
+  }else if ((x >= posPatternImage[1][0]  && x<= posPatternImage[1][0] + 80 ) && (y>= posPatternImage[1][1] && y<= posPatternImage[1][1] + 80)) {  // Hovering on the Image  Pattern -2 
+    cursor(HAND);
+  }else if ((x >= posPatternImage[2][0] && x<= posPatternImage[2][0]  + 80 ) && (y>= posPatternImage[2][1] && y<= posPatternImage[2][1] + 80)) {  // Hovering on the Image  Pattern -3 
+    cursor(HAND);
+  }else if ((x >= 730 && x<= 760 ) && (y>= 60 && y<= 90)) {  // Hovering on the Image  Pattern -3 
+    cursor(HAND);
+  } else if ((x >= 730 && x<= 760 ) && (y>= 100 && y<= 130)) {  // Hovering on the Image  Pattern -3 
+    cursor(HAND);
+  } else if ((x >= 730 && x<= 760 ) && (y>= 140 && y<= 170)) {  // Hovering on the Image  Pattern -3 
+    cursor(HAND);
+  }  else {
     cursor(ARROW);
   }
 }
@@ -1164,7 +1235,7 @@ void mousePressed() {
   // println(str(mouseX) + "," + str(mouseY));
   // really simple - just send the instruction to the arduino via serial
   // it will be of the form (hovered_object, hovered_count\n)
-  if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm' || hovered_object == 'p') {
+  if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm'  ) {
     // reset flag and start high quality high speed recording
     flagged_test = false;
     startRecording = true;
@@ -1232,15 +1303,15 @@ void mousePressed() {
     current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
     break;
 
-  case 'p':      // Start the patterns
+ /* case 'p':      // Start the patterns
     previousMillis = millis();      // start the timer from now
     status = "pattern";
     pattern_state = 2;  // To Identify that test is in progress    
-    break;
+    break;*/
   }
-  if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm' || hovered_object == 'p') {
+ /* if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm' || hovered_object == 'p') {
 imageNumber = getImageNumber(status , hovered_count);// to display the eye direction for the user[respond only for valid clicks]
-  }
+  }*/
 }
 
 
@@ -1264,9 +1335,12 @@ void clearHemisQuads() {
     }
   }
 
-  if (pattern_state == 2) {
-    pattern_state = 1;
+for(int i=0; i<3; i++){
+  if (pattern_state[i] == 2) {
+    pattern_state[i] = 1;
   }
+}
+
 }
 
 // Mouse released To Notify The Slider To Update The Time Intervals And Send It To Arduino 
@@ -1555,7 +1629,7 @@ void CAPTURE() {
 }
 
 
-
+/*
 // Returns the image number to be displayed for the eye direction according to the present status of the test
 int getImageNumber(String object, int countNumber){
 int returnNumber= 1;
@@ -1646,7 +1720,7 @@ returnNumber = 1;
 
 return returnNumber ;
 }
-
+*/
 // Send The Sweep Interval Value To Ardiuno 
 /*void SWEEP() {
  // cam.save(base_folder + "/ScaleReading/Scale.jpg");
@@ -1803,7 +1877,7 @@ void  sendTimeIntervals(int chosenStrip) {
  println(sweepInterval[pixelNumber]);
  println("All data calculated");
  } DERECATED ************************************************************************************/
-void FORWARD() {
+/*void FORWARD() {
   imageCount = (imageCount+1)%5;
 }
 void BACKWARD() {
@@ -1812,6 +1886,35 @@ void BACKWARD() {
   } else {
     imageCount = (imageCount-1)%5;
   }
+}*/ 
+
+void PATTERNONE () {
+arduino.write('p');
+arduino.write(',');
+arduino.write('1');
+arduino.write('\n');
+
+pattern_state[0] = 2;
+}
+
+
+void PATTERNTWO () {
+arduino.write('p');
+arduino.write(',');
+arduino.write('2');
+arduino.write('\n');
+
+pattern_state[1] = 2;
+}
+
+
+void PATTERNTHREE () {
+arduino.write('p');
+arduino.write(',');
+arduino.write('3');
+arduino.write('\n');
+
+pattern_state[2] = 2;
 }
 
 // THE BANG FUNCTIONS
@@ -2102,4 +2205,3 @@ float[][] importExcel(String filepath) {
 boolean sketchFullScreen() {
   return true;
 }
-

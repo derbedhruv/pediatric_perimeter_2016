@@ -34,7 +34,7 @@
 #include <MemoryFree.h>
 
 
-#define Br 2      // This is where you define the brightness of the LEDs - this is constant for all
+// #define Br 2      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
@@ -72,6 +72,7 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 
 // THE FOLLOWING ARE VARIABLES FOR THE ENTIRE SERIALEVENT INTERRUPT ONLY
 // the variable 'breakOut' is a boolean which is used to communicate to the loop() that we need to immedietely shut everything off
+byte Br; // variable to set brightness
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
 unsigned long previousMillis, currentMillis, sweep_interval = 1367,Recieved_sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
@@ -112,7 +113,8 @@ boolean fallDoneRM = false;
 boolean verifyTestRM = false;
 String  wayImplementRM;  // These two variables should be Global variables / Donot try to declare as constants or as a function parameters (PGM might crash)
 int startPixelRM, endPixelRM, numOfPixRM; // To get the pixel number limits for the pattern - 2
-
+int patternTwoIndex;
+byte meridiansPatternTwo[][6] = {{1,2,3,4,5,6},{7,8,9,10,11,12},{13,14,15,16,17,18},{19,20,21,22,23,24}};
 
 // Variables for Third Pattern
 byte meridianNumbersCKR [24];
@@ -126,7 +128,7 @@ void setup() {
   Serial.begin(115200);
   Serial.setTimeout(500);
   Serial.println("starting..");
-
+  Br = 2; // Initialise to default Brightness Value Required 
   for (int i = 0; i < 25; i++) {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
@@ -134,7 +136,6 @@ void setup() {
   clearAll();
 }
 
-boolean valuesSet = false;
 
 void loop() {
   if (sweep == true) {
@@ -243,7 +244,7 @@ void loop() {
             case 2 :
               wayImplementFM = riseFixed;
               verifyTest = fountainModel(25, 5, 4, allMeridians , 24, 2);
-              Serial.print("Returned From The Function  ,"); Serial.println(verifyTest);
+            //  Serial.print("Returned From The Function  ,"); Serial.println(verifyTest);
               if (verifyTest == true) {
                 patternOneIndex += 1;
                 patternOneIndex %= 2;
@@ -257,7 +258,7 @@ void loop() {
 
         //for Pattern Two : Spiral / Rotation Model
         case 2:
-           if (startPixelRM >= endPixelRM - numOfPixRM - 1) {
+         /*  if (startPixelRM >= endPixelRM - numOfPixRM - 1) {
             wayImplementRM = riseFixedFall;
             verifyTestRM =  rotationModel(startPixelRM, 4, 3, 6, 27, endPixelRM, 2 );
             if (verifyTestRM == true) {
@@ -266,6 +267,12 @@ void loop() {
                 startPixelRM = 12;
               }
              }
+          }*/
+          verifyTest = fountainModel(3,3,1, meridiansPatternTwo[patternTwoIndex], 6*(patternTwoIndex), 2);
+          if(verifyTest == true){
+            patternTwoIndex += 1;
+            patternTwoIndex %= 4;
+            verifyTest = false;
           }
           currentMillis = millis();
           break;
@@ -327,6 +334,8 @@ void loop() {
           // this is the case of setting brightness of the LEDs
           case 'm': { // Choosen Meridian Will Turn On
               // Based on the number entered as longit[0], we will turn on that particular LED.
+              Br =1;
+                analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
               byte chosenStrip = longit.toInt();
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = false;
@@ -341,6 +350,7 @@ void loop() {
               break;
             }
         case 'p':  {// Choose
+          Br =1;
             byte chosenStrip = longit.toInt();
             if (chosenStrip <= 5) {
               patterns = true;
@@ -349,13 +359,14 @@ void loop() {
                 patterns_interval = 500;
                 patternOneIndex = 2;
               } else if (patternNumber == 2) {
-                patterns_interval = 100;
-                startPixelRM = 12;
-                endPixelRM = 4;
-                numOfPixRM = 3;
+                patterns_interval = 500;
+              //  startPixelRM = 12;
+               // endPixelRM = 4;
+              //  numOfPixRM = 3;
+              patternTwoIndex = 0;
               } else if (patternNumber == 3) {
                 patternThreeIndex = 2;
-                patterns_interval = 500;
+                patterns_interval = 250;
               }
 
               currentMillis = millis();
@@ -419,16 +430,17 @@ void loop() {
                * Refer case 't' for sweep intervals;
                */
               byte chosenStrip = longit.toInt();
-              
+               analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = true;
+                Br = 2;
                 //Set The Sweep Interval
                 sweep_interval = Recieved_sweep_interval;
                 sweepStrip = chosenStrip;
                 daisyStrip = daisyConverter(sweepStrip);
                 currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain
               }
-              analogWrite(fixationLED, 0);
+              //analogWrite(fixationLED, 0);
               //byte acknowledgement = 97;
               //Serial.write(acknowledgement);
               break;
@@ -444,7 +456,7 @@ void loop() {
               // clearAll();
               // turn off the fixation
               analogWrite(fixationLED, 0);
-
+              Br = 1;
               // we then switch through WHICH hemisphere
               switch (longit[0]) {
                 case '1': {
@@ -476,7 +488,7 @@ void loop() {
               Serial.println("quadrants");
               // turn off the fixation
               analogWrite(fixationLED, 0);
-
+              Br = 1;
               switch (longit[0]) {
                 // we shall go anticlockwise. "1" shall start from the bottom right.
                 case '1': {
@@ -907,6 +919,10 @@ void turnOnDaisy(byte pixels[], byte numOfPixels) {
   meridians[24].setBrightness(Br);
   for (int i = 0; i < numOfPixels; i++) {
     //CKR    Serial.println(pixels[i]);
+    //get The Daisy Equivalent pixel
+    int quot = daisyConverter(pixels[i]/3);
+    int rem = pixels[i] % 3;
+    pixels[i] = 3*quot + rem ;
     meridians[24].setPixelColor(pixels[i], r, g, b);
   }
   meridians[24].show();
