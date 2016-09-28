@@ -186,7 +186,7 @@ PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to
 String base_folder, workingDirectory;
 
 boolean flagged_test = false;
-int current_sweep_meridian;
+int current_sweep_meridian,current_gross_test;
 
 // STATUS VARIABLES
 String status = "idle";
@@ -917,11 +917,13 @@ public class SecondApplet extends PApplet {
 
       // This will not be changed because the values are not changed with this change in orientation
       if (meridian_state[i] < 0) {  //Notify That the mouse is hovering on the Meridians
-        stroke(hover_color);
+        //stroke(hover_color);
+        stroke(#bbbbbb);
         meridian_state[i] = abs(meridian_state[i]);  // revert to earlier thing
       } else if (meridian_state[i] > 0 && meridian_state[i] <= 3) { //Color The Meridian If It Is Done 
-        stroke(meridian_color[meridian_state[i]]);
-      } else {
+       // stroke(meridian_color[meridian_state[i]]);
+       stroke(#bbbbbb);      
+    } else {
         stroke(#bbbbbb);
       }
 
@@ -1293,6 +1295,7 @@ void mousePressed() {
     {      
       previousMillis = millis();      // start the timer from now
       status = "quadrant";
+      current_gross_test = hovered_count;
       if (hovered_count <= 4) {
         quad_state[abs(4 - hovered_count)][0] = 3;
         break;
@@ -1305,6 +1308,7 @@ void mousePressed() {
     {
       previousMillis = millis();      // start the timer from now
       status = "hemi";
+      current_gross_test = hovered_count;
       if (hovered_count < 2) {
         hemi_state[hemi_hover_code[hovered_count][0]][0] = 3;
         hemi_state[hemi_hover_code[hovered_count][1]][0] = 3;
@@ -1341,9 +1345,10 @@ void mousePressed() {
 }
 
 
-
+// Update the Objects to DONE state / back to normal if it is flagged
 void clearHemisQuads() {
   // checks if any hemi_state or quad_state values are == 3, and makes them into 2 (done)
+ if(flagged_test == false){
   for (int i = 0; i < 4; i++) {  // 4 quadrants
     for (int j = 0; j < 2; j++) {  // inner and outer
       if (abs(quad_state[i][j]) == 3) {
@@ -1361,12 +1366,36 @@ void clearHemisQuads() {
     }
   }
 
+ 
+ }else {    // checks if any hemi_state or quad_state values are == 3, and makes them into 1 (flagged)
+
+   for (int i = 0; i < 4; i++) {  // 4 quadrants
+    for (int j = 0; j < 2; j++) {  // inner and outer
+      if (abs(quad_state[i][j]) == 3) {
+        quad_state[i][j] = 1;
+      }
+      if (abs(hemi_state[i][j]) == 3) {
+        hemi_state[i][j] = 1;
+      }
+    }
+  }
+
+  for (int i = 0; i < 24; i++) {  // 24 Meridians 
+    if (abs(meridian_state[i]) == 3) {
+      meridian_state[i] = 1;
+    }
+  }
+
+ }
+ 
+ // Patterns does not have flagging 
   for (int i=0; i<3; i++) {
     if (pattern_state[i] == 2) {
       pattern_state[i] = 1;
     }
   }
-}
+  
+ }
 
 // Mouse released To Notify The Slider To Update The Time Intervals And Send It To Arduino 
 void mouseReleased() {
@@ -1467,7 +1496,7 @@ public void Stop() {
   //  arduino.write('\n'); 
   //  println("Clear All Command Sent To Ardiuno");
 
-  // UI UPDATE - MAKE QUADS/HEMIS PRESENTLY IN ACTIVE STATE TO 'DONE' STATE
+  // UI UPDATE - MAKE QUADS/HEMIS PRESENTLY IN ACTIVE STATE TO 'DONE' STATE / BACK to NORMAL if flagged
   clearHemisQuads();
   //imageNumber = 1;// reset the image 
   // CALCULATE REACTION TIME AND PRINT IT TO SCREEN
@@ -1484,7 +1513,7 @@ public void Stop() {
     } else {
       quadHemi_text.print(str(s) + "\t\t");
     }
-    switch (hovered_count) {
+    switch (current_gross_test ) {
     case 1:
       quadHemi_text.print("TR Quad Outer");
       break;
@@ -1519,6 +1548,10 @@ public void Stop() {
     }
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
     quadHemi_text.flush();
+    
+    // Check if this is flagged to discard it
+    
+    
   }
 
   if (status == "hemi") {
@@ -1530,7 +1563,7 @@ public void Stop() {
     } else {
       quadHemi_text.print(str(s) + "\t\t");
     }
-    switch(hovered_count) {
+    switch(current_gross_test ) {
     case 0:
       quadHemi_text.print("R Hemi Outer");
       break;
@@ -1546,6 +1579,8 @@ public void Stop() {
     }
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
     quadHemi_text.flush();
+    
+   
   }
 
   //Save Meridians to a Text File in a Proper Format
@@ -1558,10 +1593,11 @@ public void Stop() {
     } else {
       quadHemi_text.print(str(s) + "\t\t");
     }
-    quadHemi_text.print("Meridian "+(current_sweep_meridian)*15 );
-
+    
+    quadHemi_text.print("Meridian "+"\t"+(current_sweep_meridian)*15 );
     quadHemi_text.print("\t" + str(reaction_time) + "\t");
     quadHemi_text.flush();
+    
   }
 
 
@@ -1597,6 +1633,11 @@ public void Stop() {
     // isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
     isopter_text.print(str(reaction_time) + "\t\t\t");
     isopter_text.flush();
+    
+    // Check if the the test is flagged or not to discard the test on GUI 
+    if (flagged_test == true){
+    meridians[current_sweep_meridian] = 28;
+    }
   }
 
   // UPDATE STATUS VARIABLES
@@ -2040,20 +2081,28 @@ void FLAG() {
   arduino.write('x');
   arduino.write('\n'); 
   println("All Cleared");
+  
+    if (flagged_test == false) {
+    if (last_tested == "quadrant" || last_tested == "hemi"|| last_tested == "Meridian") {
+      flagged_test = true;
+    } else if (last_tested == "sweep") {
+      flagged_test = true;
+    }
+  }
   //Call the stop function so that We can Update the files
   Stop();
   println("Stopped");
 
   // just update hte flag variable to "flagged"
-  if (flagged_test == false) {
-    if (last_tested == "quadrant" || last_tested == "hemi") {
+  if(flagged_test == true){
+    if (last_tested == "quadrant" || last_tested == "hemi"|| last_tested == "Meridian") {
       quadHemi_text.print("flagged");
       quadHemi_text.flush();
-      flagged_test = true;
+      flagged_test = false;
     } else if (last_tested == "sweep") {
       isopter_text.print("flagged");
       isopter_text.flush();
-      flagged_test = true;
+      flagged_test = false;
     }
   }
   println("Flagged Completely");
