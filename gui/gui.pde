@@ -50,7 +50,7 @@ import processing.serial.*;
 import codeanticode.gsvideo.*;
 import ddf.minim.*;  // the audio recording library
 import org.apache.poi.ss.usermodel.Sheet;  // For Importing The Data From EXcel Sheet 
-import gifAnimation.*;
+//import gifAnimation.*;
 
 
 // DECLARING A CONTROLP5 OBJECT
@@ -141,8 +141,20 @@ color meridian_text_color[] = {
 
 
 // Patterns Variables
-int pattern_state [] = {1,1,1};
-int posPatternImage [][] = {{105,540},{255,540}, {385,540}};
+int pattern_state [] = {
+  1, 1, 1
+};
+int posPatternImage [][] = {
+  {
+    105, 540
+  }
+  , {
+    255, 540
+  }
+  , {
+    385, 540
+  }
+};
 // VARIABLES THAT KEEP TRACK OF WHAT OBJECT (HEMI, QUAD OR ISOPTER) WE ARE HOVERING OVER AND WHICH COUNT IT IS
 // THIS WILL ENABLE SENDING A SERIAL COMM TO THE ARDUINO VERY EASILY ON A MOUSE PRESS EVENT
 char hovered_object;
@@ -210,7 +222,7 @@ int imageNumber;
 // Second window Variables to generate the final Isopter according to the subject's view
 PFrame f;
 PApplet s;
-Gif myAnimation;
+//Gif myAnimation;
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
 void setup() {
@@ -263,10 +275,11 @@ void setup() {
     }
   }
 
- //Get the Working Directory of the sketch 
-  workingDirectory = sketchPath("");
-  
- 
+  //Get the Working Directory of the sketch 
+  workingDirectory = sketchPath("");  
+  //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
+  angleData = importExcel("E:/GitRepositories/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
+
   // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
   cp5 = new ControlP5(this);
   cp5.setColorForeground(#eeeeee);
@@ -286,93 +299,105 @@ void setup() {
         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
           .setColor(0)
             ;  
-  
-  PImage[] flagImage = {loadImage("flagW.png"),loadImage("flagB.png"),loadImage("flagW.png")};
+
+  PImage[] flagImage = {
+    loadImage("flagW.png"), loadImage("flagB.png"), loadImage("flagW.png")
+  };
   cp5.addButton("FLAG")
     .setValue(128)
       .setPosition(730, 60)
         .setImages(flagImage)
           .updateSize()
-          ;
-          
-/*  cp5.addBang("FLAG") //The Bang Clear and the Specifications
-    .setPosition(925, 400)
-      .setSize(75, 25)
-        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-          .setColor(0)
-            ;*/  
-            
-  PImage[] notesImage = {loadImage("noteW.png"),loadImage("noteB.png"),loadImage("noteW.png")};
+            ;
+
+  /*  cp5.addBang("FLAG") //The Bang Clear and the Specifications
+   .setPosition(925, 400)
+   .setSize(75, 25)
+   .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+   .setColor(0)
+   ;*/
+
+  PImage[] notesImage = {
+    loadImage("noteW.png"), loadImage("noteB.png"), loadImage("noteW.png")
+  };
   cp5.addButton("ADD_NOTE")
     .setValue(128)
-      .setPosition(730,100)
+      .setPosition(730, 100)
         .setImages(notesImage)
           .updateSize()
-             ;   
-/*  cp5.addBang("ADD_NOTE") //The Bang Clear and the Specifications
-    .setPosition(925, 430)
-      .setSize(75, 25)
-        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-          .setColor(0)
-            ; */
-  PImage[] captureImage = {loadImage("captureW.png"),loadImage("captureB.png"),loadImage("captureW.png")};
+            ;   
+  /*  cp5.addBang("ADD_NOTE") //The Bang Clear and the Specifications
+   .setPosition(925, 430)
+   .setSize(75, 25)
+   .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+   .setColor(0)
+   ; */
+  PImage[] captureImage = {
+    loadImage("captureW.png"), loadImage("captureB.png"), loadImage("captureW.png")
+  };
   cp5.addButton("CAPTURE")
     .setValue(128)
-      .setPosition(730,140)
+      .setPosition(730, 140)
         .setImages(captureImage)
           .updateSize()
-             ;      
-  
+            ;      
+
   /*
   cp5.addBang("CAPTURE") //The Bang Clear and the Specifications
-    .setPosition(925, 460)
-      .setSize(75, 25)
-        .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-          .setColor(0)
-            ;*/
-  
- /* println(workingDirectory);
-  backwardImage = loadImage(workingDirectory + "backward.jpg");
-  cp5.addButton("BACKWARD")
+   .setPosition(925, 460)
+   .setSize(75, 25)
+   .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
+   .setColor(0)
+   ;*/
+
+  /* println(workingDirectory);
+   backwardImage = loadImage(workingDirectory + "backward.jpg");
+   cp5.addButton("BACKWARD")
+   .setValue(128)
+   .setPosition(235, 592)
+   .setImage(backwardImage)
+   .updateSize()
+   ;
+   
+   forwardImage = loadImage(workingDirectory +"forward.jpg");
+   cp5.addButton("FORWARD")
+   .setValue(128)
+   .setPosition(235, 542)
+   .setImages(forwardImage)
+   .updateSize()
+   ; */
+
+  PImage[] patternOne = {
+    loadImage("pattern1W.png"), loadImage("pattern1B.png"), loadImage("pattern1W.png")
+  };
+  cp5.addButton("PATTERNONE")
     .setValue(128)
-      .setPosition(235, 592)
-        .setImage(backwardImage)
+      .setPosition(posPatternImage[0][0], posPatternImage[0][1])
+        .setImages(patternOne)
           .updateSize()
             ;
 
-  forwardImage = loadImage(workingDirectory +"forward.jpg");
-  cp5.addButton("FORWARD")
-    .setValue(128)
-      .setPosition(235, 542)
-        .setImages(forwardImage)
-          .updateSize()
-            ; */
-
-  PImage[] patternOne = {loadImage("pattern1W.png"),loadImage("pattern1B.png"),loadImage("pattern1W.png")};
-  cp5.addButton("PATTERNONE")
-    .setValue(128)
-      .setPosition(posPatternImage[0][0],posPatternImage[0][1])
-        .setImages(patternOne)
-          .updateSize()
-             ;
-             
-  PImage[] patternTwo = {loadImage("pattern2W.png"),loadImage("pattern2B.png"),loadImage("pattern2W.png")};
+  PImage[] patternTwo = {
+    loadImage("pattern2W.png"), loadImage("pattern2B.png"), loadImage("pattern2W.png")
+  };
   cp5.addButton("PATTERNTWO")
     .setValue(128)
-      .setPosition(posPatternImage[1][0],posPatternImage[1][1])
+      .setPosition(posPatternImage[1][0], posPatternImage[1][1])
         .setImages(patternTwo)
           .updateSize()
-             ;
-             
-  PImage[] patternThree = {loadImage("pattern3W.png"),loadImage("pattern3B.png"),loadImage("pattern3W.png")};
+            ;
+
+  PImage[] patternThree = {
+    loadImage("pattern3W.png"), loadImage("pattern3B.png"), loadImage("pattern3W.png")
+  };
   cp5.addButton("PATTERNTHREE")
     .setValue(128)
-      .setPosition(posPatternImage[2][0],posPatternImage[2][1])
+      .setPosition(posPatternImage[2][0], posPatternImage[2][1])
         .setImages(patternThree)
           .updateSize()
-             ;
-             
-             
+            ;
+
+
   // To Define The Slider To Vary The LED Sweep Interval 
   cp5.addSlider("SWEEP") // Time Interval For LEDs Sweep
     .setPosition(750, 510)
@@ -412,10 +437,10 @@ void setup() {
   cp5.addSlider("FIXATION") // Time Interval For LEDs Sweep
     .setPosition(1000, 510)
       .setSize(150, 10)
-        .setRange(2, 75    )
+        .setRange(2, 75 )
           .setColorValue(255) 
             // .setLabel("Sweep")
-            .setValue(100)
+            .setValue(75)
               .setNumberOfTickMarks(10)
                 .setSliderMode(Slider.FLEXIBLE)
                   .setLabelVisible(false) 
@@ -509,19 +534,13 @@ void setup() {
     exit();    // quit the program
   }
 
-  //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
-  angleData = importExcel("E:/GitRepositories/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
   // angleData stores the values according to device numbering
-
-// Initialize the pattern_state 
-pattern_state [0] = 1;
-pattern_state [1] = 1;
-pattern_state [2] = 1;
-
-
-arduino.write('x');
-arduino.write('\n');
- 
+  // Initialize the pattern_state 
+  pattern_state [0] = 1;
+  pattern_state [1] = 1;
+  pattern_state [2] = 1;
+  arduino.write('x');
+  arduino.write('\n');
 }
 
 void draw() {
@@ -543,35 +562,35 @@ void draw() {
   } 
   // cam.save(base_folder + "/isopter.jpg");  
   image(cam, 80, 50);    // display the image, interpolate with the previous image if this one was a dropped frame
-  
+
   // Overlay a protractor on the live feed 
   PImage protractor = loadImage("protractor.png");
   image(protractor, 309, 203);
-  
-//  image(myAnimation, 1180,30);// Baby's Animation
-  
- // eyeDirection = loadImage(workingDirectory + "/Images/" + imageNumber + ".jpg");
-  
- // image(eyeDirection,1180, 200);
+
+  //  image(myAnimation, 1180,30);// Baby's Animation
+
+  // eyeDirection = loadImage(workingDirectory + "/Images/" + imageNumber + ".jpg");
+
+  // image(eyeDirection,1180, 200);
   //Draw the picture to show the patterns
   //String path ="E:/GitRepositories/pediatric_perimeter_2016/gui/";
-//  String path = workingDirectory;
- // displayImage = loadImage(path+"pattern"+str(imageCount + 1)+ ".png");
+  //  String path = workingDirectory;
+  // displayImage = loadImage(path+"pattern"+str(imageCount + 1)+ ".png");
   // println(pattern_state);
-  
-  for (int i =0; i < 3; i++){
-  if (pattern_state[i] < 0) {
-    fill(hover_color);
-    pattern_state[i] = abs(pattern_state[i]);
-  } else if (pattern_state[i] == 2) {
-    fill(#ffff00); // In Progress
-  } else if (pattern_state[i] == 1) {
-    fill(backgroundColor);
-  } 
- // stroke(backgroundColor);
-//  rect(125, 535, 90, 90 );
- // image(displayImage, 130, 540);
- ellipse(posPatternImage[i][0] - 25, posPatternImage[i][1] + 60, 10, 10);
+
+  for (int i =0; i < 3; i++) {
+    if (pattern_state[i] < 0) {
+      fill(hover_color);
+      pattern_state[i] = abs(pattern_state[i]);
+    } else if (pattern_state[i] == 2) {
+      fill(#ffff00); // In Progress
+    } else if (pattern_state[i] == 1) {
+      fill(backgroundColor);
+    } 
+    // stroke(backgroundColor);
+    //  rect(125, 535, 90, 90 );
+    // image(displayImage, 130, 540);
+    ellipse(posPatternImage[i][0] - 25, posPatternImage[i][1] + 60, 10, 10);
   }
   // Checkin
   // draw the crosshair at the center of the video feed
@@ -624,79 +643,89 @@ public class SecondApplet extends PApplet {
   float x = 683, y = 375, xi, yi;
   int d1 = 20, d2 = 360, d, Value=0;
 
-  float    collectCoordinates [][] =  { 
-  { 
-    0, 0,0
-  }
-  , { 
-    0, 0,0
-  }
-  ,{ 
-   0, 0,0
-  },  { 
-    0, 0,0
-  }
-  , { 
-    0, 0,0
-  }
-  ,{ 
-   0, 0,0
-  },  { 
-    0, 0,0
-  }
-  , { 
-    0, 0,0
-  }
-  ,{ 
-   0, 0,0
-  },  { 
-    0, 0,0
-  }
-  , { 
-    0, 0,0
-  }
-  ,{ 
-   0, 0,0
-  },  { 
-    0, 0,0
-  }
-  , { 
-    0, 0,0
-  }
-  ,{ 
-   0, 0,0
-  },  { 
-    0, 0,0
-  }
-  , { 
-    0, 0,0
-  }
-  ,{ 
-   0, 0,0
-  },  { 
-    0, 0,0
-  }
-  , { 
-    0, 0,0
-  }
-  ,{ 
-   0, 0,0
-  },  { 
-    0, 0,0
-  }
-  , { 
-    0, 0,0
-  }
-  ,{ 
-   0, 0,0
-  }  };
-  
-   boolean insertOrigin = false, originIncluded = false;
-   int count, index;
-  
+  float    collectCoordinates [][] = { 
+    { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+    , { 
+      0, 0, 0
+    }
+  };
+
+  boolean insertOrigin = false, originIncluded = false;
+  int count, index;
+
   int dotsCounter; 
-  boolean coversAllQuads [] = {false, false, false, false};
-  
+  boolean coversAllQuads [] = {
+    false, false, false, false
+  };
+
   public void setup() {
     background(0);
     noStroke();
@@ -712,119 +741,118 @@ public class SecondApplet extends PApplet {
     // ellipse(ghostX, ghostY, 10, 10);
     ellipse(x, y, 2*d2 +d1, 2*d2+d1 );
     drawIsopter2(meridians, 683, 380, 650);  
-    
 
-  
-    if(dotsCounter >= 3){
-    float swap;
-    /*
+
+
+    if (dotsCounter >= 3) {
+      float swap;
+      /*
     for(int k=0; k< dotsCounter; k++)
-    {
-      println(collectCoordinates[k][0] +" " + collectCoordinates[k][1] +" " + collectCoordinates[k][2]);
-    }*/
-     //println(collectCoordinates);
-     // Sort The array for red dots Joining 
-     if (frameCount ==1){
-   for (int c = 0; c < dotsCounter; c++) {
-      for (int d = 0; d < dotsCounter - c - 1; d++) {
-        if (collectCoordinates[d][2] < collectCoordinates[d+1][2]) 
-        {
-          swap       = collectCoordinates[d][2];
-          collectCoordinates[d][2]   = collectCoordinates[d+1][2];
-          collectCoordinates[d+1][2] = swap;
-         
-          swap       = collectCoordinates[d][1];
-          collectCoordinates[d][1]   = collectCoordinates[d+1][1];
-          collectCoordinates[d+1][1] = swap;
-          
-          swap       = collectCoordinates[d][0];
-          collectCoordinates[d][0]   = collectCoordinates[d+1][0];
-          collectCoordinates[d+1][0] = swap;
+       {
+       println(collectCoordinates[k][0] +" " + collectCoordinates[k][1] +" " + collectCoordinates[k][2]);
+       }*/
+      //println(collectCoordinates);
+      // Sort The array for red dots Joining 
+      if (frameCount ==1) {
+        for (int c = 0; c < dotsCounter; c++) {
+          for (int d = 0; d < dotsCounter - c - 1; d++) {
+            if (collectCoordinates[d][2] < collectCoordinates[d+1][2]) 
+            {
+              swap       = collectCoordinates[d][2];
+              collectCoordinates[d][2]   = collectCoordinates[d+1][2];
+              collectCoordinates[d+1][2] = swap;
+
+              swap       = collectCoordinates[d][1];
+              collectCoordinates[d][1]   = collectCoordinates[d+1][1];
+              collectCoordinates[d+1][1] = swap;
+
+              swap       = collectCoordinates[d][0];
+              collectCoordinates[d][0]   = collectCoordinates[d+1][0];
+              collectCoordinates[d+1][0] = swap;
+            }
+          }
+        }
+
+
+        /*float sum = int(coversALlQuads[0])*pow(2,0) +  int(coversALlQuads[1])*pow(2,1) + int(coversALlQuads[2])*pow(2,2) + int(coversALlQuads[3])*pow(2,3);
+         if(sum < 15 && sum > 0){ 
+         float index = log(15 - sum )/ log(2);
+         if(index - int(index) == 0){
+         insertOrigin = true;
+         }
+         }*/
+        count = 0; 
+        index =0; // Initialising
+        for (int i = 0; i < 4; i++ ) {
+          if (!(coversAllQuads[i])) {
+            index = i; 
+            insertOrigin = true;
+            count++;
+          }
+        }
+        println("index and count and state of quads: "+index+" "+ count);
+        println(coversAllQuads);
+
+        //Update the CollectCoordinates[][] with Origin If required
+        if (insertOrigin) {
+          println("trying to Insert Origin");
+          if (count == 3 || count ==2) {
+            //Append the origin Coordinates at the end on the matrix
+            collectCoordinates[dotsCounter][0] = 683;
+            collectCoordinates[dotsCounter][1] = 380;
+            dotsCounter++;
+          } else if (count ==1) {
+            // Insert the origin into the matrix
+            float tempX = 683, tempY = 380; 
+            boolean originInserted = false;
+            int j;
+            for (j=0; j < dotsCounter; j++) {
+              if (collectCoordinates[j][2] < (index+1)*90) {
+                swap       = tempX;
+                tempX   = collectCoordinates[j][0];
+                collectCoordinates[j][0] = swap;
+
+                swap       = tempY;
+                tempY   = collectCoordinates[j][1];
+                collectCoordinates[j][1] = swap;
+                originInserted = true;
+              }
+            }
+
+            // if(!originInserted){          
+            collectCoordinates[dotsCounter][0] = tempX;
+            collectCoordinates[dotsCounter][1] = tempY;
+            dotsCounter++;
+            //  }
+          }
         }
       }
-   }
-   
-  
-   /*float sum = int(coversALlQuads[0])*pow(2,0) +  int(coversALlQuads[1])*pow(2,1) + int(coversALlQuads[2])*pow(2,2) + int(coversALlQuads[3])*pow(2,3);
-   if(sum < 15 && sum > 0){ 
-   float index = log(15 - sum )/ log(2);
-   if(index - int(index) == 0){
-   insertOrigin = true;
-   }
-   }*/
-   count = 0; 
-   index =0; // Initialising
-   for (int i = 0; i < 4 ; i++ ){
-   if (!(coversAllQuads[i])){
-   index = i; 
-   insertOrigin = true;
-   count++; 
-   }
-   }
-   println("index and count and state of quads: "+index+" "+ count);
-   println(coversAllQuads);
-   
-   //Update the CollectCoordinates[][] with Origin If required
-   if(insertOrigin){
-    println("trying to Insert Origin");
-     if(count == 3 || count ==2){
-     //Append the origin Coordinates at the end on the matrix
-       collectCoordinates[dotsCounter][0] = 683;
-       collectCoordinates[dotsCounter][1] = 380;
-       dotsCounter++;
-     }else if(count ==1){
-      // Insert the origin into the matrix
-     float tempX = 683, tempY = 380; 
-     boolean originInserted = false;
-     int j;
-     for (j=0; j < dotsCounter; j++){
-       if(collectCoordinates[j][2] < (index+1)*90){
-          swap       = tempX;
-          tempX   = collectCoordinates[j][0];
-          collectCoordinates[j][0] = swap;
-          
-          swap       = tempY;
-          tempY   = collectCoordinates[j][1];
-          collectCoordinates[j][1] = swap;
-          originInserted = true;
+
+
+      // println("After");
+
+      for (int k=0; k < dotsCounter; k++)
+      {
+        println(collectCoordinates[k][0] +" " + collectCoordinates[k][1] +"  " + collectCoordinates[k][2]);
       }  
-    }
-   
-   // if(!originInserted){          
-     collectCoordinates[dotsCounter][0] = tempX;
-     collectCoordinates[dotsCounter][1] = tempY;
-     dotsCounter++;
-  //  }
- }
- }  
 
-}
 
-    
-  // println("After");
+      stroke(0);
+      noFill();
+      beginShape();   
+      curveVertex(collectCoordinates[0][0], collectCoordinates[0][1]);
+      int j;
+      for (j=0; j < dotsCounter; j++) {
+        curveVertex(collectCoordinates[j][0], collectCoordinates[j][1]);
+      }
 
-  for(int k=0; k < dotsCounter; k++)
-    {
-      println(collectCoordinates[k][0] +" " + collectCoordinates[k][1] +"  " + collectCoordinates[k][2]);
-    }  
-    
-    
-    stroke(0);
-    noFill();
-    beginShape();   
-    curveVertex(collectCoordinates[0][0],collectCoordinates[0][1]);
-    int j;
-    for (j=0; j < dotsCounter; j++){
-      curveVertex(collectCoordinates[j][0],collectCoordinates[j][1]);
+      // curveVertex(collectCoordinates[j-1][0],collectCoordinates[j-1][1]);
+      curveVertex(collectCoordinates[0][0], collectCoordinates[0][1]);
+      curveVertex(collectCoordinates[1][0], collectCoordinates[1][1]);
+      // curveVertex(collectCoordinates[j-1][0],collectCoordinates[j-1][1]);
+      endShape();
     }
 
-    // curveVertex(collectCoordinates[j-1][0],collectCoordinates[j-1][1]);
-    curveVertex(collectCoordinates[0][0],collectCoordinates[0][1]);
-    curveVertex(collectCoordinates[1][0],collectCoordinates[1][1]);
-    // curveVertex(collectCoordinates[j-1][0],collectCoordinates[j-1][1]);
-    endShape();
-   }
-    
     textView = loadFont(workingDirectory + "data/GoudyOldStyleT-Bold-48.vlw");
     textFont(textView, 40);
     fill(#ff0000);
@@ -877,8 +905,8 @@ public class SecondApplet extends PApplet {
     // stroke(#bbbbbb);
     int mappingIndex;          // mappingIndex  = (36 - i)% 24  [ Maps the Isopter  to the Baby's Point of View ]
     // Then draw the 24 meridians
-   //  dotsCounter =0; // Initialising the counter 
-  
+    //  dotsCounter =0; // Initialising the counter 
+
     for (int i = 0; i < 24; i++) {
       // first calculate the location of the points on the circumference of this circle, given that meridians are at 15 degree (PI/12) intervals
       // stroke(#bbbbbb);
@@ -948,39 +976,38 @@ public class SecondApplet extends PApplet {
            }*/
 
           if (pixelNumber > 3) { // For Meridian LEDs
-            xi = (cos(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber +1  ]/120) + x;
-            yi = (sin(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber +1  ]/120) + y;
-            
+            xi = (cos(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber   ]/120) + x;
+            yi = (sin(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber   ]/120) + y;
           } else if (pixelNumber <= 3 ) { // For Daisy LEDs
             xi = (cos(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + x;
             yi = (sin(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + y;
             // println(angleData[meridianNumber][numberOfPixels - pixelNumber]);  
-           //  println(pixelNumber +"  " + angleData[meridianNumber][numberOfPixels - pixelNumber] );
+            //  println(pixelNumber +"  " + angleData[meridianNumber][numberOfPixels - pixelNumber] );
           }
           //  println(xi,yi);
           ellipse(xi, yi, 10, 10);
-          if (frameCount == 1){
-          collectCoordinates[dotsCounter][0]=xi;
-          collectCoordinates[dotsCounter][1]=yi;
-          collectCoordinates[dotsCounter][2] = mappingIndex*15; // Re - arrange While joining the red dots
-         
-          // This has to be done to join the dots on the final report
-          if(xi > x && yi >= y ){
-            coversAllQuads [3] = true;
-          }else if(xi > x && yi <= y){
-            coversAllQuads [0] = true;
-          }else if(xi <= x && yi < y){
-            coversAllQuads [1] = true;
-          }else if(xi <= x && yi > y){
-            coversAllQuads [2] = true;
+          if (frameCount == 1) {
+            collectCoordinates[dotsCounter][0]=xi;
+            collectCoordinates[dotsCounter][1]=yi;
+            collectCoordinates[dotsCounter][2] = mappingIndex*15; // Re - arrange While joining the red dots
+
+            // This has to be done to join the dots on the final report
+            if (xi > x && yi >= y ) {
+              coversAllQuads [3] = true;
+            } else if (xi > x && yi <= y) {
+              coversAllQuads [0] = true;
+            } else if (xi <= x && yi < y) {
+              coversAllQuads [1] = true;
+            } else if (xi <= x && yi > y) {
+              coversAllQuads [2] = true;
+            }
+
+            dotsCounter++;
           }
-          
-          dotsCounter++;
-        }
         }
       }
     }
-   println(dotsCounter);
+    println(dotsCounter);
   }
 }
 
@@ -1077,7 +1104,7 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     // draw a line from the center to the meridian points (xm, ym)
     line(x, y, xm, ym);
     strokeWeight(1); // Restore the default Value 
-    
+
     // draw the text at a location near the edge, which is along an imaginary circle of larger diameter - at point (xt, yt)
     float xt = cos(radians(-i*15))*(diameter + 30)/2 + x - 10;
     float yt = sin(radians(-i*15))*(diameter + 20)/2 + y + 5;
@@ -1089,17 +1116,17 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     }
     text(str(i*15), xt, yt);  // draw the label of the meridian (in degrees)
 
-  //Boundaries of the device need to be displayed 
-  float radiusLargerSide = (angleData[16][0]/120)*diameter;
-  float radiusSmallerSide = (angleData[7][0]/120)*diameter;
-  float x1=x;
-  float y1=y;
-  stroke(0);
-  //fill
-  noFill();
-  arc(x,y,radiusLargerSide,radiusLargerSide,-2*PI/3,-PI/3);
-  arc(x,y,radiusSmallerSide,radiusSmallerSide,-285*PI/180,-255*PI/180);
-  
+    //Boundaries of the device need to be displayed 
+    float radiusLargerSide = (angleData[16][0]/120)*diameter;
+    float radiusSmallerSide = (angleData[7][0]/120)*diameter;
+    float x1=x;
+    float y1=y;
+    stroke(0);
+    //fill
+    noFill();
+    arc(x, y, radiusLargerSide, radiusLargerSide, -2*PI/3, -PI/3);
+    arc(x, y, radiusSmallerSide, radiusSmallerSide, -285*PI/180, -255*PI/180);
+
     // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
     fill(#ff0000);  // red colour
     // println(abs(meridians[i]));
@@ -1131,8 +1158,8 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
          }*/
 
         if (pixelNumber > 3) { // For Meridian LEDs
-          xi = (cos(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber +1  ]/120) + x;
-          yi = (sin(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber +1  ]/120) + y;
+          xi = (cos(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber   ]/120) + x;
+          yi = (sin(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber   ]/120) + y;
         } else if (pixelNumber <= 3 ) { // For Daisy LEDs
           xi = (cos(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + x;
           yi = (sin(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + y;
@@ -1206,17 +1233,17 @@ void hover(float x, float y) {
     }
   } else if ((x >= posPatternImage[0][0] && x<= posPatternImage[0][0] + 80 ) && (y>= posPatternImage[0][1] && y<= posPatternImage[0][1] + 80)) {  // Hovering on the Image Pattern -1 
     cursor(HAND);
-  }else if ((x >= posPatternImage[1][0]  && x<= posPatternImage[1][0] + 80 ) && (y>= posPatternImage[1][1] && y<= posPatternImage[1][1] + 80)) {  // Hovering on the Image  Pattern -2 
+  } else if ((x >= posPatternImage[1][0]  && x<= posPatternImage[1][0] + 80 ) && (y>= posPatternImage[1][1] && y<= posPatternImage[1][1] + 80)) {  // Hovering on the Image  Pattern -2 
     cursor(HAND);
-  }else if ((x >= posPatternImage[2][0] && x<= posPatternImage[2][0]  + 80 ) && (y>= posPatternImage[2][1] && y<= posPatternImage[2][1] + 80)) {  // Hovering on the Image  Pattern -3 
+  } else if ((x >= posPatternImage[2][0] && x<= posPatternImage[2][0]  + 80 ) && (y>= posPatternImage[2][1] && y<= posPatternImage[2][1] + 80)) {  // Hovering on the Image  Pattern -3 
     cursor(HAND);
-  }else if ((x >= 730 && x<= 760 ) && (y>= 60 && y<= 90)) {  // Hovering on the Image  Pattern -3 
+  } else if ((x >= 730 && x<= 760 ) && (y>= 60 && y<= 90)) {  // Hovering on the Image  Pattern -3 
     cursor(HAND);
   } else if ((x >= 730 && x<= 760 ) && (y>= 100 && y<= 130)) {  // Hovering on the Image  Pattern -3 
     cursor(HAND);
   } else if ((x >= 730 && x<= 760 ) && (y>= 140 && y<= 170)) {  // Hovering on the Image  Pattern -3 
     cursor(HAND);
-  }  else {
+  } else {
     cursor(ARROW);
   }
 }
@@ -1258,7 +1285,6 @@ void mousePressed() {
       arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
     }
     arduino.write('\n');
- 
   }
 
   // change colour of the object to "presently being done"
@@ -1303,19 +1329,19 @@ void mousePressed() {
     current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
     break;
 
- /* case 'p':      // Start the patterns
-    previousMillis = millis();      // start the timer from now
-    status = "pattern";
-    pattern_state = 2;  // To Identify that test is in progress    
-    break;*/
+    /* case 'p':      // Start the patterns
+     previousMillis = millis();      // start the timer from now
+     status = "pattern";
+     pattern_state = 2;  // To Identify that test is in progress    
+     break;*/
   }
- /* if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm' || hovered_object == 'p') {
-imageNumber = getImageNumber(status , hovered_count);// to display the eye direction for the user[respond only for valid clicks]
-  }*/
+  /* if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm' || hovered_object == 'p') {
+   imageNumber = getImageNumber(status , hovered_count);// to display the eye direction for the user[respond only for valid clicks]
+   }*/
 }
 
 
- 
+
 void clearHemisQuads() {
   // checks if any hemi_state or quad_state values are == 3, and makes them into 2 (done)
   for (int i = 0; i < 4; i++) {  // 4 quadrants
@@ -1335,12 +1361,11 @@ void clearHemisQuads() {
     }
   }
 
-for(int i=0; i<3; i++){
-  if (pattern_state[i] == 2) {
-    pattern_state[i] = 1;
+  for (int i=0; i<3; i++) {
+    if (pattern_state[i] == 2) {
+      pattern_state[i] = 1;
+    }
   }
-}
-
 }
 
 // Mouse released To Notify The Slider To Update The Time Intervals And Send It To Arduino 
@@ -1444,7 +1469,7 @@ public void Stop() {
 
   // UI UPDATE - MAKE QUADS/HEMIS PRESENTLY IN ACTIVE STATE TO 'DONE' STATE
   clearHemisQuads();
- imageNumber = 1;// reset the image 
+  //imageNumber = 1;// reset the image 
   // CALCULATE REACTION TIME AND PRINT IT TO SCREEN
   reaction_time = currentMillis - previousMillis;  
   println("Reaction time is " + str(reaction_time) + "ms");
@@ -1545,8 +1570,8 @@ public void Stop() {
   // REDRAW AND SAVE THE ISOPTER TO FILE  
   if (status == "sweep") {
     // redraw isopter image to file
-    PImage isopter = get(760, 30, 400, 360);     // get that particular section of the screen where the isopter lies. 
-    isopter.save(workingDirectory + base_folder + "/isopter.jpg");  // save it to a file in the same folder
+    //  PImage isopter = get(760, 30, 400, 360);     // get that particular section of the screen where the isopter lies. 
+    // isopter.save(workingDirectory + base_folder + "/isopter.jpg");  // save it to a file in the same folder
 
     // write this to the isopter text file
     isopter_text.println();
@@ -1557,18 +1582,19 @@ public void Stop() {
     } else {
       isopter_text.print(s + "\t");
     }
-    isopter_text.print((hovered_count)*15 + "\t\t");
+
+    println("Stopped Meridian :" + current_sweep_meridian);
+    isopter_text.print((current_sweep_meridian)*15 + "\t\t");
     //CKR
-    if(abs(meridians[hovered_count]) >0 && abs(meridians[hovered_count]) <= numberOfLEDs[(24 - hovered_count)%24 ] + 1 ) {
-    if (abs(meridians[hovered_count]) > 3) { 
-      isopter_text.print(str(angleData[(24 - hovered_count)%24][numberOfLEDs[(24 - hovered_count)%24 ] - abs(meridians[hovered_count]) +1  ]) + "\t");
+    if (abs(meridians[current_sweep_meridian]) >0 && abs(meridians[current_sweep_meridian]) <= numberOfLEDs[(24 - current_sweep_meridian)%24 ]  ) {
+      if (abs(meridians[current_sweep_meridian]) > 3) { 
+        isopter_text.print(str(angleData[(24 - current_sweep_meridian)%24][numberOfLEDs[(24 - current_sweep_meridian)%24 ] - abs(meridians[current_sweep_meridian])   ]) + "\t");
+      } else if (abs(meridians[current_sweep_meridian]) <= 3 ) {
+        isopter_text.print(str(angleData[(24 - current_sweep_meridian)%24][numberOfLEDs[(24 - current_sweep_meridian)%24 ] - abs(meridians[current_sweep_meridian])  ]) + "\t");
+      }
     }
-    else if (abs(meridians[hovered_count]) <= 3 ) {
-      isopter_text.print(str(angleData[(24 - hovered_count)%24][numberOfLEDs[(24 - hovered_count)%24 ] - abs(meridians[hovered_count])  ]) + "\t");
-    }
-    }
-  //CKR
-   // isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
+    //CKR
+    // isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
     isopter_text.print(str(reaction_time) + "\t\t\t");
     isopter_text.flush();
   }
@@ -1625,102 +1651,103 @@ void serialEvent(Serial arduino) {
 
 
 void CAPTURE() {
-  cam.save(workingDirectory + base_folder + "/ScaleReading/Scale.jpg");
+  cam.save( workingDirectory+"/ScaleReading/Scale.jpg");
 }
 
 
 /*
 // Returns the image number to be displayed for the eye direction according to the present status of the test
-int getImageNumber(String object, int countNumber){
-int returnNumber= 1;
+ int getImageNumber(String object, int countNumber){
+ int returnNumber= 1;
  if (object == "quadrant") {
-
-    switch (countNumber) {
-    case 1:
-      returnNumber = 6;
-      break;
-
-    case 2:
-      
-    returnNumber =8;
-      break;
-
-    case 3:
-      
-      returnNumber = 7;
-      break;
-
-    case 4:
-     returnNumber = 9;
-      break;
-
-    case 5:
-     returnNumber = 6;
-      break;
-
-    case 6:
-      returnNumber = 8;
-      break;
-
-    case 7:
-     returnNumber = 7;
-      break;
-
-    case 8:
-     returnNumber = 9;
-      break;
-    } 
-  }
-
-  if (object == "hemi") {
-
-    switch(countNumber) {
-    case 0:
-     returnNumber = 3;
-      break;
-    case 1:
-      returnNumber = 2;
-      break;
-    case 2:
-      returnNumber = 3;
-      break;
-    case 3:
-     returnNumber = 2;
-      break;
-    }
-
-  }
-
-  //Save Meridians to a Text File in a Proper Format
-  if (object == "Meridian" || object == "sweep") {
-   if(countNumber >= 1 && countNumber <= 5){
-     returnNumber = 6;
-   }else if(countNumber >= 7 && countNumber <= 11){
-      returnNumber = 8;
-   }else if(countNumber >= 13 && countNumber <= 17){
-      returnNumber = 7;
-   }else if(countNumber >= 19 && countNumber <= 23){
-      returnNumber = 9;
-   }else if(countNumber == 0){
-      returnNumber = 3;
-   }else if(countNumber == 6){
-     returnNumber = 5;
-   }else if(countNumber == 12){
-     returnNumber =2;
-   }else if(countNumber == 18){
-      returnNumber = 4;
-   }else {
-      returnNumber = 1;
-   }
-  }
  
-if (object == "pattern") {
-returnNumber = 1;
-}
+ switch (countNumber) {
+ case 1:
+ returnNumber = 6;
+ break;
+ 
+ case 2:
+ 
+ returnNumber =8;
+ break;
+ 
+ case 3:
+ 
+ returnNumber = 7;
+ break;
+ 
+ case 4:
+ returnNumber = 9;
+ break;
+ 
+ case 5:
+ returnNumber = 6;
+ break;
+ 
+ case 6:
+ returnNumber = 8;
+ break;
+ 
+ case 7:
+ returnNumber = 7;
+ break;
+ 
+ case 8:
+ returnNumber = 9;
+ break;
+ } 
+ }
+ 
+ if (object == "hemi") {
+ 
+ switch(countNumber) {
+ case 0:
+ returnNumber = 3;
+ break;
+ case 1:
+ returnNumber = 2;
+ break;
+ case 2:
+ returnNumber = 3;
+ break;
+ case 3:
+ returnNumber = 2;
+ break;
+ }
+ 
+ }
+ 
+ //Save Meridians to a Text File in a Proper Format
+ if (object == "Meridian" || object == "sweep") {
+ if(countNumber >= 1 && countNumber <= 5){
+ returnNumber = 6;
+ }else if(countNumber >= 7 && countNumber <= 11){
+ returnNumber = 8;
+ }else if(countNumber >= 13 && countNumber <= 17){
+ returnNumber = 7;
+ }else if(countNumber >= 19 && countNumber <= 23){
+ returnNumber = 9;
+ }else if(countNumber == 0){
+ returnNumber = 3;
+ }else if(countNumber == 6){
+ returnNumber = 5;
+ }else if(countNumber == 12){
+ returnNumber =2;
+ }else if(countNumber == 18){
+ returnNumber = 4;
+ }else {
+ returnNumber = 1;
+ }
+ }
+ 
+ if (object == "pattern") {
+ returnNumber = 1;
+ }
+ 
+ return returnNumber ;
+ }
+ */
 
-return returnNumber ;
-}
-*/
 // Send The Sweep Interval Value To Ardiuno 
 /*void SWEEP() {
  // cam.save(base_folder + "/ScaleReading/Scale.jpg");
@@ -1730,21 +1757,6 @@ return returnNumber ;
  arduino.write( sweepValue);
  println("Sweep Value Sent to Ardiuno :" + sweepValue);
  }*/
-
-
-void FIXATION() {
-  /*
-   * Function to change brightness of fixation LED in arduino.
-   * Arduino uses PWM to change brightness.
-   * It is sent in the form (l, fixationBrightness).
-   * Triggered by Slider.PRESSED
-   */
-  int fixationBrightness =  int(cp5.getController("FIXATION").getValue());
-  arduino.write('l');
-  arduino.write(','); 
-  arduino.write(str(fixationBrightness));
-  arduino.write('\n');
-}
 
 
 void  sendTimeIntervals(int chosenStrip) {
@@ -1878,47 +1890,67 @@ void  sendTimeIntervals(int chosenStrip) {
  println("All data calculated");
  } DERECATED ************************************************************************************/
 /*void FORWARD() {
-  imageCount = (imageCount+1)%5;
-}
-void BACKWARD() {
-  if (imageCount == 0) {
-    imageCount = 4;
-  } else {
-    imageCount = (imageCount-1)%5;
-  }
-}*/ 
+ imageCount = (imageCount+1)%5;
+ }
+ void BACKWARD() {
+ if (imageCount == 0) {
+ imageCount = 4;
+ } else {
+ imageCount = (imageCount-1)%5;
+ }
+ }*/
 
 void PATTERNONE () {
-arduino.write('p');
-arduino.write(',');
-arduino.write('1');
-arduino.write('\n');
+  arduino.write('p');
+  arduino.write(',');
+  arduino.write('1');
+  arduino.write('\n');
 
-pattern_state[0] = 2;
+  pattern_state[0] = 2;
 }
 
 
 void PATTERNTWO () {
-arduino.write('p');
-arduino.write(',');
-arduino.write('2');
-arduino.write('\n');
+  arduino.write('p');
+  arduino.write(',');
+  arduino.write('2');
+  arduino.write('\n');
 
-pattern_state[1] = 2;
+  pattern_state[1] = 2;
 }
 
 
 void PATTERNTHREE () {
-arduino.write('p');
-arduino.write(',');
-arduino.write('3');
-arduino.write('\n');
+  arduino.write('p');
+  arduino.write(',');
+  arduino.write('3');
+  arduino.write('\n');
 
-pattern_state[2] = 2;
+  pattern_state[2] = 2;
 }
+
+
+void FIXATION() {
+  /*
+   * Function to change brightness of fixation LED in arduino.
+   * Arduino uses PWM to change brightness.
+   * It is sent in the form (l, fixationBrightness).
+   * Triggered by Slider.PRESSED
+   */
+  int fixationBrightness =  int(cp5.getController("FIXATION").getValue());
+  println("Brtnss : " + fixationBrightness);
+  arduino.write('l');
+  arduino.write(','); 
+  arduino.write(str(fixationBrightness));
+  arduino.write('\n');
+}
+
 
 // THE BANG FUNCTIONS
 void FINISH() {
+  // Make Sure everything is reset in the device.
+  arduino.write('x');
+  arduino.write('\n');
   println("finished everything");
   finalMillis = currentMillis;
 
@@ -2004,6 +2036,14 @@ void PATIENT_INFO() {
 }
 
 void FLAG() {
+  //First clear all the meridians 
+  arduino.write('x');
+  arduino.write('\n'); 
+  println("All Cleared");
+  //Call the stop function so that We can Update the files
+  Stop();
+  println("Stopped");
+
   // just update hte flag variable to "flagged"
   if (flagged_test == false) {
     if (last_tested == "quadrant" || last_tested == "hemi") {
@@ -2016,6 +2056,7 @@ void FLAG() {
       flagged_test = true;
     }
   }
+  println("Flagged Completely");
 }
 
 
@@ -2077,7 +2118,7 @@ float[][] importExcel(String filepath) {
    if (cell.getCellType()==0 || cell.getCellType()==2 || cell.getCellType()==3)cell.setCellType(1);
    temp[i][j] = cell.getStringCellValue();
    // Get The Cell Values And Populate Them Into An Array 
-                           /* Cell cell0 = row.getCell(0);
+                             /* Cell cell0 = row.getCell(0);
    if (cell0.getCellType()==0 || cell0.getCellType()==2 || cell0.getCellType()==3)cell0.setCellType(1);
    temp[i][0] = cell0.getStringCellValue();
    Cell cell1 = row.getCell(1);
@@ -2205,3 +2246,4 @@ float[][] importExcel(String filepath) {
 boolean sketchFullScreen() {
   return true;
 }
+

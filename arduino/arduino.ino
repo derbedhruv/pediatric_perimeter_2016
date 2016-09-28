@@ -1,4 +1,4 @@
-      /**************************************************************
+/**************************************************************
   //  PEDIATRIC PERIMETER ARDUINO SEGMENT FOR ADDRESSABLE LEDs
   //  SRUJANA CENTER FOR INNOVATION, LV PRASAD EYE INSTITUTE
   //
@@ -75,9 +75,9 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 byte Br; // variable to set brightness
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
-unsigned long previousMillis, currentMillis, sweep_interval = 1367,Recieved_sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
+unsigned long previousMillis, currentMillis, sweep_interval = 1367, Recieved_sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
 int fixationStrength = 100;  // brightness of the fixation
-byte sweepStart, longitudeInt, Slider = 255, currentSweepLED,LEDNumber ,sweepStrip, daisyStrip;
+byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, LEDNumber , sweepStrip, daisyStrip;
 byte Respose_ClearAll;
 byte meridians_turnOn[24];
 char temp[25] = "";
@@ -128,7 +128,7 @@ void setup() {
   Serial.begin(115200);
   Serial.setTimeout(500);
   Serial.println("starting..");
-  Br = 2; // Initialise to default Brightness Value Required 
+  Br = 2; // Initialise to default Brightness Value Required
   for (int i = 0; i < 25; i++) {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
@@ -138,23 +138,28 @@ void setup() {
 
 
 void loop() {
- // if (sweep == true) {
 
-    // Decide the Sweep Interval corresponding to each LED
-    // "sweepIntervals" Will Have The time intervals for the current chosen strip
-    // This will change for every strip
-    
-    /* DEPRECATED *************************************************************************************
+  /* if (fixationStrength > 0){
+    Serial.println(fixationStrength);
+    }*/
+
+  // if (sweep == true) {
+
+  // Decide the Sweep Interval corresponding to each LED
+  // "sweepIntervals" Will Have The time intervals for the current chosen strip
+  // This will change for every strip
+
+  /* DEPRECATED *************************************************************************************
     if (currentSweepLED > 0) {
-      /*
-       * BottomMost LED is where we start the sweep from, but it's pixelNumber is the last, i.e highest,
-       * while its sweepDelay comes at the very beginning
-       * The below formula adjusts for that, setting the sweepInterval of LED as it should be, from the array
-       *
-      //sweep_interval = sweepIntervals[numPixels[sweepStrip - 1] - currentSweepLED];
+    /*
+       BottomMost LED is where we start the sweep from, but it's pixelNumber is the last, i.e highest,
+       while its sweepDelay comes at the very beginning
+       The below formula adjusts for that, setting the sweepInterval of LED as it should be, from the array
+
+    //sweep_interval = sweepIntervals[numPixels[sweepStrip - 1] - currentSweepLED];
     } * DEPRECATED ************************************************************************************/
 
-    // we will poll for this variable and then sweep the same LED
+  // we will poll for this variable and then sweep the same LED
   /*  currentMillis = millis();
     // Serial.println(currentMillis - previousMillis);
     if (currentMillis - previousMillis <= sweep_interval) {
@@ -173,15 +178,15 @@ void loop() {
         // clear all previous meridian stuff...
         meridians[sweepStrip - 1].clear();
         meridians[sweepStrip - 1].show();
-        sweep_interval = 1;      // infinitely short so that we just zap off the longer strip 
+        sweep_interval = 1;      // infinitely short so that we just zap off the longer strip
         meridians[24].setBrightness(Br);  // set this here to avoid wasting steps later
-        
+
       } else if (currentSweepLED < 3) {
         // only need to light the daisy
           meridians[24].setPixelColor(3 * daisyStrip + 2 - currentSweepLED - 1, 0, 0, 0);
           meridians[24].setPixelColor(3 * daisyStrip + 2 - currentSweepLED, r, g, b);
           meridians[24].show(); // This sends the updated pixel color to the hardware.
-         sweep_interval = Recieved_sweep_interval/2; // For Daisy The delay is doubled So to maintain constat through out meridian 
+         sweep_interval = Recieved_sweep_interval/2; // For Daisy The delay is doubled So to maintain constat through out meridian
          }
 
     } else {           // ToDo when its within the interval
@@ -203,42 +208,50 @@ void loop() {
         // We notify over serial (to processing), that the next LED has come on.
       }
     }
-  }
-*/
-// Code for Sweep 
- if (sweep == true) {
+    }
+  */
+  // Code for Sweep
+  if (sweep == true) {
 
     // Serial.println(currentMillis - previousMillis);
     if (millis() - currentMillis <= sweep_interval) {
 
     } else {
-    Serial.println(millis());
-    if ((LEDNumber <= numPixels[sweepStrip - 1] + 3 - 1) && LEDNumber > 0){
-      wayImplementFM = fixed;
-      byte meridiansSweep [] = {sweepStrip,0};
-              verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep ,1, 2);
-              verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep ,1, 2);
-              //Serial.println(verifyTest);
-              if (verifyTest == true) {
-                Serial.println(LEDNumber);   
-                 LEDNumber = LEDNumber - 1;   
-                verifyTest = false;
-                currentMillis = millis();        
-     
-              }
+      // Serial.println(millis());
+      if ((LEDNumber <= numPixels[sweepStrip - 1] + 3 - 1) && LEDNumber > 0) {
+        wayImplementFM = fixed;
+        byte meridiansSweep [] = {sweepStrip, 0};
+        verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2);
+        verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2);
+        //Serial.println(verifyTest);
+        if (verifyTest == true) {
+          Serial.println(LEDNumber);
+          LEDNumber = LEDNumber - 1;
+          verifyTest = false;
+          currentMillis = millis();
+
+        }
+      } else if (LEDNumber == 0) {
+        // To Notify That We Are Done With LED Strip;
+        LEDNumber = 28; // 28 value is to Reinitailze The Value in GUI [Clear the red dot on Meridian on GUI]
+        Serial.println(LEDNumber);
+        // previousMillis = 0;
+        clearAll();
+        // sweep = false;
+        // sweep_interval = 1750;
+      }
+
     }
-              
-    }
- }
-// Code for patterns
- if (patterns == true) {
+  }
+  // Code for patterns
+  if (patterns == true) {
 
     // Serial.println(currentMillis - previousMillis);
     if (millis() - currentMillis <= patterns_interval) {
 
     } else {
 
-//Select the pattern 
+      //Select the pattern
       switch (patternNumber) {
 
         //pattern One
@@ -268,7 +281,7 @@ void loop() {
             case 2 :
               wayImplementFM = riseFixed;
               verifyTest = fountainModel(25, 5, 4, allMeridians , 24, 2);
-            //  Serial.print("Returned From The Function  ,"); Serial.println(verifyTest);
+              //  Serial.print("Returned From The Function  ,"); Serial.println(verifyTest);
               if (verifyTest == true) {
                 patternOneIndex += 1;
                 patternOneIndex %= 2;
@@ -282,22 +295,22 @@ void loop() {
 
         //for Pattern Two : Spiral / Rotation Model
         case 2:
-         /*  if (startPixelRM >= endPixelRM - numOfPixRM - 1) {
-            wayImplementRM = riseFixedFall;
-            verifyTestRM =  rotationModel(startPixelRM, 4, 3, 6, 27, endPixelRM, 2 );
-            if (verifyTestRM == true) {
-              startPixelRM -= 3;
-              if (startPixelRM == 0) {
-                startPixelRM = 12;
+          /*  if (startPixelRM >= endPixelRM - numOfPixRM - 1) {
+             wayImplementRM = riseFixedFall;
+             verifyTestRM =  rotationModel(startPixelRM, 4, 3, 6, 27, endPixelRM, 2 );
+             if (verifyTestRM == true) {
+               startPixelRM -= 3;
+               if (startPixelRM == 0) {
+                 startPixelRM = 12;
+               }
               }
-             }
-          }*/
+            }*/
           wayImplementRM = riseFixed;
-          verifyTest = fountainModel(3,3,1, allMeridians, 6*(patternTwoIndex+ 1 ), 2);
-          if(verifyTest == true){
+          verifyTest = fountainModel(3, 3, 1, allMeridians, 6 * (patternTwoIndex + 1 ), 2);
+          if (verifyTest == true) {
             patternTwoIndex += 1;
             patternTwoIndex %= 4;
-           // Serial.print("2 Index: ");Serial.println(patternTwoIndex);
+            // Serial.print("2 Index: ");Serial.println(patternTwoIndex);
             verifyTest = false;
           }
           currentMillis = millis();
@@ -310,7 +323,7 @@ void loop() {
 
             case 1:
               wayImplementFM = fixed;
-               verifyTest = fountainModel(5, 5, 1, meridianNumbersCKR  , 20, 2);
+              verifyTest = fountainModel(5, 5, 1, meridianNumbersCKR  , 20, 2);
               if (verifyTest == true) {
                 counterCKR += 1;
                 counterCKR %= 6;
@@ -336,14 +349,14 @@ void loop() {
   }
 
 
-// Code to get serial data and process it.
+  // Code to get serial data and process it.
   if (Serial.available() > 0) {
     char inChar = (char)Serial.read();
     // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
     // for historical reasons we will store this as variables (lat, long)
     if (inChar == ',') {
       breakOut = false;
-       lat = inputString;
+      lat = inputString;
       // reset the variable
       inputString = "";
     } else {
@@ -353,15 +366,16 @@ void loop() {
         longit = inputString;
         // reset everything again..
         inputString = "";
-
+        //  Serial.println(lat[0]);
         // we deal with 3 cases: sweeps, hemispheres and quadrants, Meridians
         switch (lat[0]) { // use only the first character, the rest is most likely garbage
 
           // this is the case of setting brightness of the LEDs
           case 'm': { // Choosen Meridian Will Turn On
               // Based on the number entered as longit[0], we will turn on that particular LED.
-              Br =1;
-                analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
+              Br = 1;
+           //   Serial.println(1);
+              analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
               byte chosenStrip = longit.toInt();
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = false;
@@ -375,45 +389,49 @@ void loop() {
               // brightness = String(longit).toInt();
               break;
             }
-        case 'p':  {// Choose
-          Br =1;
-            byte chosenStrip = longit.toInt();
-            if (chosenStrip <= 5) {
-              patterns = true;
-              patternNumber = chosenStrip;
-              if (patternNumber == 1) {
-                patterns_interval = 500;
-                patternOneIndex = 2;
-              } else if (patternNumber == 2) {
-                patterns_interval = 500;
-              //  startPixelRM = 12;
-               // endPixelRM = 4;
-              //  numOfPixRM = 3;
-              patternTwoIndex = 0;
-              } else if (patternNumber == 3) {
-                patternThreeIndex = 2;
-                patterns_interval = 250;
-              }
+          case 'p':  {// Choose
+              Br = 1;
+         //     Serial.println(2);
+              analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
+              byte chosenStrip = longit.toInt();
+              if (chosenStrip <= 5) {
+                patterns = true;
+                patternNumber = chosenStrip;
+                if (patternNumber == 1) {
+                  patterns_interval = 500;
+                  patternOneIndex = 2;
+                } else if (patternNumber == 2) {
+                  patterns_interval = 500;
+                  //  startPixelRM = 12;
+                  // endPixelRM = 4;
+                  //  numOfPixRM = 3;
+                  patternTwoIndex = 0;
+                } else if (patternNumber == 3) {
+                  patternThreeIndex = 2;
+                  patterns_interval = 250;
+                }
 
-              currentMillis = 0;
-            }
+                currentMillis = 0;
+              }
               break;
-        }
+            }
           // change sweep time according to the LEDs placement in the Device
           case 't': {
               /*
-               * Indicates that GUI is ready to send Sweep interval times   
-               * The format sent is t, strip number (chosenStrip)
-               */
+                 Indicates that GUI is ready to send Sweep interval times
+                 The format sent is t, strip number (chosenStrip)
+              */
               //delay(30);  //Wait some time so it can write everything //DEPRECATED
               //int chosenStrip = longit.toInt(); //DEPRECATED
               //readSweepIntervals(chosenStrip); //Start reading sweep intervals  //DEPRECATED
+              if (longit.toInt() != 0){
               Recieved_sweep_interval = longit.toInt();  //every LED has same time interval
+                  }
               break;
               /*// interval= longit.toInt();
                 // sweepTimeIntervals
                 int meridian = longit.toInt();
-                int n = numPixels[meridian - 1] + 3; // No. Of LEDs 
+                int n = numPixels[meridian - 1] + 3; // No. Of LEDs
 
                 // Get The Time Intervals in the form of a string
                 if (Serial.available()>0) {
@@ -440,7 +458,7 @@ void loop() {
                 // Populate The Time intervals
                 //  sweepIntervals [i] = atol(inStr.substring(prevIndex,index-1));
 
--                   inStr.substring(prevIndex,index-1).toCharArray(temp, sizeof(temp)); // Convert into Chaecter Array Before converting to Long Int
+                -                   inStr.substring(prevIndex,index-1).toCharArray(temp, sizeof(temp)); // Convert into Chaecter Array Before converting to Long Int
                    sweepIntervals [i] = atol(temp);
 
                   }
@@ -451,12 +469,13 @@ void loop() {
           // choose strip to sweep
           case 's': {
               /*
-               * This is the case of sweeping a single longitude.
-               * Based on the number entered as longit[0], we will turn on LEDs in that particular meridian based on the sweep intervals sent earlier.
-               * Refer case 't' for sweep intervals;
-               */
+                 This is the case of sweeping a single longitude.
+                 Based on the number entered as longit[0], we will turn on LEDs in that particular meridian based on the sweep intervals sent earlier.
+                 Refer case 't' for sweep intervals;
+              */
               byte chosenStrip = longit.toInt();
-               analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
+        //      Serial.println(3);
+              analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = true;
                 Br = 2;
@@ -464,10 +483,10 @@ void loop() {
                 sweep_interval = Recieved_sweep_interval;
                 sweepStrip = chosenStrip;
                 daisyStrip = daisyConverter(sweepStrip);
-                currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy 
+                currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy
                 LEDNumber = numPixels[sweepStrip - 1] + 3 - 1;
                 // Serial.println(LEDNumber); // First LED to start
-                currentMillis =0;
+                currentMillis = 0;
               }
               //analogWrite(fixationLED, 0);
               //byte acknowledgement = 97;
@@ -477,13 +496,18 @@ void loop() {
 
           case 'l': {
               //change the brightness value of fixation LEDs based on user input
+             if (longit.toInt() != 0){
               fixationStrength = longit.toInt();
+            //  Serial.println(4);
+
               analogWrite(fixationLED, fixationStrength);
+             }
               break;
             }
           case 'h': {
               // clearAll();
               // turn off the fixation
+            //  Serial.println(5);
               analogWrite(fixationLED, 0);
               Br = 1;
               // we then switch through WHICH hemisphere
@@ -516,6 +540,7 @@ void loop() {
           case 'q': {
               Serial.println("quadrants");
               // turn off the fixation
+          //    Serial.println(6);
               analogWrite(fixationLED, 0);
               Br = 1;
               switch (longit[0]) {
@@ -618,8 +643,9 @@ void clearAll() {
   fixedDoneRM = false;
 
 
-  
+
   // then put on fixation
+  // Serial.println(fixationStrength);
   analogWrite(fixationLED, fixationStrength);
 }
 
@@ -735,7 +761,7 @@ void turnThemOn (byte meridian_range[], boolean daisy_on, byte number_of_meridia
   // It also turns on particular "meridians" in the daisy, but only if the daisy_on is set to true, default false
 
   // First the meridians
-  analogWrite(fixationLED, 0);
+  //analogWrite(fixationLED, 0);
   for (int ii = 0; ii < number_of_meridians; ii++) {
     int meridian_to_be_turned_on = meridian_range[ii] - 1;
 
@@ -762,9 +788,9 @@ void turnThemOn (byte meridian_range[], boolean daisy_on, byte number_of_meridia
 
 
 boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPixelNumberFM,   byte meridiansToBeOnFM[], byte numOfMeridians, int  stepSizeFM ) {
-//The generalised function where you can address each and every LED at a particular instance on the Specified Meridians 
-//This function is like a goto statement where it makes LEDs travel from the Start Pixel to End Pixel with Rising LED by LED to a set and travel with the set 
-// towards End Pixel and Finally falls LED by LED. At the end it returns true when the patternis completed for the parameters given
+  //The generalised function where you can address each and every LED at a particular instance on the Specified Meridians
+  //This function is like a goto statement where it makes LEDs travel from the Start Pixel to End Pixel with Rising LED by LED to a set and travel with the set
+  // towards End Pixel and Finally falls LED by LED. At the end it returns true when the patternis completed for the parameters given
 
   boolean fountainModelDone = false;
   byte pixelIndex ;
@@ -775,12 +801,12 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
     riseDone = true;
   }
 
- // To skip FALL if not required  
+  // To skip FALL if not required
   if (wayImplementFM == fixed || wayImplementFM == riseFixed) { // Dont Use Substring because program might crash here.
     fallCounter = numOfPixelsInSetFM - 1;
     fallDone = true;
   }
-  
+
   //Set whether Rise is completed/Not Required
   if ((riseCounter == numOfPixelsInSetFM - 1)) {
     riseDone = true;
@@ -796,7 +822,7 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
   }
 
   //Set  whether Fall is completed / Not required {This is here to maintain uniform delay through out the sequence]
-if (fallCounter == numOfPixelsInSetFM - 1) {
+  if (fallCounter == numOfPixelsInSetFM - 1) {
     fallDone = true;
   } else {
     fallDone = false;
@@ -832,7 +858,7 @@ if (fallCounter == numOfPixelsInSetFM - 1) {
     }
 
     if (pixelIndex > 0) {
-       turnOnDaisy(daisyPixelsTurnOn, pixelIndex);
+      turnOnDaisy(daisyPixelsTurnOn, pixelIndex);
     }
 
     riseCounter = riseCounter + 1;
@@ -929,13 +955,13 @@ if (fallCounter == numOfPixelsInSetFM - 1) {
     fountainModelDone = false;
   }
 
-/*
-  Serial.print("FM  :");
-  Serial.print(riseCounter); Serial.print(",");
-  Serial.print(fixedCounter); Serial.print(",");
-  Serial.println(fallCounter);
+  /*
+    Serial.print("FM  :");
+    Serial.print(riseCounter); Serial.print(",");
+    Serial.print(fixedCounter); Serial.print(",");
+    Serial.println(fallCounter);
 
-  Serial.print("ToBeReturned  "); Serial.println(freeRam()); */
+    Serial.print("ToBeReturned  "); Serial.println(freeRam()); */
   return fountainModelDone;
 }
 
@@ -949,9 +975,9 @@ void turnOnDaisy(byte pixels[], byte numOfPixels) {
   for (int i = 0; i < numOfPixels; i++) {
     //CKR    Serial.println(pixels[i]);
     //get The Daisy Equivalent pixel
-    int quot = daisyConverter((pixels[i]/3) +1 );
+    int quot = daisyConverter((pixels[i] / 3) + 1 );
     int rem = pixels[i] % 3;
-    pixels[i] = 3*quot + rem ;
+    pixels[i] = 3 * quot + rem ;
     meridians[24].setPixelColor(pixels[i], r, g, b);
   }
   meridians[24].show();
@@ -962,18 +988,18 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
 
   boolean rotationModelDone = false;
 
-   if (wayImplementRM == fixed || wayImplementRM == fixedFall) {
+  if (wayImplementRM == fixed || wayImplementRM == fixedFall) {
 
     riseCounterRM = numOfMeridiansInSetRM - 1;
     riseDoneRM = true;
-   }
+  }
   // }
   //Set the fallCounter value based on the "wayImplemented"
-   if (wayImplementRM == fixed || wayImplementRM == riseFixed) { // Donot Use Substring because the program might crash
+  if (wayImplementRM == fixed || wayImplementRM == riseFixed) { // Donot Use Substring because the program might crash
     fallCounterRM = numOfMeridiansInSetRM - 1;
     fallDoneRM = true;
-   }
- 
+  }
+
   //Set whether Rise is completed/Not Required
   if ((riseCounterRM == numOfMeridiansInSetRM - 1)) {
     riseDoneRM = true;
@@ -1013,7 +1039,7 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
     }
   }
 
- //Code for Fixed
+  //Code for Fixed
   if (fixedCounterRM < ((endMeridianNumberRM % 24) + 24 - startMeridianNumberRM  - numOfMeridiansInSetRM + 2) && riseDoneRM == true) {
 
     int j;
@@ -1064,7 +1090,7 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
     }
   }
 
-   //Reset the counters and different variables used to run the function
+  //Reset the counters and different variables used to run the function
   if (riseDoneRM == true && fixedDoneRM == true && fallDoneRM == true) {
 
     rotationModelDone = true;
@@ -1079,22 +1105,22 @@ boolean rotationModel(int startPixelNumberRM, int startMeridianNumberRM, int num
   } else {
     rotationModelDone = false;
   }
- // Serial.print("RM ended & to be Returned");
+  // Serial.print("RM ended & to be Returned");
 
   //CKR  Serial.print("RM  :");
   //CKR  Serial.print(riseCounterRM);Serial.print(",");
   //CKR Serial.print(fixedCounterRM);Serial.print(",");
   // CKR Serial.println(fallCounterRM);
- // Serial.print("RM End : "); Serial.println(freeRam());
+  // Serial.print("RM End : "); Serial.println(freeRam());
   return rotationModelDone;
 }
 
 /*
-int freeRam () {
+  int freeRam () {
   extern int __heap_start, *__brkval;
   int v;
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
+  }
 
 */
 //function that Updates Meridian numbers to be turned ON in pattern - 3
@@ -1114,14 +1140,14 @@ void  updateMeridianNumbersCKR() {
 }
 
 /* DEPRECATED ********************************************************************************************
-void readSweepIntervals(int chosenStrip) {
+  void readSweepIntervals(int chosenStrip) {
 
   /*
-   * Function to read sweep interval values being sent by GUI;
-   * It reads until it reaches '\n' i.e. endOfLine;
-   * A comma is a delimiter, hence, it stores the value from before the comma and then continues to read;
-   * At the end, it sends 98 to acknowledge that it has recieved the required number of elements
-   *
+     Function to read sweep interval values being sent by GUI;
+     It reads until it reaches '\n' i.e. endOfLine;
+     A comma is a delimiter, hence, it stores the value from before the comma and then continues to read;
+     At the end, it sends 98 to acknowledge that it has recieved the required number of elements
+
   int pixelNumber = 0;
   byte acknowledgement;
   while (pixelNumber != numPixels[chosenStrip - 1]) {
@@ -1154,19 +1180,19 @@ void readSweepIntervals(int chosenStrip) {
       acknowledgement = 97;
       Serial.println(acknowledgement);
     }
-  } 
-  
+  }
+
   inputString = Serial.readStringUntil('\n');
 
   int len = inputString.length();
 
   String numString = "";
-  
+
   for(int characterNumber = 0; characterNumber < len; characterNumber++ ) {
 
     if(inputString.charAt(characterNumber) == '\n') {
       sweepIntervals[pixelNumber++] = numString.toInt();
-      numString = ""; 
+      numString = "";
       break;
     }
     else if(inputString.charAt(characterNumber) == ',') {
@@ -1176,7 +1202,7 @@ void readSweepIntervals(int chosenStrip) {
     else {
       numString+=inputString.charAt(characterNumber);
     }
-    
+
   }
 
   if(!numString.equals("")) {
@@ -1187,6 +1213,6 @@ void readSweepIntervals(int chosenStrip) {
     acknowledgement = 98;
     Serial.println(acknowledgement);
   }
-  
-} DEPRECATED ******************************************************************************/
+
+  } DEPRECATED ******************************************************************************/
 
