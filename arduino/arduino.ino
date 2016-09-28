@@ -949,7 +949,7 @@ void turnOnDaisy(byte pixels[], byte numOfPixels) {
   for (int i = 0; i < numOfPixels; i++) {
     //CKR    Serial.println(pixels[i]);
     //get The Daisy Equivalent pixel
-    int quot = daisyConverter(pixels[i]/3);
+    int quot = daisyConverter((pixels[i]/3) +1 );
     int rem = pixels[i] % 3;
     pixels[i] = 3*quot + rem ;
     meridians[24].setPixelColor(pixels[i], r, g, b);
