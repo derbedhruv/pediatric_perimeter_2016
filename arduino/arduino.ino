@@ -77,7 +77,7 @@ String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
 unsigned long previousMillis, currentMillis, sweep_interval = 1367,Recieved_sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
 int fixationStrength = 100;  // brightness of the fixation
-byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, sweepStrip, daisyStrip;
+byte sweepStart, longitudeInt, Slider = 255, currentSweepLED,LEDNumber ,sweepStrip, daisyStrip;
 byte Respose_ClearAll;
 byte meridians_turnOn[24];
 char temp[25] = "";
@@ -114,7 +114,7 @@ boolean verifyTestRM = false;
 String  wayImplementRM;  // These two variables should be Global variables / Donot try to declare as constants or as a function parameters (PGM might crash)
 int startPixelRM, endPixelRM, numOfPixRM; // To get the pixel number limits for the pattern - 2
 int patternTwoIndex;
-byte meridiansPatternTwo[][6] = {{1,2,3,4,5,6},{7,8,9,10,11,12},{13,14,15,16,17,18},{19,20,21,22,23,24}};
+//byte meridiansPatternTwo[][6] = {{1,2,3,4,5,6},{7,8,9,10,11,12},{13,14,15,16,17,18},{19,20,21,22,23,24}};
 
 // Variables for Third Pattern
 byte meridianNumbersCKR [24];
@@ -138,7 +138,7 @@ void setup() {
 
 
 void loop() {
-  if (sweep == true) {
+ // if (sweep == true) {
 
     // Decide the Sweep Interval corresponding to each LED
     // "sweepIntervals" Will Have The time intervals for the current chosen strip
@@ -155,7 +155,7 @@ void loop() {
     } * DEPRECATED ************************************************************************************/
 
     // we will poll for this variable and then sweep the same LED
-    currentMillis = millis();
+  /*  currentMillis = millis();
     // Serial.println(currentMillis - previousMillis);
     if (currentMillis - previousMillis <= sweep_interval) {
 
@@ -204,8 +204,32 @@ void loop() {
       }
     }
   }
+*/
+// Code for Sweep 
+ if (sweep == true) {
 
+    // Serial.println(currentMillis - previousMillis);
+    if (millis() - currentMillis <= sweep_interval) {
 
+    } else {
+    Serial.println(millis());
+    if ((LEDNumber <= numPixels[sweepStrip - 1] + 3 - 1) && LEDNumber > 0){
+      wayImplementFM = fixed;
+      byte meridiansSweep [] = {sweepStrip,0};
+              verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep ,1, 2);
+              verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep ,1, 2);
+              //Serial.println(verifyTest);
+              if (verifyTest == true) {
+                Serial.println(LEDNumber);   
+                 LEDNumber = LEDNumber - 1;   
+                verifyTest = false;
+                currentMillis = millis();        
+     
+              }
+    }
+              
+    }
+ }
 // Code for patterns
  if (patterns == true) {
 
@@ -268,10 +292,12 @@ void loop() {
               }
              }
           }*/
-          verifyTest = fountainModel(3,3,1, meridiansPatternTwo[patternTwoIndex], 6*(patternTwoIndex), 2);
+          wayImplementRM = riseFixed;
+          verifyTest = fountainModel(3,3,1, allMeridians, 6*(patternTwoIndex+ 1 ), 2);
           if(verifyTest == true){
             patternTwoIndex += 1;
             patternTwoIndex %= 4;
+           // Serial.print("2 Index: ");Serial.println(patternTwoIndex);
             verifyTest = false;
           }
           currentMillis = millis();
@@ -369,7 +395,7 @@ void loop() {
                 patterns_interval = 250;
               }
 
-              currentMillis = millis();
+              currentMillis = 0;
             }
               break;
         }
@@ -438,7 +464,10 @@ void loop() {
                 sweep_interval = Recieved_sweep_interval;
                 sweepStrip = chosenStrip;
                 daisyStrip = daisyConverter(sweepStrip);
-                currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy chain
+                currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy 
+                LEDNumber = numPixels[sweepStrip - 1] + 3 - 1;
+                // Serial.println(LEDNumber); // First LED to start
+                currentMillis =0;
               }
               //analogWrite(fixationLED, 0);
               //byte acknowledgement = 97;
