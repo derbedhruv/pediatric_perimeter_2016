@@ -186,7 +186,7 @@ PrintWriter isopter_text, quadHemi_text;       // the textfiles which is used to
 String base_folder, workingDirectory;
 
 boolean flagged_test = false;
-int current_sweep_meridian,current_gross_test;
+int current_sweep_meridian,current_gross_test,imageFrameCounter;
 
 // STATUS VARIABLES
 String status = "idle";
@@ -260,12 +260,21 @@ void setup() {
     println("Checking if correct camera has been plugged in ...");
 
     for (int i = 0; i < cameras.length; i++) {  //Listing the available Cameras      
-      // println(cameras[i].length());
+     //  println(cameras[i].length());
       // println(cameras[i].substring(3,6));
       if (cameras[i].length() == 13 && cameras[i].substring(3, 6).equals("USB")) {
         println("...success!");
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
         cam.start();      // shall start acquiring video feed from the camera
+ 
+          int[][] res = cam.resolutions();
+  for ( i = 0; i < res.length; i++) {
+    println(res[i][0] + "x" + res[i][1]);
+  }
+        String[] fps = cam.framerates();
+          for (i = 0; i < fps.length; i++) {
+        println(fps[i]);
+  }
         break;
       }
     }  
@@ -524,10 +533,36 @@ void setup() {
     quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
     quadHemi_text.flush();
     // 
+    
+
+
+    
+    
     // CREATE A NEW AUDIO OBJECT
     sound_recording = minim.createRecorder(mic_input, base_folder + "/recording.wav", false);    // the false means that it would save directly to disc rather than in a buffer
     sound_recording.beginRecord();
 
+
+    // Start Desktop Recording as a background process
+     String video_folder =  workingDirectory+ "/" + base_folder + "/video.mpg";
+     try {
+       String[] ffmpeg_command = {
+    "C:\\Windows\\System32\\cmd.exe", "/c", "start", "ffmpeg", "-f", "gdigrab", "-framerate", "50", "-i", "desktop", "-vb", "48M",  video_folder  };
+ ProcessBuilder  p = new ProcessBuilder(ffmpeg_command);
+  Process  pr = p.start();
+
+   
+  print("Process ID : "); println(p);
+/*
+System.out.println("About to start");
+pr = Runtime.getRuntime().exec("ffmpeg -f gdigrab -framerate 50 -i desktop -vb 48M E:/sampleAB.avi");
+System.out.println("started");*/
+    
+  } 
+  catch (IOException e) {
+    e.printStackTrace(); 
+    exit();
+  }
     // RECALCULATE PRECISE ANGLES BASED ON THE OCCIPITAL TO CORNEAL DISTANCE ENTERED
     // OTHERWISE USE DEFAULT
   } else {
@@ -555,7 +590,7 @@ void draw() {
   background(backgroundColor);//4B66A8
 
   // draw the video capture here
-  fill(0);
+fill(0);
   rect(80, 50, 640, 480); 
   if (cam.available() == true) {
     cam.read();
@@ -564,8 +599,8 @@ void draw() {
   image(cam, 80, 50);    // display the image, interpolate with the previous image if this one was a dropped frame
 
   // Overlay a protractor on the live feed 
-  PImage protractor = loadImage("protractor.png");
-  image(protractor, 309, 203);
+   PImage protractor = loadImage("protractor.png");
+   image(protractor, 309, 203);
 
   //  image(myAnimation, 1180,30);// Baby's Animation
 
@@ -607,21 +642,22 @@ void draw() {
 
   // draw the isopter/meridians
   drawIsopter(meridians, isopter_center[0], isopter_center[1], isopter_diameter);
-  textView = loadFont("E:/GitRepositories/pediatric_perimeter_2016/gui/data/Calibri-Bold-48.vlw");
-  textFont(textView, 15);
+ // textView = loadFont("E:/GitRepositories/pediatric_perimeter_2016/gui/data/Calibri-Bold-48.vlw");
+ // textFont(textView, 15);
   // print reaction time and information about what was the last thing tested and the thing presently being tested
   fill(0);
   text("Reaction time is  : " + str(reaction_time) + "ms", 520, 565);
   text("Last thing tested : " + last_tested, 520, 595);
   text("Present Status    : " + status, 520, 625);
-  textFont(textView, 25);
+//  textFont(textView, 25);
   text(str(currentMillis) + "ms", 1075, 625);      // milliseconds elapsed since the program began
-  textFont(textView, 15);
+//  textFont(textView, 15);
   text( "Value :" + cp5.getController("FIXATION").getValue(), 1025, 545);  // display the brightness 
 
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
-  saveFrame(workingDirectory + base_folder + "/frames/frame-####.jpg");      //save each frame to disc without compression
+//  saveFrame(workingDirectory + base_folder + "/frames/frame-####.jpg");      //save each frame to disc without compression
+//println(frameCount);
 }
 
 
@@ -1449,6 +1485,7 @@ void keyPressed() {
   if (k == 32) {    // 32 is the ASCII code for the space key
     imageNumber = 1;
     SpaceKey_State = 1;
+    flagged_test = false;
     /// println(Delay_Store);
     println("Space Bar Pressed Now");
     arduino.write('x');
@@ -2027,11 +2064,11 @@ void FINISH() {
 
   // stop recording the sound..
   sound_recording.endRecord();
-
+  sound_recording.save();
   // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
   // send a popup message giving a message to the user
 
-  String[] ffmpeg_command = {
+/*  String[] ffmpeg_command = {
     "C:\\Windows\\System32\\cmd.exe", "/c", "start", "ffmpeg", "-framerate", str(final_fps), "-start_number", "0001", "-i", sketchPath("") + base_folder + "/frames/frame-%04d.jpg", "-i", sketchPath("") + base_folder + "/recording.wav", sketchPath("") + base_folder + "/video.mp4"
   };
 
@@ -2048,12 +2085,12 @@ void FINISH() {
      while((line=input.readLine()) != null){
      System.out.println(line);
      }
-     */
+     
   } 
   catch (IOException e) {
     e.printStackTrace(); 
     exit();
-  }
+  }*/
 
   // ONCE THIS IS DONE, DELETE THE 'FRAME' DIRECTORY
   // TODO: DO THIS IS A BAT FILE OR THROUGH THE CMD - OTHERWISE YOU'LL DELETE THEM BEFORE THEY'RE USED
@@ -2083,9 +2120,9 @@ void FLAG() {
   println("All Cleared");
   
     if (flagged_test == false) {
-    if (last_tested == "quadrant" || last_tested == "hemi"|| last_tested == "Meridian") {
+    if (status == "quadrant" || status == "hemi"|| status == "Meridian") {
       flagged_test = true;
-    } else if (last_tested == "sweep") {
+    } else if (status == "sweep") {
       flagged_test = true;
     }
   }
@@ -2295,4 +2332,5 @@ float[][] importExcel(String filepath) {
 boolean sketchFullScreen() {
   return true;
 }
+
 
