@@ -33,22 +33,31 @@
 #endif
 #include <MemoryFree.h>
 
+#define Red 163
+#define Green 255
+#define Blue 4
 
 // #define Br 2      // This is where you define the brightness of the LEDs - this is constant for all
 
 // Declare Integer Variables for RGB values. Define Colour of the LEDs.
 // Moderately bright green color.
 // reducing memory usage so making these into preprocessor directives
-#define r 163
-#define g 255
-#define b 4
-
+byte colorSequence[10][3] ={
+  {223, 75, 23 },
+  {233, 204, 19 },
+  {155, 233, 19 },
+  {51, 233, 19  },
+  {19, 181, 233 },
+  {19, 233, 181 },
+  {19, 45, 233  },
+  {217, 19, 233 },
+  {233, 19, 19  }
+  }; 
 #define fixationLED 12  // the fixation LED pin
 
 
+
 //String Constants for Patterns
-
-
 #define fixed "FIXED"
 #define riseFixed "RISE_FIXED"
 #define fixedFall "FIXED_FALL"
@@ -73,6 +82,10 @@ Adafruit_NeoPixel meridians[25];    // create meridians object array for 24 meri
 // THE FOLLOWING ARE VARIABLES FOR THE ENTIRE SERIALEVENT INTERRUPT ONLY
 // the variable 'breakOut' is a boolean which is used to communicate to the loop() that we need to immedietely shut everything off
 byte Br; // variable to set brightness
+byte r ;
+byte g ;
+byte b ;
+
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
 unsigned long previousMillis, currentMillis, sweep_interval = 1367, Recieved_sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
@@ -121,7 +134,7 @@ byte meridianNumbersCKR [24];
 int counterCKR;
 int patternThreeIndex = 2; // To start with a one time sequence.
 
-
+   byte colorIndex= 0;
 
 void setup() {
   // setup serial connection
@@ -250,7 +263,14 @@ void loop() {
     if (millis() - currentMillis <= patterns_interval) {
 
     } else {
+  
+     colorIndex += 1;
+     colorIndex %= 9;
 
+     r = colorSequence [colorIndex] [0];
+     g = colorSequence [colorIndex] [1];
+     b = colorSequence [colorIndex] [2];
+     
       //Select the pattern
       switch (patternNumber) {
 
@@ -374,7 +394,11 @@ void loop() {
           case 'm': { // Choosen Meridian Will Turn On
               // Based on the number entered as longit[0], we will turn on that particular LED.
               Br = 1;
-           //   Serial.println(1);
+               //Set The Color of the LED in Strip 
+                r = Red;
+                g = Green;
+                b= Blue;
+              //   Serial.println(1);
               analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
               byte chosenStrip = longit.toInt();
               if (chosenStrip <= 24 && chosenStrip > 0) {
@@ -391,7 +415,7 @@ void loop() {
             }
           case 'p':  {// Choose
               Br = 1;
-         //     Serial.println(2);
+              //     Serial.println(2);
               analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
               byte chosenStrip = longit.toInt();
               if (chosenStrip <= 5) {
@@ -424,15 +448,15 @@ void loop() {
               //delay(30);  //Wait some time so it can write everything //DEPRECATED
               //int chosenStrip = longit.toInt(); //DEPRECATED
               //readSweepIntervals(chosenStrip); //Start reading sweep intervals  //DEPRECATED
-              if (longit.toInt() != 0){
-              Recieved_sweep_interval = longit.toInt();  //every LED has same time interval
-                  }
+              if (longit.toInt() != 0) {
+                Recieved_sweep_interval = longit.toInt();  //every LED has same time interval
+              }
               break;
               /*// interval= longit.toInt();
                 // sweepTimeIntervals
                 int meridian = longit.toInt();
                 int n = numPixels[meridian - 1] + 3; // No. Of LEDs
-
+2222222222222222222222222222222222222222222222222222222222222222222222222
                 // Get The Time Intervals in the form of a string
                 if (Serial.available()>0) {
                 // sweepIntervals  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // clear the prev sweep interval values
@@ -474,11 +498,16 @@ void loop() {
                  Refer case 't' for sweep intervals;
               */
               byte chosenStrip = longit.toInt();
-        //      Serial.println(3);
+              //      Serial.println(3);
               analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = true;
                 Br = 2;
+                //Set The Color of the LED in Strip 
+                r = Red;
+                g = Green;
+                b= Blue;
+                
                 //Set The Sweep Interval
                 sweep_interval = Recieved_sweep_interval;
                 sweepStrip = chosenStrip;
@@ -496,20 +525,24 @@ void loop() {
 
           case 'l': {
               //change the brightness value of fixation LEDs based on user input
-             if (longit.toInt() != 0){
-              fixationStrength = longit.toInt();
-            //  Serial.println(4);
+              if (longit.toInt() != 0) {
+                fixationStrength = longit.toInt();
+                //  Serial.println(4);
 
-              analogWrite(fixationLED, fixationStrength);
-             }
+                analogWrite(fixationLED, fixationStrength);
+              }
               break;
             }
           case 'h': {
               // clearAll();
               // turn off the fixation
-            //  Serial.println(5);
+              //  Serial.println(5);
               analogWrite(fixationLED, 0);
               Br = 1;
+               //Set The Color of the LED in Strip 
+                r = Red;
+                g = Green;
+                b= Blue;
               // we then switch through WHICH hemisphere
               switch (longit[0]) {
                 case '1': {
@@ -540,9 +573,13 @@ void loop() {
           case 'q': {
               Serial.println("quadrants");
               // turn off the fixation
-          //    Serial.println(6);
+              //    Serial.println(6);
               analogWrite(fixationLED, 0);
               Br = 1;
+               //Set The Color of the LED in Strip 
+                r = Red;
+                g = Green;
+                b= Blue;
               switch (longit[0]) {
                 // we shall go anticlockwise. "1" shall start from the bottom right.
                 case '1': {
