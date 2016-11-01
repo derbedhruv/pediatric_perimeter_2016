@@ -429,7 +429,7 @@ f.setVisible(true);  // This shows the First Screen
   workingDirectory = sketchPath("");  
   //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
  // angleData = importExcel("E:/GitRepositories/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
- angleData = importExcel(workingDirectory + "AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
+ angleData = importExcel(workingDirectory + "/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
 
   // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
   cp5 = new ControlP5(this);
@@ -1037,7 +1037,7 @@ public class SecondApplet extends PApplet {
       endShape();
     }
 
-    textView = loadFont(workingDirectory + "data/GoudyOldStyleT-Bold-48.vlw");
+    textView = loadFont(workingDirectory + "/data/GoudyOldStyleT-Bold-48.vlw");
     textFont(textView, 40);
     fill(#ff0000);
     text("Baby's \n Right ", 975, 75);
@@ -2185,7 +2185,7 @@ void FINISH() {
   println(final_fps);
 
   PImage screenIsopter = get(760, 30, 400, 360);     // get that particular section of the screen where the isopter lies. 
-  screenIsopter.save(workingDirectory + base_folder + "/Reference_GUI_Isopter.jpg");  // save it to a file in the same folder
+  screenIsopter.save(workingDirectory + "/" + base_folder + "/Reference_GUI_Isopter.jpg");  // save it to a file in the same folder
 
 
   f = new PFrame(width, height);
@@ -2226,13 +2226,14 @@ try {
         }
         
         
-  delay(500);
+//  delay(500);
   
+  println("Stitching Initiated to : " + base_folder);
   //Stitch the video and Audio 
   
   try {
        String[] ffmpeg_command = {
-    "C:\\Windows\\System32\\cmd.exe", "/c", "start", "ffmpeg", "-i", workingDirectory + base_folder +"/video.mpg", "-i", workingDirectory + base_folder +"/recording.wav", "-c:v", "copy", "-c:a", "copy",workingDirectory + base_folder + "/FinalVideo.avi"};
+    "C:\\Windows\\System32\\cmd.exe", "/c", "start", "ffmpeg", "-i", workingDirectory+"/"+base_folder +"/video.mpg", "-i",  workingDirectory+"/"+base_folder +"/recording.wav", "-c:v", "copy", "-c:a", "copy", workingDirectory + "/" +base_folder + "/FinalVideo.avi"};
  ProcessBuilder  p = new ProcessBuilder(ffmpeg_command);
   Process  pr = p.start();
   } 
