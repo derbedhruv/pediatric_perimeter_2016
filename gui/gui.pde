@@ -29,7 +29,7 @@
  
 /**************************************************************************************************
  //
- d//  MERIDIAN numbering of Device/in Arduino  and No.of LEDs on each Meridian  
+ //  MERIDIAN numbering of Device/in Arduino  and No.of LEDs on each Meridian  
  //  Meridian Label  :  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  
  //  No. of LEDs     : 25 25 25 25 21 14 13 14 21  25  25  25  25  25  25  25  14  12  12  12  14  26  25  25
  //  
@@ -218,7 +218,7 @@ PImage  subjectIsopter;
 int imageCount;
 PImage eyeDirection;
 int imageNumber;
-
+public int count = 0;
 // Second window Variables to generate the final Isopter according to the subject's view
 PFrame f;
 PApplet s;
@@ -283,6 +283,147 @@ void setup() {
       exit();
     }
   }
+
+// SHow the First Frame to collect the Demographic data of the patient
+
+
+   //noLoop();
+  final JFrame f=new JFrame();
+  f.setSize(1050,600);
+  JPanel myPanel=new JPanel();
+  myPanel.setLayout(null);
+  JLabel caption=new JLabel("Patient's Information");
+  caption.setSize(200,60);
+  caption.setLocation(200,60);
+  myPanel.add(caption);
+JLabel lbl1 = new JLabel("Patient Name");
+JLabel lbl2 = new JLabel("MR Number");
+JLabel lbl3 = new JLabel("Date of Birth");
+JLabel lbl4 = new JLabel("Milestone details");
+JLabel lbl5 = new JLabel("Occipital Distance");
+
+myPanel.add(lbl1);
+myPanel.add(lbl2);
+myPanel.add(lbl3);
+myPanel.add(lbl4);
+myPanel.add(lbl5);
+
+lbl1.setLocation(130, 120);
+lbl2.setLocation(130, 150);
+lbl3.setLocation(130, 180);
+lbl4.setLocation(130, 210);
+lbl5.setLocation(130, 240);
+
+lbl1.setSize(100, 14);
+lbl2.setSize(100, 14);
+lbl3.setSize(80, 14);
+lbl4.setSize(120, 14);
+lbl5.setSize(130, 14);
+  
+  final JTextField pname = new JTextField(30);
+  final JTextField pMR = new JTextField(30);
+  final JTextField pdob = new JTextField(30);
+  final JTextField pmilestone_details = new JTextField(30);
+  final JTextField potc = new JTextField(30);
+   
+   myPanel.add(pname);
+  myPanel.add(pMR);
+  myPanel.add(pdob);
+  myPanel.add(pmilestone_details);
+  myPanel.add(potc);
+    
+    pname.setLocation(250,120);
+    pMR.setLocation(250,150);
+    pdob.setLocation(250,180);
+    pmilestone_details.setLocation(250,210);
+    potc.setLocation(250,240);
+    pname.setSize(250,19);
+    pMR.setSize(250,19);
+    pdob.setSize(250,19);
+    pmilestone_details.setSize(250,19);
+    potc.setSize(250,19);
+    
+    JButton OK=new JButton("OK");
+    myPanel.add(OK);
+    OK.setLocation(150,300);
+    OK.setSize(150,20);
+    JButton Start_Anyway=new JButton("Start_Anyway");
+    myPanel.add(Start_Anyway);
+    Start_Anyway.setLocation(320,300);
+    Start_Anyway.setSize(150,20);
+    
+    JLabel inst1=new JLabel("Instructions");
+     inst1.setSize(300,20);
+     inst1.setLocation(540,100);
+     myPanel.add(inst1);
+     JLabel ard=new JLabel("Arduino");
+     JLabel camc=new JLabel("Camera");
+     ard.setLocation(800,20);
+     ard.setSize(100,30);
+     camc.setLocation(800,40);
+     camc.setSize(100,30);
+     myPanel.add(ard);
+     myPanel.add(camc);
+     
+    OK.addActionListener(new ActionListener()
+    {
+    public void actionPerformed(ActionEvent event)
+    {
+      println("OK clicked");
+      if(pname.getText().equals("") || pMR.getText().equals("")  ||potc.getText().equals(""))
+      {
+        println("if block of ok");
+          count=0;
+          //loop();
+      }
+      else
+      {
+         println("else block of ok");
+          count++;
+          f.dispose();
+      }
+      
+      println(count);
+    }
+  });
+    
+    Start_Anyway.addActionListener(new ActionListener()
+    {
+    public void actionPerformed(ActionEvent event)
+    {
+      count++;
+    }
+  });
+    
+    println("Yooo .. Broo..");
+    JLabel ard_con,cam_con;
+
+// Display the status of the Arduino Interface
+ if (arduino != null){
+    ard_con=new JLabel("Connected");
+ }else {
+    ard_con=new JLabel("Not Connected");
+ }
+ 
+ // Add The label to the panel
+  ard_con.setLocation(900,25);
+  ard_con.setSize(100,20);
+  myPanel.add(ard_con);
+  
+ // Display the status of the Camera Interface 
+ if (cam != null){
+   cam_con=new JLabel("Connected");
+ }else{
+   cam_con=new JLabel("Not Connected");
+ }
+ 
+ cam_con.setLocation(900,45);
+ cam_con.setSize(100,20);
+ myPanel.add(cam_con);
+
+f.add(myPanel);
+f.setVisible(true);  // This shows the First Screen 
+
 
   //Get the Working Directory of the sketch 
   workingDirectory = sketchPath("");  
@@ -486,7 +627,7 @@ void setup() {
   minim = new Minim(this);
   mic_input = minim.getLineIn();    // keep this ready. This is the line-in.
 
-  // TAKE PATIENT DETAILS AS INPUT
+ /* // TAKE PATIENT DETAILS AS INPUT
   // String patient_stuff = javax.swing.JOptionPane.showInputDialog(this, "Patient Name:");
   JTextField pname = new JTextField();
   JTextField pMR = new JTextField();
@@ -499,18 +640,24 @@ void setup() {
     "Date of Birth:", pdob, 
     "Milestone Notes:", pmilestone_details, 
     "Occipital to Corneal Distance (mm):", padditional_info,
-  };
+  };*/
 
   // TODO: change showconfirmDialog to something else that only shows an OK option
-  int option = JOptionPane.showConfirmDialog(this, message, "Please enter patient information", JOptionPane.OK_CANCEL_OPTION);
+ // int option = JOptionPane.showConfirmDialog(this, message, "Please enter patient information", JOptionPane.OK_CANCEL_OPTION);
 
-  if (option == JOptionPane.OK_OPTION)
-  {
+ // if (option == JOptionPane.OK_OPTION)
+ // {
+   
+   while(count == 0)
+{
+ println("Waiting for the USer..");
+}
+ 
     patient_name = pname.getText();
     patient_MR = pMR.getText();
     patient_dob = pdob.getText();
     patient_milestone_details = pmilestone_details.getText();
-    patient_OTC = padditional_info.getText();
+    patient_OTC = potc.getText();
     occipitalDistance = Integer.parseInt(patient_OTC.trim());
 
     // Create files for saving patient details
@@ -552,7 +699,7 @@ void setup() {
   Process  pr = p.start();
 
    
-  print("Process ID : "); println(p);
+ // print("Process ID : "); println(p);
 /*
 System.out.println("About to start");
 pr = Runtime.getRuntime().exec("ffmpeg -f gdigrab -framerate 50 -i desktop -vb 48M E:/sampleAB.avi");
@@ -565,9 +712,9 @@ System.out.println("started");*/
   }
     // RECALCULATE PRECISE ANGLES BASED ON THE OCCIPITAL TO CORNEAL DISTANCE ENTERED
     // OTHERWISE USE DEFAULT
-  } else {
-    exit();    // quit the program
-  }
+ // } else {
+ //   exit();    // quit the program
+// }
 
   // angleData stores the values according to device numbering
   // Initialize the pattern_state 
@@ -2066,6 +2213,32 @@ void FINISH() {
   sound_recording.endRecord();
   sound_recording.save();
   // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
+  
+  delay(100);
+
+// Stop the desktop recording 
+try {
+            Process p = Runtime.getRuntime().exec("C:\\Windows\\System32\\cmd.exe /c start taskkill /IM ffmpeg.exe /f " );
+           // StreamGobbler.StreamGobblerLOGProcess(p);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        
+  delay(500);
+  
+  //Stitch the video and Audio 
+  
+  try {
+       String[] ffmpeg_command = {
+    "C:\\Windows\\System32\\cmd.exe", "/c", "start", "ffmpeg", "-i", workingDirectory + base_folder +"/video.mpg", "-i", workingDirectory + base_folder +"/recording.wav", "-c:v", "copy", "-c:a", "copy",workingDirectory + base_folder + "/FinalVideo.avi"};
+ ProcessBuilder  p = new ProcessBuilder(ffmpeg_command);
+  Process  pr = p.start();
+  } 
+  catch (IOException e) {
+    e.printStackTrace(); 
+    exit();
+  }
   // send a popup message giving a message to the user
 
 /*  String[] ffmpeg_command = {
