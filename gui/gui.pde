@@ -428,7 +428,8 @@ f.setVisible(true);  // This shows the First Screen
   //Get the Working Directory of the sketch 
   workingDirectory = sketchPath("");  
   //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
-  angleData = importExcel("E:/GitRepositories/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
+ // angleData = importExcel("E:/GitRepositories/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
+ angleData = importExcel(workingDirectory + "AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
 
   // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
   cp5 = new ControlP5(this);
