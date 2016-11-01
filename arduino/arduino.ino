@@ -141,12 +141,13 @@ void setup() {
   Serial.begin(115200);
   Serial.setTimeout(500);
   Serial.println("starting..");
-  Br = 2; // Initialise to default Brightness Value Required
+  Br = 2; // Initialise to default Brightness Value Requiredx
   for (int i = 0; i < 25; i++) {
     // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
     meridians[i] = Adafruit_NeoPixel(numPixels[i], pinArduino[i], NEO_GRB + NEO_KHZ800);
   }
   clearAll();
+
 }
 
 
@@ -679,7 +680,9 @@ void clearAll() {
   fallDoneRM = false;
   fixedDoneRM = false;
 
-
+  // No Pattern and No Sweep 
+  patterns = false;
+  sweep = false;
 
   // then put on fixation
   // Serial.println(fixationStrength);
