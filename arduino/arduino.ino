@@ -417,7 +417,7 @@ void loop() {
           case 'p':  {// Choose
               Br = 1;
               //     Serial.println(2);
-              analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
+              analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
               byte chosenStrip = longit.toInt();
               if (chosenStrip <= 5) {
                 patterns = true;
@@ -500,7 +500,7 @@ void loop() {
               */
               byte chosenStrip = longit.toInt();
               //      Serial.println(3);
-              analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
+              analogWrite(fixationLED, fixationStrength / 2); // Fixation is very Important during kinetic perimetry.
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = true;
                 Br = 2;
