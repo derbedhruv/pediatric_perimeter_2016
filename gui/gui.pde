@@ -1,7 +1,7 @@
 /***************************************
- THIS IS THE LATEST VERSION AS OF 14-APR-2016
+ THIS IS THE LATEST VERSION AS OF 03-Nov-2016
  Project Name : Pediatric Perimeter v3.x
- Author : Dhruv Joshi
+ Author : CKR
  Modifications made:
  - removed the cp5 controlform, replace with the JOptionPane
  - Saving of audio for the duration of the test
@@ -41,8 +41,11 @@
  
  */
 import java.io.*;
-import java.awt.*;
+import java.awt.Label;
+import java.awt.Font;
+import java.awt.Color;
 import java.awt.event.*;
+import java.awt.*;
 import javax.swing.*;
 import static javax.swing.JOptionPane.*;
 import controlP5.*;
@@ -157,8 +160,8 @@ int posPatternImage [][] = {
 };
 // VARIABLES THAT KEEP TRACK OF WHAT OBJECT (HEMI, QUAD OR ISOPTER) WE ARE HOVERING OVER AND WHICH COUNT IT IS
 // THIS WILL ENABLE SENDING A SERIAL COMM TO THE ARDUINO VERY EASILY ON A MOUSE PRESS EVENT
-char hovered_object;
-int hovered_count;    // the current meridian which has been hovered over
+char hovered_object,lastTest_Hobject;
+int hovered_count,lastTest_Hcount;    // the current meridian which has been hovered over
 color hover_color = #08BFC4; //  Color When hovering on Clickable objects
 color backgroundColor = #5f6171;
 
@@ -280,7 +283,7 @@ void setup() {
     }  
     if (cam == null) {
       println("...NO. Please check the camera connected and try again."); 
-      exit();
+     // exit();
     }
   }
 
@@ -288,142 +291,7 @@ void setup() {
 
 
    //noLoop();
-  final JFrame f=new JFrame();
-  f.setSize(1050,600);
-  JPanel myPanel=new JPanel();
-  myPanel.setLayout(null);
-  JLabel caption=new JLabel("Patient's Information");
-  caption.setSize(200,60);
-  caption.setLocation(200,60);
-  myPanel.add(caption);
-JLabel lbl1 = new JLabel("Patient Name");
-JLabel lbl2 = new JLabel("MR Number");
-JLabel lbl3 = new JLabel("Date of Birth");
-JLabel lbl4 = new JLabel("Milestone details");
-JLabel lbl5 = new JLabel("Occipital Distance");
-
-myPanel.add(lbl1);
-myPanel.add(lbl2);
-myPanel.add(lbl3);
-myPanel.add(lbl4);
-myPanel.add(lbl5);
-
-lbl1.setLocation(130, 120);
-lbl2.setLocation(130, 150);
-lbl3.setLocation(130, 180);
-lbl4.setLocation(130, 210);
-lbl5.setLocation(130, 240);
-
-lbl1.setSize(100, 14);
-lbl2.setSize(100, 14);
-lbl3.setSize(80, 14);
-lbl4.setSize(120, 14);
-lbl5.setSize(130, 14);
-  
-  final JTextField pname = new JTextField(30);
-  final JTextField pMR = new JTextField(30);
-  final JTextField pdob = new JTextField(30);
-  final JTextField pmilestone_details = new JTextField(30);
-  final JTextField potc = new JTextField(30);
-   
-   myPanel.add(pname);
-  myPanel.add(pMR);
-  myPanel.add(pdob);
-  myPanel.add(pmilestone_details);
-  myPanel.add(potc);
-    
-    pname.setLocation(250,120);
-    pMR.setLocation(250,150);
-    pdob.setLocation(250,180);
-    pmilestone_details.setLocation(250,210);
-    potc.setLocation(250,240);
-    pname.setSize(250,19);
-    pMR.setSize(250,19);
-    pdob.setSize(250,19);
-    pmilestone_details.setSize(250,19);
-    potc.setSize(250,19);
-    
-    JButton OK=new JButton("OK");
-    myPanel.add(OK);
-    OK.setLocation(150,300);
-    OK.setSize(150,20);
-    JButton Start_Anyway=new JButton("Start_Anyway");
-    myPanel.add(Start_Anyway);
-    Start_Anyway.setLocation(320,300);
-    Start_Anyway.setSize(150,20);
-    
-    JLabel inst1=new JLabel("Instructions");
-     inst1.setSize(300,20);
-     inst1.setLocation(540,100);
-     myPanel.add(inst1);
-     JLabel ard=new JLabel("Arduino");
-     JLabel camc=new JLabel("Camera");
-     ard.setLocation(800,20);
-     ard.setSize(100,30);
-     camc.setLocation(800,40);
-     camc.setSize(100,30);
-     myPanel.add(ard);
-     myPanel.add(camc);
-     
-    OK.addActionListener(new ActionListener()
-    {
-    public void actionPerformed(ActionEvent event)
-    {
-      println("OK clicked");
-      if(pname.getText().equals("") || pMR.getText().equals("")  ||potc.getText().equals(""))
-      {
-        println("if block of ok");
-          count=0;
-          //loop();
-      }
-      else
-      {
-         println("else block of ok");
-          count++;
-          f.dispose();
-      }
-      
-      println(count);
-    }
-  });
-    
-    Start_Anyway.addActionListener(new ActionListener()
-    {
-    public void actionPerformed(ActionEvent event)
-    {
-      count++;
-    }
-  });
-    
-    println("Yooo .. Broo..");
-    JLabel ard_con,cam_con;
-
-// Display the status of the Arduino Interface
- if (arduino != null){
-    ard_con=new JLabel("Connected");
- }else {
-    ard_con=new JLabel("Not Connected");
- }
  
- // Add The label to the panel
-  ard_con.setLocation(900,25);
-  ard_con.setSize(100,20);
-  myPanel.add(ard_con);
-  
- // Display the status of the Camera Interface 
- if (cam != null){
-   cam_con=new JLabel("Connected");
- }else{
-   cam_con=new JLabel("Not Connected");
- }
- 
- cam_con.setLocation(900,45);
- cam_con.setSize(100,20);
- myPanel.add(cam_con);
-
-f.add(myPanel);
-f.setVisible(true);  // This shows the First Screen 
-
 
   //Get the Working Directory of the sketch 
   workingDirectory = sketchPath("");  
@@ -621,44 +489,116 @@ f.setVisible(true);  // This shows the First Screen
             ;     
 
 
+ JPanel panel = new JPanel();
+        //panel.setSize(700,500);
+        panel.setLayout(new GridLayout(4,1));
+        JLabel ard=new JLabel("Arduino");
+         JLabel camc=new JLabel("Camera");
+         //198-512.png
+         
+         JPanel hd=new JPanel();
+         hd.setLayout(null);
+         
+        Label cap=new Label("Patients Info",Label.CENTER);
+        cap.setFont(new Font("Serif",Font.BOLD,20));
+        cap.setForeground(Color.BLACK);
+    
+        // JLabel cap=new JLabel("Patients Info");
+         cap.setLocation(150,10);
+         cap.setSize(150,60);
+         String path1=workingDirectory+"r.png";
+         String path2=workingDirectory+"g.png";
+         ImageIcon red,grn;
+         if(arduino == null){
+            red = new ImageIcon(path1);
+         }else{
+           red = new ImageIcon(path2);
+         }
+      
+          JLabel red1 = new JLabel();
+          red1.setIcon(red);
+          red1.setLocation(410,45);
+          red1.setSize(10,10);
+           if(cam == null){
+           grn = new ImageIcon(path1);
+         }else{
+           grn = new ImageIcon(path2);
+         }
+         
+          JLabel grn1=new JLabel(grn);
+          grn1.setLocation(410,65);
+          grn1.setSize(10,10);
+         hd.add(red1);
+         hd.add(grn1);
+         hd.add(cap);
+         ard.setLocation(350,40);
+         ard.setSize(60,20);
+         camc.setLocation(350,60);
+         camc.setSize(60,20);
+         hd.add(ard);
+        hd.add(camc);
+         
+         panel.add(hd); 
+        
+        JLabel lbl1 = new JLabel("Patient Name");
+        JLabel lbl2 = new JLabel("MR Number");
+        JLabel lbl3 = new JLabel("Date of Birth");
+        JLabel lbl4 = new JLabel("Milestone details");
+        JLabel lbl5 = new JLabel("Occipital Distance");
+
+  final JTextField pname = new JTextField(10);
+  final JTextField pMR = new JTextField(10);
+  final JTextField pdob = new JTextField(10);
+  final JTextField pmilestone_details = new JTextField(10);
+  final JTextField potc = new JTextField(10);
 
 
+  JPanel labels=new JPanel();
+  labels.setLayout(new GridLayout(5,2));
+ // labels.setSize(300,400);
+    labels.add(lbl1);
+     labels.add(pname);
+    labels.add(lbl2);
+     labels.add(pMR);
+    labels.add(lbl3);
+     labels.add(pdob);
+    labels.add(lbl4);
+    labels.add(pmilestone_details);
+    labels.add(lbl5);
+   labels.add(potc);
+  
+  JPanel instr=new JPanel(new GridLayout(0,1));
+  //instr.setSize(200,100);
+  Label inscap=new Label("Instructions",Label.CENTER);
+  inscap.setFont(new Font("Serif",Font.BOLD,15));
+  inscap.setForeground(Color.BLACK);
+  instr.add(inscap);
+  JLabel l1=new JLabel("1. Parents should be given informed consent for signing.");
+  JLabel l2=new JLabel("2. Only the parents and 3 (maximum) examiners would be allowed to stay inside the room during the testing.");
+  JLabel l3=new JLabel("3. Try re-connecting the arduino before you run the code ");
+  instr.add(l1);
+  instr.add(l2);
+  instr.add(l3);
+  panel.add(labels);
+  panel.add(instr);
 
-  // AUDIO RECORDING SETTINGS
-  minim = new Minim(this);
-  mic_input = minim.getLineIn();    // keep this ready. This is the line-in.
+        int result = JOptionPane.showConfirmDialog(
+            this, // use your JFrame here
+            panel,
+            "Use a Panel",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE);
 
- /* // TAKE PATIENT DETAILS AS INPUT
-  // String patient_stuff = javax.swing.JOptionPane.showInputDialog(this, "Patient Name:");
-  JTextField pname = new JTextField();
-  JTextField pMR = new JTextField();
-  JTextField pdob = new JTextField();
-  JTextField pmilestone_details = new JTextField();
-  JTextField padditional_info = new JTextField();
-  Object[] message = {
-    "Patient Name:", pname, 
-    "MR Number:", pMR, 
-    "Date of Birth:", pdob, 
-    "Milestone Notes:", pmilestone_details, 
-    "Occipital to Corneal Distance (mm):", padditional_info,
-  };*/
-
-  // TODO: change showconfirmDialog to something else that only shows an OK option
- // int option = JOptionPane.showConfirmDialog(this, message, "Please enter patient information", JOptionPane.OK_CANCEL_OPTION);
-
- // if (option == JOptionPane.OK_OPTION)
- // {
-   
-   while(count == 0)
-{
- println("Waiting for the USer..");
-}
- 
-    patient_name = pname.getText();
-    patient_MR = pMR.getText();
-    patient_dob = pdob.getText();
-    patient_milestone_details = pmilestone_details.getText();
-    patient_OTC = potc.getText();
+      
+      
+     if(result == JOptionPane.OK_OPTION ) 
+     {
+           patient_name = pname.getText();
+      patient_MR = pMR.getText();
+      patient_dob = pdob.getText();
+      patient_milestone_details = pmilestone_details.getText();
+      patient_OTC = potc.getText();
+          
     occipitalDistance = Integer.parseInt(patient_OTC.trim());
 
     // Create files for saving patient details
@@ -684,7 +624,9 @@ f.setVisible(true);  // This shows the First Screen
     
 
 
-    
+      // AUDIO RECORDING SETTINGS
+  minim = new Minim(this);
+  mic_input = minim.getLineIn();    // keep this ready. This is the line-in.
     
     // CREATE A NEW AUDIO OBJECT
     sound_recording = minim.createRecorder(mic_input, base_folder + "/recording.wav", false);    // the false means that it would save directly to disc rather than in a buffer
@@ -698,32 +640,28 @@ f.setVisible(true);  // This shows the First Screen
     "C:\\Windows\\System32\\cmd.exe", "/c", "start", "ffmpeg", "-f", "gdigrab", "-framerate", "50", "-i", "desktop", "-vb", "48M",  video_folder  };
  ProcessBuilder  p = new ProcessBuilder(ffmpeg_command);
   Process  pr = p.start();
-
-   
- // print("Process ID : "); println(p);
-/*
-System.out.println("About to start");
-pr = Runtime.getRuntime().exec("ffmpeg -f gdigrab -framerate 50 -i desktop -vb 48M E:/sampleAB.avi");
-System.out.println("started");*/
     
   } 
   catch (IOException e) {
     e.printStackTrace(); 
     exit();
   }
-    // RECALCULATE PRECISE ANGLES BASED ON THE OCCIPITAL TO CORNEAL DISTANCE ENTERED
-    // OTHERWISE USE DEFAULT
- // } else {
- //   exit();    // quit the program
-// }
 
-  // angleData stores the values according to device numbering
+
+  // angleDadta stores the values according to device numbering
   // Initialize the pattern_state 
   pattern_state [0] = 1;
   pattern_state [1] = 1;
   pattern_state [2] = 1;
   arduino.write('x');
   arduino.write('\n');
+  }
+  else
+  {
+      exit(); 
+  }
+  
+   
 }
 
 void draw() {
@@ -1471,6 +1409,11 @@ void mousePressed() {
       arduino.write(str(hovered_count));    // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
     }
     arduino.write('\n');
+    println("Original " + hovered_object+ "  " + hovered_count);
+// Update these values for FLAG 
+lastTest_Hobject = hovered_object;
+lastTest_Hcount = hovered_count;
+println("Check " + lastTest_Hobject + "  " + lastTest_Hcount);
   }
 
   // change colour of the object to "presently being done"
@@ -2297,22 +2240,87 @@ void FLAG() {
     if (flagged_test == false) {
     if (status == "quadrant" || status == "hemi"|| status == "Meridian") {
       flagged_test = true;
+        Stop();
     } else if (status == "sweep") {
       flagged_test = true;
+      Stop();
+    }else {
+      flagged_test = true;
+      println(lastTest_Hobject + "  " + lastTest_Hcount);
+     // Reset the state to normal as it is flagged 
+  switch(lastTest_Hobject) {
+  case 'q': 
+    {      
+      previousMillis = millis();      // start the timer from now
+      status = "Flagged Quad";
+      current_gross_test = lastTest_Hcount;
+      quadHemi_text.print("flagged");
+      quadHemi_text.flush();
+      if (lastTest_Hcount <= 4) {
+        quad_state[abs(4 - lastTest_Hcount)][0] = 1;
+        break;
+      } else {
+        quad_state[abs(8 - lastTest_Hcount)][1] = 1;
+        break;
+      }
+     
+    }
+  case 'h': 
+    {
+      previousMillis = millis();      // start the timer from now
+      status = "Flagged Hemi";
+      current_gross_test = lastTest_Hcount;
+      quadHemi_text.print("flagged");
+      quadHemi_text.flush();
+      if (lastTest_Hcount < 2) {
+        hemi_state[hemi_hover_code[lastTest_Hcount][0]][0] = 1;
+        hemi_state[hemi_hover_code[lastTest_Hcount][1]][0] = 1;
+        break;
+      } else {
+        hemi_state[hemi_hover_code[lastTest_Hcount - 2][0]][1] = 1;
+        hemi_state[hemi_hover_code[lastTest_Hcount - 2][1]][1] = 1;
+        break;
+      }
+
+    }
+  case 'm':
+    previousMillis = millis();      // start the timer from now
+    status = "Flagged Meridian";
+    meridian_state[lastTest_Hcount] = 1;
+    quadHemi_text.print("flagged");
+    quadHemi_text.flush();
+    break;
+
+  case 's':
+    previousMillis = millis();      // start the timer from now
+    status = "Flagged sweep";
+    meridians[lastTest_Hcount] = 28;  // this needs to be stored in a seperate variable    
+    isopter_text.print("flagged");
+    isopter_text.flush();
+    break;
+
+  }
+  flagged_test = false;
+  
+  //Reset the values preventing from re-functioning
+  lastTest_Hobject = 'c';
+  lastTest_Hcount = 0;
     }
   }
   //Call the stop function so that We can Update the files
-  Stop();
+
   println("Stopped");
 
   // just update hte flag variable to "flagged"
   if(flagged_test == true){
     if (last_tested == "quadrant" || last_tested == "hemi"|| last_tested == "Meridian") {
+      status = "Flagged " + last_tested;
       quadHemi_text.print("flagged");
       quadHemi_text.flush();
       flagged_test = false;
     } else if (last_tested == "sweep") {
       isopter_text.print("flagged");
+      status = "Flagged " + last_tested;
       isopter_text.flush();
       flagged_test = false;
     }
