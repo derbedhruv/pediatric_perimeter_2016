@@ -2210,12 +2210,8 @@ void FINISH() {
    */
 
 
-  // stop recording the sound..
-  sound_recording.endRecord();
-  sound_recording.save();
-  // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
   
-  delay(100);
+
 
 // Stop the desktop recording 
 try {
@@ -2226,8 +2222,12 @@ try {
         }
         
         
+  // stop recording the sound..
+  sound_recording.endRecord();
+  sound_recording.save();
+  // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
 //  delay(500);
-  
+  delay(1000);
   println("Stitching Initiated to : " + base_folder);
   //Stitch the video and Audio 
   
