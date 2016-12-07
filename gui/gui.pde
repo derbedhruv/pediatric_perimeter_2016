@@ -53,8 +53,6 @@ import processing.serial.*;
 import codeanticode.gsvideo.*;
 import ddf.minim.*;  // the audio recording library
 import org.apache.poi.ss.usermodel.Sheet;  // For Importing The Data From EXcel Sheet 
-//import gifAnimation.*;
-
 
 // DECLARING A CONTROLP5 OBJECT
 private ControlP5 cp5;
@@ -225,7 +223,7 @@ public int count = 0;
 // Second window Variables to generate the final Isopter according to the subject's view
 PFrame f;
 PApplet s;
-//Gif myAnimation;
+
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
 void setup() {
@@ -261,9 +259,7 @@ void setup() {
     println("Checking if correct camera has been plugged in ...");
 
     for (int i = 0; i < cameras.length; i++) {  //Listing the available Cameras      
-     //  println(cameras[i].length());
-      // println(cameras[i].substring(3,6));
-      if (cameras[i].length() == 13 && cameras[i].substring(3, 6).equals("USB")) {
+     if (cameras[i].length() == 13 && cameras[i].substring(3, 6).equals("USB")) {
         println("...success!");
         cam = new GSCapture(this, 640, 480, cameras[i]);      // Camera object will capture in 640x480 resolution
         cam.start();      // shall start acquiring video feed from the camera
@@ -281,22 +277,17 @@ void setup() {
     }  
     if (cam == null) {
       println("...NO. Please check the camera connected and try again."); 
-     // exit();
     }
   }
 
   // INITIATE SERIAL CONNECTION
  
-// SHow the First Frame to collect the Demographic data of the patient
-
-
-   //noLoop();
- 
-
+  // SHow the First Frame to collect the Demographic data of the patient
+  
   //Get the Working Directory of the sketch 
   workingDirectory = sketchPath("");  
   //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
- // angleData = importExcel("E:/GitRepositories/pediatric_perimeter_2016/gui/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
+ // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
  angleData = importExcel(workingDirectory + "/AngleData.xlsx");       // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
 
   // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
@@ -329,13 +320,7 @@ void setup() {
           .updateSize()
             ;
 
-  /*  cp5.addBang("FLAG") //The Bang Clear and the Specifications
-   .setPosition(925, 400)
-   .setSize(75, 25)
-   .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-   .setColor(0)
-   ;*/
-
+ 
   PImage[] notesImage = {
     loadImage("noteW.png"), loadImage("noteB.png"), loadImage("noteW.png")
   };
@@ -345,46 +330,17 @@ void setup() {
         .setImages(notesImage)
           .updateSize()
             ;   
-  /*  cp5.addBang("ADD_NOTE") //The Bang Clear and the Specifications
-   .setPosition(925, 430)
-   .setSize(75, 25)
-   .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-   .setColor(0)
-   ; */
+ 
   PImage[] captureImage = {
     loadImage("captureW.png"), loadImage("captureB.png"), loadImage("captureW.png")
   };
+ 
   cp5.addButton("CAPTURE")
     .setValue(128)
       .setPosition(730, 140)
         .setImages(captureImage)
           .updateSize()
             ;      
-
-  /*
-  cp5.addBang("CAPTURE") //The Bang Clear and the Specifications
-   .setPosition(925, 460)
-   .setSize(75, 25)
-   .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER) //Caption and the alignment
-   .setColor(0)
-   ;*/
-
-  /* println(workingDirectory);
-   backwardImage = loadImage(workingDirectory + "backward.jpg");
-   cp5.addButton("BACKWARD")
-   .setValue(128)
-   .setPosition(235, 592)
-   .setImage(backwardImage)
-   .updateSize()
-   ;
-   
-   forwardImage = loadImage(workingDirectory +"forward.jpg");
-   cp5.addButton("FORWARD")
-   .setValue(128)
-   .setPosition(235, 542)
-   .setImages(forwardImage)
-   .updateSize()
-   ; */
 
   PImage[] patternOne = {
     loadImage("pattern1W.png"), loadImage("pattern1B.png"), loadImage("pattern1W.png")
@@ -490,7 +446,6 @@ void setup() {
 
 
  JPanel panel = new JPanel();
-        //panel.setSize(700,500);
         panel.setLayout(new GridLayout(4,1));
         JLabel ard=new JLabel("Arduino");
          JLabel camc=new JLabel("Camera");
@@ -503,7 +458,6 @@ void setup() {
         cap.setFont(new Font("Serif",Font.BOLD,20));
         cap.setForeground(Color.BLACK);
     
-        // JLabel cap=new JLabel("Patients Info");
          cap.setLocation(150,10);
          cap.setSize(150,60);
          String path1=workingDirectory+"r.png";
@@ -555,7 +509,6 @@ void setup() {
 
   JPanel labels=new JPanel();
   labels.setLayout(new GridLayout(5,2));
- // labels.setSize(300,400);
     labels.add(lbl1);
      labels.add(pname);
     labels.add(lbl2);
@@ -568,7 +521,6 @@ void setup() {
    labels.add(potc);
   
   JPanel instr=new JPanel(new GridLayout(0,1));
-  //instr.setSize(200,100);
   Label inscap=new Label("Instructions",Label.CENTER);
   inscap.setFont(new Font("Serif",Font.BOLD,15));
   inscap.setForeground(Color.BLACK);
@@ -643,7 +595,6 @@ void setup() {
     quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
     quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t|Notes");
     quadHemi_text.flush();
-    // 
     
 
 
@@ -704,18 +655,15 @@ fill(0);
   if (cam.available() == true) {
     cam.read();
   } 
-  // cam.save(base_folder + "/isopter.jpg");  
   image(cam, 80, 50);    // display the image, interpolate with the previous image if this one was a dropped frame
 
   // Overlay a protractor on the live feed 
    PImage protractor = loadImage("protractor.png");
    image(protractor, 309, 203);
+  
+  // Baby's Animation
 
-  //  image(myAnimation, 1180,30);// Baby's Animation
 
-  // eyeDirection = loadImage(workingDirectory + "/Images/" + imageNumber + ".jpg");
-
-  // image(eyeDirection,1180, 200);
   //Draw the picture to show the patterns
   //String path ="E:/GitRepositories/pediatric_perimeter_2016/gui/";
   //  String path = workingDirectory;
@@ -731,9 +679,6 @@ fill(0);
     } else if (pattern_state[i] == 1) {
       fill(backgroundColor);
     } 
-    // stroke(backgroundColor);
-    //  rect(125, 535, 90, 90 );
-    // image(displayImage, 130, 540);
     ellipse(posPatternImage[i][0] - 25, posPatternImage[i][1] + 60, 10, 10);
   }
   // Checkin
@@ -751,8 +696,6 @@ fill(0);
 
   // draw the isopter/meridians
   drawIsopter(meridians, isopter_center[0], isopter_center[1], isopter_diameter);
- // textView = loadFont("E:/GitRepositories/pediatric_perimeter_2016/gui/data/Calibri-Bold-48.vlw");
- // textFont(textView, 15);
   // print reaction time and information about what was the last thing tested and the thing presently being tested
   fill(0);
   text("Reaction time is  : " + str(reaction_time) + "ms", 520, 565);
@@ -765,8 +708,7 @@ fill(0);
 
   // RECORD THE FRAME, SAVE AS RECORDED VIDEO
   // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
-//  saveFrame(workingDirectory + base_folder + "/frames/frame-####.jpg");      //save each frame to disc without compression
-//println(frameCount);
+  //  saveFrame(workingDirectory + base_folder + "/frames/frame-####.jpg");      //save each frame to disc without compression
 }
 
 
@@ -883,7 +825,6 @@ public class SecondApplet extends PApplet {
     fill(255);
     ellipse(mouseX, mouseY, 10, 10);
     fill(#cccccc);
-    // ellipse(ghostX, ghostY, 10, 10);
     ellipse(x, y, 2*d2 +d1, 2*d2+d1 );
     drawIsopter2(meridians, 683, 380, 650);  
 
@@ -891,12 +832,6 @@ public class SecondApplet extends PApplet {
 
     if (dotsCounter >= 3) {
       float swap;
-      /*
-    for(int k=0; k< dotsCounter; k++)
-       {
-       println(collectCoordinates[k][0] +" " + collectCoordinates[k][1] +" " + collectCoordinates[k][2]);
-       }*/
-      //println(collectCoordinates);
       // Sort The array for red dots Joining 
       if (frameCount ==1) {
         for (int c = 0; c < dotsCounter; c++) {
@@ -919,13 +854,6 @@ public class SecondApplet extends PApplet {
         }
 
 
-        /*float sum = int(coversALlQuads[0])*pow(2,0) +  int(coversALlQuads[1])*pow(2,1) + int(coversALlQuads[2])*pow(2,2) + int(coversALlQuads[3])*pow(2,3);
-         if(sum < 15 && sum > 0){ 
-         float index = log(15 - sum )/ log(2);
-         if(index - int(index) == 0){
-         insertOrigin = true;
-         }
-         }*/
         count = 0; 
         index =0; // Initialising
         for (int i = 0; i < 4; i++ ) {
@@ -964,20 +892,15 @@ public class SecondApplet extends PApplet {
               }
             }
 
-            // if(!originInserted){          
             collectCoordinates[dotsCounter][0] = tempX;
             collectCoordinates[dotsCounter][1] = tempY;
             dotsCounter++;
-            //  }
           }
         }
       }
 
 
-      // println("After");
-
-      for (int k=0; k < dotsCounter; k++)
-      {
+      for (int k=0; k < dotsCounter; k++) {
         println(collectCoordinates[k][0] +" " + collectCoordinates[k][1] +"  " + collectCoordinates[k][2]);
       }  
 
@@ -991,10 +914,8 @@ public class SecondApplet extends PApplet {
         curveVertex(collectCoordinates[j][0], collectCoordinates[j][1]);
       }
 
-      // curveVertex(collectCoordinates[j-1][0],collectCoordinates[j-1][1]);
       curveVertex(collectCoordinates[0][0], collectCoordinates[0][1]);
       curveVertex(collectCoordinates[1][0], collectCoordinates[1][1]);
-      // curveVertex(collectCoordinates[j-1][0],collectCoordinates[j-1][1]);
       endShape();
     }
 
@@ -1005,7 +926,6 @@ public class SecondApplet extends PApplet {
     text("Baby's \n left ", 325, 75);
     if (frameCount == 1) {
       subjectIsopter = get(300, 25, 800, 700);      
-      //image(isopter3,0,0);
       subjectIsopter.save(workingDirectory+base_folder+"/Isopter_Report.jpg");
     }
   }
@@ -1016,22 +936,8 @@ public class SecondApplet extends PApplet {
     stroke(0);
     fill(#eeeeee);
     ellipse(x, y, diameter, diameter);    // the outer circle of the isopter, representing the projection of the whole dome
-    /* ellipse(x, y, 0.25*diameter, 0.25*diameter);  // the inner daisy chain
-     ellipse(x, y, 0.75*diameter, 0.75*diameter);  // the inner daisy chain
-     
-     float r_IsopterRange1 = abs(cos(radians(30)))*diameter/2;
-     stroke(#bbbbbb);
-     ellipse(x, y, r_IsopterRange1, r_IsopterRange1); 
-     Concentric Circles For different ranges of the visual field  
-     fill(0);
-     fill(#eeeeee); */
-
+   
     for (int i = 7; i >=1; i--) {
-
-      /*float xc = cos(radians(-i*30))*diameter/2 + x;
-       float yc = sin(radians(-i*30))*diameter/2 + y; 
-       float r_IsopterRange = sin(radians(i*10))*diameter;// Finding the diameter for the range
-       float xc = sin(radians(i*15))*(r_IsopterRange)/02 + x + 5; */
 
       float r_IsopterRange = diameter * ((i*15.0)/120);
       float yc = sin(radians(-90))*(r_IsopterRange+20)/2 + y + 15 ;
@@ -1040,21 +946,17 @@ public class SecondApplet extends PApplet {
       } else {
         stroke(#bbbbbb);
       }
-      // stroke(#bbbbbb);
       ellipse(x, y, r_IsopterRange, r_IsopterRange); 
       fill(#bbbbbb);
       text(str(i*15), x-5, yc);
       fill(#eeeeee);
     }
 
-    // stroke(#bbbbbb);
     int mappingIndex;          // mappingIndex  = (36 - i)% 24  [ Maps the Isopter  to the Baby's Point of View ]
     // Then draw the 24 meridians
-    //  dotsCounter =0; // Initialising the counter 
 
     for (int i = 0; i < 24; i++) {
       // first calculate the location of the points on the circumference of this circle, given that meridians are at 15 degree (PI/12) intervals
-      // stroke(#bbbbbb);
 
       mappingIndex = (36 - i) % 24;
       float xm = cos(radians(-mappingIndex*15))*diameter/2 + x;
@@ -1080,10 +982,6 @@ public class SecondApplet extends PApplet {
       float xt = cos(radians(-i*15))*(diameter + 30)/2 + x - 10;
       float yt = sin(radians(-i*15))*(diameter + 20)/2 + y + 5;
 
-      /*cartesianCoordinates[mappingIndex][0] = xt;
-       cartesianCoordinates[mappingIndex][1] = yt;*/
-
-
       if (meridians[i] < 0) {
         fill(#ff0000);
         meridians[i] = abs(meridians[i]);
@@ -1094,12 +992,6 @@ public class SecondApplet extends PApplet {
 
       // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
       fill(#ff0000);  // red colour
-      // println(abs(meridians[i]));
-      /*if (abs(meridians[i]) < 28 ) {
-       float xi = cos(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + x;
-       float yi = sin(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + y;
-       ellipse(xi, yi, 10, 10);
-       }*/
       if (abs(meridians[i]) < 28 ) {
         // Get The Angle of the LED 
         //  angleData[meridianNumber-1][pixelNumber-1] = finalAngleValue;
@@ -1110,17 +1002,6 @@ public class SecondApplet extends PApplet {
         int numberOfPixels = numberOfLEDs[(24 - i)%24 ]; // Based on the device numbering 
         //println(((25 - i)%24) + " " + numberOfPixels);
         if (pixelNumber > 0 && pixelNumber <= numberOfPixels + 1) {
-          /*if (angleData[i][numberOfPixels - pixelNumber + 1] > 90) {
-           fill(#00ffff);// Use  different color to indicate it
-           // Indicate the dot on the periphery of the circle 
-           float xi = cos(radians(-i*15))*(10 + (diameter - 10)/2) + x;
-           float yi = sin(radians(-i*15))*(10 + (diameter - 10)/2) + y;
-           ellipse(xi, yi, 10, 10);
-           } else {
-           float xi = cos(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + x;
-           float yi = sin(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + y;
-           ellipse(xi, yi, 10, 10);
-           }*/
 
           if (pixelNumber > 3) { // For Meridian LEDs
             xi = (cos(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber   ]/120) + x;
@@ -1128,10 +1009,7 @@ public class SecondApplet extends PApplet {
           } else if (pixelNumber <= 3 ) { // For Daisy LEDs
             xi = (cos(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + x;
             yi = (sin(radians(-mappingIndex*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + y;
-            // println(angleData[meridianNumber][numberOfPixels - pixelNumber]);  
-            //  println(pixelNumber +"  " + angleData[meridianNumber][numberOfPixels - pixelNumber] );
           }
-          //  println(xi,yi);
           ellipse(xi, yi, 10, 10);
           if (frameCount == 1) {
             collectCoordinates[dotsCounter][0]=xi;
@@ -1199,23 +1077,8 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
   stroke(0);
   fill(#eeeeee);
   ellipse(x, y, diameter, diameter);    // the outer circle of the isopter, representing the projection of the whole dome
-  /* ellipse(x, y, 0.25*diameter, 0.25*diameter);  // the inner daisy chain
-   ellipse(x, y, 0.75*diameter, 0.75*diameter);  // the inner daisy chain
-   
-   float r_IsopterRange1 = abs(cos(radians(30)))*diameter/2;
-   stroke(#bbbbbb);
-   ellipse(x, y, r_IsopterRange1, r_IsopterRange1); 
-   Concentric Circles For different ranges of the visual field  
-   fill(0);
-   fill(#eeeeee); */
 
   for (int i = 7; i >=1; i--) {
-
-    /*float xc = cos(radians(-i*30))*diameter/2 + x;
-     float yc = sin(radians(-i*30))*diameter/2 + y; 
-     float r_IsopterRange = sin(radians(i*10))*diameter;// Finding the diameter for the range
-     float xc = sin(radians(i*15))*(r_IsopterRange)/02 + x + 5; */
-
     float r_IsopterRange = diameter * ((i*15.0)/120);
     float yc = sin(radians(-90))*(r_IsopterRange+20)/2 + y + 15 ;
     if (i==1) {
@@ -1223,18 +1086,15 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
     } else {
       stroke(#bbbbbb);
     }
-    // stroke(#bbbbbb);
     ellipse(x, y, r_IsopterRange, r_IsopterRange); 
     fill(#bbbbbb);
     text(str(i*15), x-5, yc);
     fill(#eeeeee);
   }
 
-  // stroke(#bbbbbb);
   // Then draw the 24 meridians
   for (int i = 0; i < 24; i++) {
     // first calculate the location of the points on the circumference of this circle, given that meridians are at 15 degree (PI/12) intervals
-    // stroke(#bbbbbb);
     float xm = cos(radians(-i*15))*diameter/2 + x;
     float ym = sin(radians(-i*15))*diameter/2 + y; 
 
@@ -1276,33 +1136,14 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
 
     // NOW WE DRAW THE RED DOTS FOR THE REALTIME FEEDBACK
     fill(#ff0000);  // red colour
-    // println(abs(meridians[i]));
-    /*if (abs(meridians[i]) < 28 ) {
-     float xi = cos(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + x;
-     float yi = sin(radians(-i*15))*(10 + (diameter - 10)*abs(meridians[i])/(2*28)) + y;
-     ellipse(xi, yi, 10, 10);
-     }*/
     if (abs(meridians[i]) < 28 ) {
       // Get The Angle of the LED 
       //  angleData[meridianNumber-1][pixelNumber-1] = finalAngleValue;
       // Check whether it is obtuse or not
       int pixelNumber = abs(meridians[i]); // LED No. if Sweep is ON 
-      // int meridianNumber = (24 - (((24 - i)%24) + 12) % 24)%24;
       int meridianNumber = (24 - i)%24;  // based on Device numbering for The 
       int numberOfPixels = numberOfLEDs[(24 - i)%24 ]; // Based on the device numbering 
-      //println(((25 - i)%24) + " " + numberOfPixels);
       if (pixelNumber > 0 && pixelNumber <= numberOfPixels + 1) {
-        /*if (angleData[i][numberOfPixels - pixelNumber + 1] > 90) {
-         fill(#00ffff);// Use  different color to indicate it
-         // Indicate the dot on the periphery of the circle 
-         float xi = cos(radians(-i*15))*(10 + (diameter - 10)/2) + x;
-         float yi = sin(radians(-i*15))*(10 + (diameter - 10)/2) + y;
-         ellipse(xi, yi, 10, 10);
-         } else {
-         float xi = cos(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + x;
-         float yi = sin(radians(-i*15))*(10 + (diameter - 10)*sin(radians(angleData[i][numberOfPixels - pixelNumber + 1] ))/2) + y;
-         ellipse(xi, yi, 10, 10);
-         }*/
 
         if (pixelNumber > 3) { // For Meridian LEDs
           xi = (cos(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber   ]/120) + x;
@@ -1310,10 +1151,8 @@ void drawIsopter(int[] meridians, int x, int y, int diameter) {
         } else if (pixelNumber <= 3 ) { // For Daisy LEDs
           xi = (cos(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + x;
           yi = (sin(radians(-i*15))*(10 + (diameter - 10)/2)) * (angleData[meridianNumber][numberOfPixels - pixelNumber]/120) + y;
-          // println(angleData[meridianNumber][numberOfPixels - pixelNumber]);  
           println(pixelNumber +"  " + angleData[meridianNumber][numberOfPixels - pixelNumber] );
         }
-        //  println(xi,yi);
         ellipse(xi, yi, 10, 10);
       }
     }
@@ -1406,7 +1245,6 @@ float angleSubtended(float x, float y, int c1, int c2) {
 }
 
 void mousePressed() {
-  // println(str(mouseX) + "," + str(mouseY));
   // really simple - just send the instruction to the arduino via serial
   // it will be of the form (hovered_object, hovered_count\n)
   if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm'  ) {
@@ -1482,16 +1320,7 @@ println("Check " + lastTest_Hobject + "  " + lastTest_Hcount);
     status = "sweep";
     current_sweep_meridian = hovered_count;  // this needs to be stored in a seperate variable    
     break;
-
-    /* case 'p':      // Start the patterns
-     previousMillis = millis();      // start the timer from now
-     status = "pattern";
-     pattern_state = 2;  // To Identify that test is in progress    
-     break;*/
   }
-  /* if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm' || hovered_object == 'p') {
-   imageNumber = getImageNumber(status , hovered_count);// to display the eye direction for the user[respond only for valid clicks]
-   }*/
 }
 
 
@@ -1549,47 +1378,6 @@ void clearHemisQuads() {
 
 // Mouse released To Notify The Slider To Update The Time Intervals And Send It To Arduino 
 void mouseReleased() {
-
-  /*
-  //Check Only The Status Of The Slider 
-   if ((mouseX >= 740 && mouseX <= 890) && (mouseY >= 485 && mouseY <= 500))
-   {
-   
-   // Get The Value Of The Slider 
-   float angularVelocity =  int(cp5.getController("SWEEP").getValue());
-   
-   //Update The time intervals meridian by meridian in the array
-   for (int i =1; i<=24; i++) {    
-   
-   // Get The index of the last entry corresponding to a meridian in the EXCEL sheet
-   // Last Entry Corresponds to 180 deg visual field 
-   int index = 0;  // Initialse The Value For the next Meridian 
-   for (int j = 0; j <= i-1; j++) {
-   index = index + numberOfLEDs[j];
-   } 
-   
-   // Update The Time Intervals For The corresponding Meridian 
-   int timeTaken = 0; // Initialise The Value For The Next Meridian 
-   int preceedTimeTaken;
-   for (int k = numberOfLEDs[i-1]; k>0; k--) {
-   
-   if (saving [index][5] != null) { // Do NOt Consider The NUll Values in the EXCEL sheet 
-   // int prevTimeTaken = timeTaken;
-   
-   timeTaken = int(((round(degrees(HALF_PI - (float(saving[index ][5]))))/angularVelocity))*1000);
-   
-   // timeTaken = int(degrees(HALF_PI - radians(float(saving[index][5])))/angularVelocity*1000); // Calculate The Time At which this LED gets ON from the start
-   if (k != 1) {
-   preceedTimeTaken      = int(((round(degrees(HALF_PI - (float(saving[index-1][5]))))/angularVelocity))*1000);
-   } else {d
-   preceedTimeTaken =  int((((round(degrees(HALF_PI )))/angularVelocity))*1000);               // Time taken for the preceeding LED to turn ON from The start
-   }
-   saving[index][6]  =  str(timeTaken - preceedTimeTaken);                             // Update The Time Interval for an LED to be in ON state 
-   index = index - 1;
-   }
-   }
-   }
-   }*/
 }
 
 // KEYPRESS TO STOP A TEST WHICH IS ONGOING
@@ -1600,13 +1388,10 @@ void keyPressed() {
     imageNumber = 1;
     SpaceKey_State = 1;
     flagged_test = false;
-    /// println(Delay_Store);
     println("Space Bar Pressed Now");
     arduino.write('x');
     arduino.write('\n'); 
-    //  Sent_Time = millis();
     println("Request sent to Ardiuno @ :" + millis());
-    //delay(100);
     int Init_Time = millis();
     int interval = 0;
     // Wait For The Serial Port  
@@ -1614,7 +1399,6 @@ void keyPressed() {
       interval = millis() - Init_Time;
     }
     println(Arduino_Response);
-    // while (Arduino_Response != 99 && interval <= 1000) {
     if ( Arduino_Response != 99 ) {
       println("Request repeated to Ardiuno");
       arduino.write('x');
@@ -1624,12 +1408,9 @@ void keyPressed() {
         interval = millis() - Init_Time;
       }
     }
-    //  else {               //  interval = millis() - Init_Time;
-    // Reset The Values 
     if ( Arduino_Response == 99 ) { 
       SpaceKey_State = 0;
       Arduino_Response = 0;
-      //  }
     }
     Stop();
     println("stopped");
@@ -1643,9 +1424,6 @@ void keyPressed() {
 // 4. WRITE ISOPTER ANGLE VALUES TO FILE AND ALSO QUAD/HEMI VALUES
 public void Stop() {
   // SIGNAL ARDUINO TO STOP
-  // arduino.write('x');
-  //  arduino.write('\n'); 
-  //  println("Clear All Command Sent To Ardiuno");
 
   // UI UPDATE - MAKE QUADS/HEMIS PRESENTLY IN ACTIVE STATE TO 'DONE' STATE / BACK to NORMAL if flagged
   clearHemisQuads();
@@ -1757,8 +1535,6 @@ public void Stop() {
   // REDRAW AND SAVE THE ISOPTER TO FILE  
   if (status == "sweep") {
     // redraw isopter image to file
-    //  PImage isopter = get(760, 30, 400, 360);     // get that particular section of the screen where the isopter lies. 
-    // isopter.save(workingDirectory + base_folder + "/isopter.jpg");  // save it to a file in the same folder
 
     // write this to the isopter text file
     isopter_text.println();
@@ -1781,7 +1557,6 @@ public void Stop() {
       }
     }
     //CKR
-    // isopter_text.print(str(abs(meridians[hovered_count])) + "\t");    // print degrees at which the meridian test stopped, to the text file
     isopter_text.print(str(reaction_time) + "\t\t\t");
     isopter_text.flush();
     
@@ -1810,10 +1585,7 @@ void serialEvent(Serial arduino) {
    */
 
   String inString = arduino.readStringUntil('\n');
-  //println("Time in ms :" + millis());
-  //println("Serial Port Value Recieved from Arduino : " + inString + " @ " + millis());
   // Wait For The Response When Space Bar Is Pressed
-  //if (SpaceKey_State != 1) {
 
   if (inString != null && inString.length() <= 4) {
     serialEventFlag = true;
@@ -1836,7 +1608,6 @@ void serialEvent(Serial arduino) {
         previousTime = currentTime;
       }
       meridians[current_sweep_meridian] = Integer.parseInt(inString.substring(0, inString.length() - 2));
-      //println(meridians[current_sweep_meridian] );
     }
   }
 }
@@ -1846,109 +1617,6 @@ void CAPTURE() {
   cam.save( workingDirectory+"/ScaleReading/Scale.jpg");
 }
 
-
-/*
-// Returns the image number to be displayed for the eye direction according to the present status of the test
- int getImageNumber(String object, int countNumber){
- int returnNumber= 1;
- if (object == "quadrant") {
- 
- switch (countNumber) {
- case 1:
- returnNumber = 6;
- break;
- 
- case 2:
- 
- returnNumber =8;
- break;
- 
- case 3:
- 
- returnNumber = 7;
- break;
- 
- case 4:
- returnNumber = 9;
- break;
- 
- case 5:
- returnNumber = 6;
- break;
- 
- case 6:
- returnNumber = 8;
- break;
- 
- case 7:
- returnNumber = 7;
- break;
- 
- case 8:
- returnNumber = 9;
- break;
- } 
- }
- 
- if (object == "hemi") {
- 
- switch(countNumber) {
- case 0:
- returnNumber = 3;
- break;
- case 1:
- returnNumber = 2;
- break;
- case 2:
- returnNumber = 3;
- break;
- case 3:
- returnNumber = 2;
- break;
- }
- 
- }
- 
- //Save Meridians to a Text File in a Proper Format
- if (object == "Meridian" || object == "sweep") {
- if(countNumber >= 1 && countNumber <= 5){
- returnNumber = 6;
- }else if(countNumber >= 7 && countNumber <= 11){
- returnNumber = 8;
- }else if(countNumber >= 13 && countNumber <= 17){
- returnNumber = 7;
- }else if(countNumber >= 19 && countNumber <= 23){
- returnNumber = 9;
- }else if(countNumber == 0){
- returnNumber = 3;
- }else if(countNumber == 6){
- returnNumber = 5;
- }else if(countNumber == 12){
- returnNumber =2;
- }else if(countNumber == 18){
- returnNumber = 4;
- }else {
- returnNumber = 1;
- }
- }
- 
- if (object == "pattern") {
- returnNumber = 1;
- }
- 
- return returnNumber ;
- }
- */
-
-// Send The Sweep Interval Value To Ardiuno 
-/*void SWEEP() {
- // cam.save(base_folder + "/ScaleReading/Scale.jpg");
- arduino.write("t");
- arduino.write(',');
- int  sweepValue = int (cp5.getController("SWEEP").getValue());
- arduino.write( sweepValue);
- println("Sweep Value Sent to Ardiuno :" + sweepValue);
- }*/
 
 
 void  sendTimeIntervals(int chosenStrip) {
@@ -1966,8 +1634,6 @@ void  sendTimeIntervals(int chosenStrip) {
    * @param chosenStrip - meridian Numberon which sweep is to be performed. 
    */
 
-  //int[] sweepIntervals = new int[numberOfLEDs[chosenStrip-1]];
-  //calculateSweepIntervalsForStrip(chosenStrip, sweepIntervals);
   println("Sending data");
   //Sending the Object details to arduino to recognise the action to be performed 
   arduino.write('t'); 
@@ -1977,120 +1643,8 @@ void  sendTimeIntervals(int chosenStrip) {
   arduino.write(str(valueToBeSent));
   println(valueToBeSent);
   arduino.write('\n');
-  //arduino.write(str(numberOfLEDs[chosenStrip-1]));     // No. of LEDs to corresponding to the Meridian 
-  /* DEPRECATED *************************************************************************************  
-   arduino.write(str(chosenStrip));                      // Send The chosen Meridian to process  
-   arduino.write('\n');
-   String valuesToBeSent = "";
-   for (int pixelNumber = 0; pixelNumber< numberOfLEDs[chosenStrip - 1]; pixelNumber++) {
-   valuesToBeSent+=sweepIntervals[pixelNumber];
-   if (pixelNumber <numberOfLEDs[chosenStrip-1] - 1) {
-   valuesToBeSent+=",";
-   } else {
-   valuesToBeSent+="\n";
-   }
-   }
-   int count = 0;
-   int len = valuesToBeSent.length();
-   println(valuesToBeSent);
-   int index = 0;
-   arduino.write(valuesToBeSent);
-   //delay(10);
-   //    while (index<len) {
-   //      char characterToBeWritten = valuesToBeSent.charAt(index);
-   //      arduino.write(characterToBeWritten);
-   //      count++;
-   //      index++;
-   //      if (count >= 30) {
-   //        println("One batch sent");
-   //        delay(100);
-   //        count = 0;
-   //      }
-   //    }
-   //    delay(100);
-   //    int numberOfPixelsToBeSent = numberofLEDs[chosenStrip - 1];
-   //    for(int pixelNumber = 0; pixelNumber<numberOfPixelsToBeSent; pixelNumber++) {
-   //      arduino.write(str())
-   //    }
-  /*
-   // wait For the response 
-   // //   delay(10);
-   
-   // Repeat  updating the The time intervals before initiating the kinetic mode 
-   if(Arduino_Response != 98) {  
-   arduino.write('t');  
-   arduino.write(',');
-   arduino.write(Pixels[chosenStrip]);     // No. of LEDs to corresponding to the Meridian 
-   arduino.write('\n'); 
-   delay(10); 
-   // 
-   }
-   
-   //Check For The response from Arduino and Send the time intervals 
-   // // if(Arduino_Response == 98) {
-   // Send The Time intervals from the array 
-   // Get The index of the last entry corresponding to a meridian in the EXCEL sheet
-   // Last Entry for a chosen  Corresponds to a value nearer to 180 deg visual field 
-   int index1 = 0;  // Initialse The Value For the next Meridian 
-   for (int j = 0; j < chosenStrip-1; j++) {
-   index1 = index1 + numberOfLEDs[j];
-   } 
-   
-   // Write the time intervales into the serial port 
-   for (int k = 1; k<= numberOfLEDs[chosenStrip-1]; k++) {
-   arduino.write(saving[index1][6]);
-   if (k!=numberOfLEDs[chosenStrip-1]) {
-   arduino.write(",");
-   }
-   }
-   arduino.write("\n");  // Notify The End Of The String 
-   // //  }
-   println("All data sent"); 
-   DEPRECATED*************************************************************************/
 }
 
-/* DEPRECATED *************************************************************************
- //Function to calculate delays for pixels;
- void calculateSweepIntervalsForStrip(int chosenStrip, int sweepInterval[]) {
- 
-/*
- * Function to calculate Sweep intervals for a strip.
- * It uses the data we've taken from the Excel sheet
- * The formula used: (angleOfNextPixel - angleOfCurrentPixel)/degreesPerSecond
- * degreesPerSecond value is obtained from the slider "SWEEP".
- * @param chosenStrip - number of meridian chosen
- * @param sweepInterval[] - array to store calculated values
- 
- 
- //Number of rows in excel sheet
- int numberOfRows = angleData.length;
- //index counter
- int valueNumber = 0;
- //degrees to move per second as per Slider
- float degreesPerSecond = cp5.getController("SWEEP").getValue();
- 
- int rowNumber;
- int pixelNumber;
- 
- for (pixelNumber = 0; pixelNumber < numberOfLEDs[chosenStrip-1] - 1; pixelNumber++) {
- sweepInterval[pixelNumber] = (int) round(((angleData[chosenStrip-1][pixelNumber + 1] - angleData[chosenStrip-1][pixelNumber])/degreesPerSecond)*1000);
- //println(angleData[chosenStrip-1][pixelNumber + 1] + " " + angleData[chosenStrip-1][pixelNumber] + " " + sweepInterval[pixelNumber]);
- }
- 
- sweepInterval[pixelNumber] = (int) round(((90.00 - angleData[chosenStrip-1][pixelNumber])/degreesPerSecond)*1000);  //Calculate delay value for last LED; x1000 for milliseconds
- println(sweepInterval[pixelNumber]);
- println("All data calculated");
- } DERECATED ************************************************************************************/
-/*void FORWARD() {
- imageCount = (imageCount+1)%5;
- }
- void BACKWARD() {
- if (imageCount == 0) {
- imageCount = 4;
- } else {
- imageCount = (imageCount-1)%5;
- }
- }*/
 
 void PATTERNONE () {
   arduino.write('p');
@@ -2164,21 +1718,6 @@ void FINISH() {
 
   JTextArea textArea = new JTextArea(10, 5);
 
-
-  /*
-  int okCxl = JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(this), textArea, "Completion Notes", JOptionPane.OK_CANCEL_OPTION);
-   if (okCxl == JOptionPane.OK_OPTION) {
-   String text = textArea.getText();
-   // Save notes in the text files and then close the text file objectsd
-   isopter_text.close();
-   
-   }
-   */
-
-
-  
-
-
 // Stop the desktop recording 
 try {
             Process p = Runtime.getRuntime().exec("C:\\Windows\\System32\\cmd.exe /c start taskkill /IM ffmpeg.exe /f " );
@@ -2192,7 +1731,6 @@ try {
   sound_recording.endRecord();
   sound_recording.save();
   // START PROCESSING THE VIDEO AND THEN QUIT THE PROGRAM
-//  delay(500);
   delay(1000);
   println("Stitching Initiated to : " + base_folder);
   //Stitch the video and Audio 
@@ -2209,55 +1747,19 @@ try {
   }
   // send a popup message giving a message to the user
 
-/*  String[] ffmpeg_command = {
-    "C:\\Windows\\System32\\cmd.exe", "/c", "start", "ffmpeg", "-framerate", str(final_fps), "-start_number", "0001", "-i", sketchPath("") + base_folder + "/frames/frame-%04d.jpg", "-i", sketchPath("") + base_folder + "/recording.wav", sketchPath("") + base_folder + "/video.mp4"
-  };
-
-  // handling the exception IOException - which happens when the command cannot find a file
-  // Using Processbuilder to call the ffmpeg process
-  try {
-    ProcessBuilder p = new ProcessBuilder(ffmpeg_command);
-    Process pr = p.start();
-
-    /*
-    // printing the output of the process to the console of processing
-     String line = null;
-     BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-     while((line=input.readLine()) != null){
-     System.out.println(line);
-     }
-     
-  } 
-  catch (IOException e) {
-    e.printStackTrace(); 
-    exit();
-  }*/
-
   // ONCE THIS IS DONE, DELETE THE 'FRAME' DIRECTORY
   // TODO: DO THIS IS A BAT FILE OR THROUGH THE CMD - OTHERWISE YOU'LL DELETE THEM BEFORE THEY'RE USED
-  /*
-  println("video created succesfully, now deleting remaining files...");
-   File frames_folder = new File(sketchPath("") +  + "/frames/");
-   File[] frames_list = frames_folder.listFiles();
-   for (int i = 0; i < frames_list.length; i++) {
-   frames_list[i].delete();
-   }
-   frames_folder.delete();    // delete the folder as well after that
-   */
-
   // THEN EXIT THE PROGRAM ONCE DONE
   println("everything sucessful, closing");
   exit();
 }
 
 void PATIENT_INFO() {
-  // TODO: show the option pane again, but populate it with existing values so that they may be changed if needed
   forPinfo();
 }
 
 void forPinfo() {
 JPanel panel = new JPanel();
-        //panel.setSize(700,500);
         panel.setLayout(new GridLayout(4,1));
         JLabel ard=new JLabel("Arduino");
          JLabel camc=new JLabel("Camera");
@@ -2270,7 +1772,6 @@ JPanel panel = new JPanel();
         cap.setFont(new Font("Serif",Font.BOLD,20));
         cap.setForeground(Color.BLACK);
     
-        // JLabel cap=new JLabel("Patients Info");
          cap.setLocation(150,10);
          cap.setSize(150,60);
          String path1=workingDirectory+"r.png";
@@ -2326,7 +1827,6 @@ JPanel panel = new JPanel();
   potc.setText(patient_OTC);
   JPanel labels=new JPanel();
   labels.setLayout(new GridLayout(5,2));
- // labels.setSize(300,400);
     labels.add(lbl1);
      labels.add(pname);
     labels.add(lbl2);
@@ -2339,7 +1839,6 @@ JPanel panel = new JPanel();
    labels.add(potc);
   
   JPanel instr=new JPanel(new GridLayout(0,1));
-  //instr.setSize(200,100);
   Label inscap=new Label("Instructions",Label.CENTER);
   inscap.setFont(new Font("Serif",Font.BOLD,15));
   inscap.setForeground(Color.BLACK);
@@ -2501,85 +2000,6 @@ float[][] importExcel(String filepath) {
   int sizeX = sheet.getLastRowNum(); // Get The Number of rows in the sheet 
 
   int sizeY = 5;                    // 5 columns : Meridian <-> LED No. <-> X_value <-> Y_value <-> Z_value
-  /*
-  for (int i=0;i<sizeX;++i) {
-   Row row = sheet.getRow(i);
-   for (int j=0;j<sizeY;++j) {
-   try {
-   Cell cell = row.getCell(j);
-   }
-   catch(Exception e) {
-   if (j>sizeY) {
-   sizeY = j;
-   }
-   }
-   }
-   }*/
-  /*temp = new String[sizeX][sizeY+2];
-   for (int i=0;i<sizeX;++i) {
-   for (int j=0;j<sizeY;++j) {
-   //  for (int j=0;j< 1;++j) { 
-   // Get The Row (Reading The Row) 
-   Row row = sheet.getRow(i);
-   try {
-   Cell cell = row.getCell(j);
-   if (cell.getCellType()==0 || cell.getCellType()==2 || cell.getCellType()==3)cell.setCellType(1);
-   temp[i][j] = cell.getStringCellValue();
-   // Get The Cell Values And Populate Them Into An Array 
-                             /* Cell cell0 = row.getCell(0);
-   if (cell0.getCellType()==0 || cell0.getCellType()==2 || cell0.getCellType()==3)cell0.setCellType(1);
-   temp[i][0] = cell0.getStringCellValue();
-   Cell cell1 = row.getCell(1);
-   if (cell1.getCellType()==0 || cell1.getCellType()==2 || cell1.getCellType()==3)cell1.setCellType(1);
-   temp[i][1] = cell1.getStringCellValue();
-   Cell cell2 = row.getCell(2);
-   if (cell2.getCellType()==0 || cell2.getCellType()==2 || cell2.getCellType()==3)cell2.setCellType(1);
-   temp[i][2] = cell2.getStringCellValue();
-   Cell cell3 = row.getCell(3);
-   if (cell3.getCellType()==0 || cell3.getCellType()==2 || cell3.getCellType()==3)cell3.setCellType(1);
-   temp[i][3] = cell3.getStringCellValue();
-   Cell cell4 = row.getCell(4);
-   if (cell4.getCellType()==0 || cell4.getCellType()==2 || cell4.getCellType()==3)cell4.setCellType(1);
-   temp[i][4] = cell4.getStringCellValue();*/
-
-  // Calculate The Angle Subtended 
-  /*  float x= float (cell2.getStringCellValue());
-   // println("x :" + x);
-   float y= float (cell3.getStringCellValue());
-   float z= float (cell4.getStringCellValue());
-   d= 550; // Distance Calculated From The ForeHead To The Center Of The Camera 
-   
-   // Substitute In The Formulae To Calculate The Angle Subtended to The Y-axis   
-   float  Val = (y-d)/ sqrt(sq(x) + sq(y-d) + sq(z));
-   float  Deg = acos(Val);
-   
-   //Populate The Angle Calculated In to The Array
-   temp[i][5] = str(Deg);
-   println( "Angle Subtended :"+ Deg);*/
-  /*   if (cell.getCellType()==0 || cell.getCellType()==2 || cell.getCellType()==3)cell.setCellType(1);
-   temp[i][j] = cell.getStringCellValue();
-   }
-   catch(Exception e) {
-   }
-   }
-   float x= float (temp[i][2]);
-   // println("x :" + x);
-   float y= float (temp[i][3]);
-   float z= float (temp[i][4]);
-   d= 550; // Distance Calculated From The ForeHead To The Center Of The Camera 
-   
-   // Substitute In The Formulae To Calculate The Angle Subtended to The Y-axis   
-   float  Val = (y+d)/ sqrt(sq(x) + sq(y+d) + sq(z));
-   float  Deg = acos(Val);
-   
-   //Populate The Angle Calculated In to The Array
-   temp[i][5] = str(Deg);
-   println( "Angle Subtended :"+ Deg);
-   }
-   println("No. Of Rows:" + sizeX);
-   println("Excel file imported: " + filepath + " successfully!");
-   // println(temp);
-   return temp;*/
   int numberOfRows = sheet.getLastRowNum();
   int numberOfColumns = 3; 
 
@@ -2654,5 +2074,4 @@ float[][] importExcel(String filepath) {
 boolean sketchFullScreen() {
   return true;
 }
-
 
