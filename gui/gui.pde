@@ -229,9 +229,7 @@ PApplet s;
 /**********************************************************************************************************************************/
 // THIS IS THE MAIN FRAME
 void setup() {
-
-  // INITIATE SERIAL CONNECTION
-  if (Serial.list().length != 0) {
+   if (Serial.list().length != 0) {
     String port = Serial.list()[Serial.list().length - 1];
     println("Arduino MEGA connected succesfully.");
 
@@ -287,6 +285,8 @@ void setup() {
     }
   }
 
+  // INITIATE SERIAL CONNECTION
+ 
 // SHow the First Frame to collect the Demographic data of the patient
 
 
@@ -582,24 +582,47 @@ void setup() {
   panel.add(labels);
   panel.add(instr);
 
-        int result = JOptionPane.showConfirmDialog(
+    int result = JOptionPane.showConfirmDialog(
+        this, // use your JFrame here
+        panel,
+        "Use a Panel",
+        JOptionPane.OK_CANCEL_OPTION,
+        JOptionPane.PLAIN_MESSAGE);
+      
+     boolean firstTime=true;
+     if(result == JOptionPane.OK_OPTION ) {
+     
+       //This While loop is used for validation of form
+       while(pname.getText().length()==0 || pMR.getText().length()==0 || pdob.getText().length()==0 || pmilestone_details.getText().length()==0 || potc.getText().length()==0 || Integer.parseInt(potc.getText())>27 || Integer.parseInt(potc.getText())<0) {
+         if(firstTime) {
+           JLabel l4 =new JLabel("Please fill the details correctly.");
+           l4.setForeground(Color.RED);
+           l4.setFont(new Font("Serif",Font.BOLD,18));
+           instr.add(l4);
+           panel.add(instr);
+           firstTime=false;
+         }
+         result = JOptionPane.showConfirmDialog(
             this, // use your JFrame here
             panel,
             "Use a Panel",
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.PLAIN_MESSAGE);
-
-      
-      
-     if(result == JOptionPane.OK_OPTION ) 
-     {
-           patient_name = pname.getText();
+         if(result==JOptionPane.CANCEL_OPTION) {
+           exit();
+           break;
+         }
+       }
+       //Validation Ends here
+       
+      patient_name = pname.getText();
       patient_MR = pMR.getText();
       patient_dob = pdob.getText();
       patient_milestone_details = pmilestone_details.getText();
       patient_OTC = potc.getText();
           
-    occipitalDistance = Integer.parseInt(patient_OTC.trim());
+
+    
 
     // Create files for saving patient details
     // give them useful header information
@@ -2229,6 +2252,122 @@ try {
 
 void PATIENT_INFO() {
   // TODO: show the option pane again, but populate it with existing values so that they may be changed if needed
+  forPinfo();
+}
+
+void forPinfo() {
+JPanel panel = new JPanel();
+        //panel.setSize(700,500);
+        panel.setLayout(new GridLayout(4,1));
+        JLabel ard=new JLabel("Arduino");
+         JLabel camc=new JLabel("Camera");
+         //198-512.png
+         
+         JPanel hd=new JPanel();
+         hd.setLayout(null);
+         
+        Label cap=new Label("Patients Info",Label.CENTER);
+        cap.setFont(new Font("Serif",Font.BOLD,20));
+        cap.setForeground(Color.BLACK);
+    
+        // JLabel cap=new JLabel("Patients Info");
+         cap.setLocation(150,10);
+         cap.setSize(150,60);
+         String path1=workingDirectory+"r.png";
+         String path2=workingDirectory+"g.png";
+         ImageIcon red,grn;
+         if(arduino == null){
+            red = new ImageIcon(path1);
+         }else{
+           red = new ImageIcon(path2);
+         }
+      
+          JLabel red1 = new JLabel();
+          red1.setIcon(red);
+          red1.setLocation(410,45);
+          red1.setSize(10,10);
+           if(cam == null){
+           grn = new ImageIcon(path1);
+         }else{
+           grn = new ImageIcon(path2);
+         }
+         
+          JLabel grn1=new JLabel(grn);
+          grn1.setLocation(410,65);
+          grn1.setSize(10,10);
+         hd.add(red1);
+         hd.add(grn1);
+         hd.add(cap);
+         ard.setLocation(350,40);
+         ard.setSize(60,20);
+         camc.setLocation(350,60);
+         camc.setSize(60,20);
+         hd.add(ard);
+        hd.add(camc);
+         
+         panel.add(hd); 
+        
+        JLabel lbl1 = new JLabel("Patient Name");
+        JLabel lbl2 = new JLabel("MR Number");
+        JLabel lbl3 = new JLabel("Date of Birth");
+        JLabel lbl4 = new JLabel("Milestone details");
+        JLabel lbl5 = new JLabel("Occipital Distance");
+
+  final JTextField pname = new JTextField(10);
+  final JTextField pMR = new JTextField(10);
+  final JTextField pdob = new JTextField(10);
+  final JTextField pmilestone_details = new JTextField(10);
+  final JTextField potc = new JTextField(10);
+
+  pname.setText(patient_name);
+  pMR.setText(patient_MR);
+  pdob.setText(patient_dob);
+  pmilestone_details.setText(patient_milestone_details);
+  potc.setText(patient_OTC);
+  JPanel labels=new JPanel();
+  labels.setLayout(new GridLayout(5,2));
+ // labels.setSize(300,400);
+    labels.add(lbl1);
+     labels.add(pname);
+    labels.add(lbl2);
+     labels.add(pMR);
+    labels.add(lbl3);
+     labels.add(pdob);
+    labels.add(lbl4);
+    labels.add(pmilestone_details);
+    labels.add(lbl5);
+   labels.add(potc);
+  
+  JPanel instr=new JPanel(new GridLayout(0,1));
+  //instr.setSize(200,100);
+  Label inscap=new Label("Instructions",Label.CENTER);
+  inscap.setFont(new Font("Serif",Font.BOLD,15));
+  inscap.setForeground(Color.BLACK);
+  instr.add(inscap);
+  JLabel l1=new JLabel("1. Parents should be given informed consent for signing.");
+  JLabel l2=new JLabel("2. Only the parents and 3 (maximum) examiners would be allowed to stay inside the room during the testing.");
+  JLabel l3=new JLabel("3. Try re-connecting the arduino before you run the code ");
+  instr.add(l1);
+  instr.add(l2);
+  instr.add(l3);
+  panel.add(labels);
+  panel.add(instr);
+
+    int result = JOptionPane.showConfirmDialog(
+        this, // use your JFrame here
+        panel,
+        "Use a Panel",
+        JOptionPane.OK_CANCEL_OPTION,
+        JOptionPane.PLAIN_MESSAGE);
+   if(result==JOptionPane.OK_OPTION) {
+      patient_name = pname.getText();
+      patient_MR = pMR.getText();
+      patient_dob = pdob.getText();
+      patient_milestone_details = pmilestone_details.getText();
+      patient_OTC = potc.getText();
+   }
+   else {
+   }
 }
 
 void FLAG() {
