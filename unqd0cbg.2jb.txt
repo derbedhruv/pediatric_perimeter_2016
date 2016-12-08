@@ -1,0 +1,17 @@
+﻿Added Patient Info, Add Note; Removed Bugs; Cleaned Code
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Date:      Thu Dec 8 13:10:13 2016 +0530
+#
+# On branch vedipen
+# Your branch and 'origin/vedipen' have diverged,
+# and have 1 and 3 different commits each, respectively.
+#   (use "git pull" to merge the remote branch into yours)
+#
+# Changes to be committed:
+#	new file:   gui/ScaleReading/Scale.jpg
+#	modified:   gui/gui.pde
+#
+

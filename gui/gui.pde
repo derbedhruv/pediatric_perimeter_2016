@@ -47,6 +47,11 @@ import java.awt.Color;
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
+import java.text.DateFormat;  //For Date Validation
+import java.text.SimpleDateFormat;
+import java.text.NumberFormat;
+import java.util.Date;
+import javax.swing.text.NumberFormatter;  //For OTC Validation
 import static javax.swing.JOptionPane.*;
 import controlP5.*;
 import processing.serial.*;
@@ -456,16 +461,25 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
     JLabel lbl1 = new JLabel("Patient Name");
     JLabel lbl2 = new JLabel("MR Number");
-    JLabel lbl3 = new JLabel("Date of Birth");
+    JLabel lbl3 = new JLabel("Date of Birth (dd/mm/yy)");
     JLabel lbl4 = new JLabel("Milestone details");
-    JLabel lbl5 = new JLabel("Occipital Distance");
+    JLabel lbl5 = new JLabel("Occipital Distance (0 - 28 cm)");
 
     final JTextField pname = new JTextField(10);
     final JTextField pMR = new JTextField(10);
-    final JTextField pdob = new JTextField(10);
+    
+    DateFormat df = new SimpleDateFormat("dd/MM/yy");
+    final JFormattedTextField pdob = new JFormattedTextField(df);
+    
     final JTextField pmilestone_details = new JTextField(10);
-    final JTextField potc = new JTextField(10);
-
+    
+    NumberFormat intFormat = NumberFormat.getIntegerInstance();
+    NumberFormatter numberFormatter = new NumberFormatter(intFormat);
+    numberFormatter.setValueClass(Integer.class); //optional, ensures you will always get a int value
+    numberFormatter.setAllowsInvalid(false);
+    numberFormatter.setMinimum(0); //Optional
+    numberFormatter.setMaximum(28); //Optional
+    final JFormattedTextField potc = new JFormattedTextField(numberFormatter);
 
     JPanel labels = new JPanel();
     labels.setLayout(new GridLayout(5, 2));
@@ -505,7 +519,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
     if (result == JOptionPane.OK_OPTION) {
 
      //This While loop is used for validation of form
-     while (pname.getText().length() == 0 || pMR.getText().length() == 0 || pdob.getText().length() == 0 || pmilestone_details.getText().length() == 0 || potc.getText().length() == 0 || Integer.parseInt(potc.getText()) > 27 || Integer.parseInt(potc.getText()) < 0) {
+     while (pname.getText().length() == 0 || pMR.getText().length() == 0 || pdob.getText().length() == 0 || pmilestone_details.getText().length() == 0 || potc.getText().length() == 0) {
       if (firstTime) {
        JLabel l4 = new JLabel("Please fill the details correctly.");
        l4.setForeground(Color.RED);
@@ -1562,7 +1576,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
 
    void CAPTURE() {
-    cam.save(workingDirectory + "/ScaleReading/Scale.jpg");
+    cam.save(base_folder + "/" + patient_name + "_scale.jpg");
    }
 
 

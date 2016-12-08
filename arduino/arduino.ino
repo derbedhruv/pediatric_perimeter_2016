@@ -31,8 +31,6 @@
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
-#include <MemoryFree.h>
-
 #define Red 163
 #define Green 255
 #define Blue 4
