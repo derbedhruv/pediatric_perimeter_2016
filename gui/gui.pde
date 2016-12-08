@@ -1576,7 +1576,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
 
    void CAPTURE() {
-    cam.save(base_folder + "/" + patient_name + "_scale.jpg");
+     if(patient_name.length()!=0 ) {
+    cam.save(workingDirectory + "/" + base_folder + "/" + patient_name + "_scale.jpg");
+     }  
    }
 
 
