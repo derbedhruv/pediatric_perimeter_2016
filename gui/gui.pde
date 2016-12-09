@@ -645,9 +645,6 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
 
     // Draw the picture to show the patterns
-    // String path ="E:/GitRepositories/pediatric_perimeter_2016/gui/";
-    // String path = workingDirectory;
-    // DisplayImage = loadImage(path+"pattern"+str(imageCount + 1)+ ".png");
 
     for (int i = 0; i < 3; i++) {
      if (pattern_state[i] < 0) {
@@ -1153,6 +1150,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
       if (r_quad < 0.5 * quad_diameter[1]) {
        // inner quads
+       if(((Float)angle).isNaN()) {    // For avoiding crashes due to angle = NaN if bychance
+         angle = HALF_PI;
+       }
        hovered_count = 4 + int((angle + HALF_PI) / HALF_PI);
        quad_state[abs(8 - hovered_count)][1] *= -1;
       } else {
@@ -1168,6 +1168,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
       // choose inner or outer hemis
       if (r_hemi < 0.5 * quad_diameter[1]) {
        // inner quads
+       
        hovered_count = 2 + int((angle + HALF_PI) / PI) % 2;
        hemi_state[hemi_hover_code[hovered_count - 2][0]][1] *= -1;
        hemi_state[hemi_hover_code[hovered_count - 2][1]][1] *= -1;
@@ -1199,13 +1200,36 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
    // QUICK FUNCTION TO CALCULATE THE ANGLE SUBTENDED
    float angleSubtended(float x, float y, int c1, int c2) {
-    // angle subtended by (x,y) to fixed point (c1,c2)
-    float angle = atan((x - c1) / (y - c2));
-    if (y >= c2) { // if the reference point is in the 3rd or 4th quadrant w.r.t. a circle with (c1,c2) as center
-     angle = PI + angle;
-    }
-    return angle + HALF_PI;
+    // angle subtended by (x,y) to fixed point (c1,c2) 
+      if(x == c2) {
+        return HALF_PI;  // To avoid INFINITY
+      }
+      float angle = atan(abs(y - c2) / abs(x - c1));
+      if(x <= c1 && y < c2) {
+        angle = PI-angle;   // Quadrant 2
+      }
+      if(x < c1 && y >= c2) {
+        angle = PI+angle;   // Quadrant 3
+      }
+      if(x >= c1 && y > c2) {
+        angle = (2*PI) - angle;  // Quadrant 4
+      }
+      return angle;
    }
+   
+// QUICK FUNCTION TO CALCULATE THE ANGLE SUBTENDED
+//float angleSubtended(float x, float y, int c1, int c2) {
+//  // angle subtended by (x,y) to fixed point (c1,c2)
+//  float angle = atan((x - c1)/(y - c2));
+//  if (y > c2) {  // if the reference point is in the 3rd or 4th quadrant w.r.t. a circle with (c1,c2) as center
+//    angle = PI + angle;
+//  }
+//  if(y == c2) {
+//    angle = 0;
+//  }
+//  return angle + HALF_PI;
+//}
+
 
    void mousePressed() {
     // really simple - just send the instruction to the arduino via serial
