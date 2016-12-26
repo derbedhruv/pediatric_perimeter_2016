@@ -1540,9 +1540,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      //CKR
      if (abs(meridians[current_sweep_meridian]) > 0 && abs(meridians[current_sweep_meridian]) <= numberOfLEDs[(24 - current_sweep_meridian) % 24]) {
       if (abs(meridians[current_sweep_meridian]) > 3) {
-       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])])+ "(" + ledPeri + ")" + "\t");
+       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])])+ "(" + ledMeri + ")" + "\t");
       } else if (abs(meridians[current_sweep_meridian]) <= 3) {
-       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])]) + "(" + ledPeri + ")" + "\t");
+       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])]) + "(" + ledMeri + ")" + "\t");
       }
      }
      //CKR
