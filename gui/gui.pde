@@ -165,7 +165,8 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    Workbook wb = null;
    float[][] angleData;
    float[] bottomMostAngle = new float[30];
-
+   public String ledMeri;
+   
 
    // SERIAL OBJECT/ARDUINO
    Serial arduino; // create serial object
@@ -187,7 +188,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    // Second window Variables to generate the final Isopter according to the subject's view
    PFrame f;
    PApplet s;
-
+   
    /**********************************************************************************************************************************/
    // THIS IS THE MAIN FRAME
    void setup() {
@@ -1539,9 +1540,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      //CKR
      if (abs(meridians[current_sweep_meridian]) > 0 && abs(meridians[current_sweep_meridian]) <= numberOfLEDs[(24 - current_sweep_meridian) % 24]) {
       if (abs(meridians[current_sweep_meridian]) > 3) {
-       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])]) + "\t");
+       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])])+ "(" + ledPeri + ")" + "\t");
       } else if (abs(meridians[current_sweep_meridian]) <= 3) {
-       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])]) + "\t");
+       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])]) + "(" + ledPeri + ")" + "\t");
       }
      }
      //CKR
@@ -1574,7 +1575,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
     String inString = arduino.readStringUntil('\n');
     // Wait For The Response When Space Bar Is Pressed
-
+    ledMeri=inString.substring(0,inString.length()-2);
     if (inString != null && inString.length() <= 4) {
      serialEventFlag = true;
      // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
