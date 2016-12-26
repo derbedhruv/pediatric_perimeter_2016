@@ -1,0 +1,19 @@
+﻿Added Patient Info, Add Note; Removed Bugs; Cleaned Code
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Date:      Thu Dec 8 13:10:13 2016 +0530
+#
+# On branch vedipen
+# Your branch is up-to-date with 'origin/vedipen'.
+#
+# Changes to be committed:
+#	new file:   gui/ScaleReading/Scale.jpg
+#	modified:   gui/gui.pde
+#
+# Untracked files:
+#	mzv0htmf.5zw.txt
+#	unqd0cbg.2jb.txt
+#
+
