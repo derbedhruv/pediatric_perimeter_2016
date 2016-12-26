@@ -252,8 +252,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
     workingDirectory = sketchPath("");
     //Import The Trace/ 3D - Model Of The Device For The LED Posiions 
     // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
-    angleData = importExcel(workingDirectory + "/AngleData.xlsx"); // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
-
+    
     // ADD BUTTONS TO THE MAIN UI, CHANGE DEFAULT CONTROLP5 VALUES
     cp5 = new ControlP5(this);
     cp5.setColorForeground(#eeeeee);
@@ -546,6 +545,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      patient_dob = pdob.getText();
      patient_milestone_details = pmilestone_details.getText();
      patient_OTC = potc.getText();
+     
+     occipitalDistance = Integer.parseInt(patient_OTC.trim());
+     angleData = importExcel(workingDirectory + "/AngleData.xlsx"); // Gives An Array With The Angle Subtended By The Each LED At The Center Of The Eye
 
      // Create files for saving patient details
      // give them useful header information
