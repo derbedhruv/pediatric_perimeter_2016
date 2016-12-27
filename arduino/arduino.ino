@@ -31,9 +31,9 @@
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
-#define Red 163
+#define Red 179
 #define Green 255
-#define Blue 4
+#define Blue 0
 
 // #define Br 2      // This is where you define the brightness of the LEDs - this is constant for all
 
