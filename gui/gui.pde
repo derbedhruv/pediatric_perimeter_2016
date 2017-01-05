@@ -188,14 +188,15 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    // Second window Variables to generate the final Isopter according to the subject's view
    PFrame f;
    PApplet s;
-   
+   String daisy_On_Off = "OFF";
    /**********************************************************************************************************************************/
    // THIS IS THE MAIN FRAME
    void setup() {
     if (Serial.list().length != 0) {
+     
      String port = Serial.list()[Serial.list().length - 1];
      println("Arduino MEGA connected succesfully.");
-
+   println(port);
      // then we open up the port.. 115200 bauds
      arduino = new Serial(this, port, 115200);
      arduino.buffer(1);
@@ -203,6 +204,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      // send a "clear all" signal to the arduino in case some random LEDs lit up..
      arduino.write('x');
      arduino.write('\n');
+     println("Cleared");
     } else {
      println("Arduino not connected or detected, please replug");
      exit();
@@ -407,8 +409,16 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      .setText("75")
      .setPosition(1150, 520)
      .setColorValue(0x00000000)
-     .setFont(createFont("Georgia", 12));
-
+     .setFont(createFont("Georgia", 12)); 
+    cp5.addRadioButton("DAISY")
+         .setPosition(925,425)
+         .setSize(25,10)
+         .setColorForeground(hover_color)
+         .setColorActive(#ffff00)
+         .setColorLabel(color(0))
+         .setSpacingColumn(50)
+         .addItem("Daisy",1)
+         ;
 
     JPanel panel = new JPanel();
     panel.setLayout(new GridLayout(4, 1));
@@ -683,7 +693,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
     text("Present Status    : " + status, 520, 625);
     text(str(currentMillis) + "ms", 1075, 625); // milliseconds elapsed since the program began
     text("Value :" + cp5.getController("FIXATION").getValue(), 1025, 545); // display the brightness 
-
+    text(daisy_On_Off, 925 , 450);
     // RECORD THE FRAME, SAVE AS RECORDED VIDEO
     // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
     //  saveFrame(workingDirectory + base_folder + "/frames/frame-####.jpg");      //save each frame to disc without compression
@@ -1574,10 +1584,12 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      */
 
     String inString = arduino.readStringUntil('\n');
+   // println("Recieved from Arduino : " + inString + inString.length());
     // Wait For The Response When Space Bar Is Pressed
-    ledMeri=inString.substring(0,inString.length()-2);
-    if (inString != null && inString.length() <= 4) {
+   
+     if (inString != null && inString.length() <= 4) {
      serialEventFlag = true;
+     ledMeri=inString.substring(0,inString.length()-2);
      // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
      int temp_Val = Integer.parseInt(inString.substring(0, inString.length() - 2));
      if (temp_Val == 99 && SpaceKey_State == 1) { // Response For Clear All Command
@@ -1603,9 +1615,11 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
 
    void CAPTURE() {
+     if(frameCount > 1){
      if(patient_name.length()!=0 ) {
     cam.save(workingDirectory + "/" + base_folder + "/" + patient_name + "_scale.jpg");
      }  
+     }
    }
 
 
@@ -1681,8 +1695,23 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
     arduino.write(str(fixationBrightness));
     arduino.write('\n');
    }
-
-
+  
+   void DAISY(int a){
+   arduino.write('d');
+   arduino.write(',');
+   if (a == 1){
+   arduino.write('1');
+   daisy_On_Off = "ON";
+   
+   }else {
+     daisy_On_Off = "OFF";
+    arduino.write('0');
+   
+   }
+   arduino.write('\n');
+   }
+   
+   
    // THE BANG FUNCTIONS
    void FINISH() {
     // Make Sure everything is reset in the device.

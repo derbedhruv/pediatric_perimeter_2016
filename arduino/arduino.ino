@@ -2,7 +2,7 @@
   //  PEDIATRIC PERIMETER ARDUINO SEGMENT FOR ADDRESSABLE LEDs
   //  SRUJANA CENTER FOR INNOVATION, LV PRASAD EYE INSTITUTE
   //
-  //  AUTHORS: Dhruv Joshi
+  //  AUTHORS: CKR
   //
   //  This code gives the user the following possible LED outputs through
   //  serial addressing:
@@ -132,8 +132,8 @@ byte meridianNumbersCKR [24];
 int counterCKR;
 int patternThreeIndex = 2; // To start with a one time sequence.
 
-   byte colorIndex= 0;
-
+byte colorIndex= 0;
+boolean daisyOn = false; 
 void setup() {
   // setup serial connection
   Serial.begin(115200);
@@ -389,7 +389,20 @@ void loop() {
         // we deal with 3 cases: sweeps, hemispheres and quadrants, Meridians
         switch (lat[0]) { // use only the first character, the rest is most likely garbage
 
-          // this is the case of setting brightness of the LEDs
+
+            case 'd': { // sets meridian to be on / off
+     
+              if (longit.toInt() == 1) {
+                daisyOn = true;
+                 
+              }else if(longit.toInt() == 0){
+               daisyOn = false;
+              }else {
+                daisyOn = false;
+              }
+              break;
+            }
+           
           case 'm': { // Choosen Meridian Will Turn On
               // Based on the number entered as longit[0], we will turn on that particular LED.
               Br = 1;
@@ -407,7 +420,7 @@ void loop() {
                 sweepStrip = chosenStrip;
 
                 meridians_turnOn [0] =  sweepStrip;
-                turnThemOn(meridians_turnOn, true, 1);
+                turnThemOn(meridians_turnOn, daisyOn, 1);
               }
               // brightness = String(longit).toInt();
               break;
