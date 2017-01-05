@@ -233,8 +233,20 @@ void loop() {
       if ((LEDNumber <= numPixels[sweepStrip - 1] + 3 - 1) && LEDNumber > 0) {
         wayImplementFM = fixed;
         byte meridiansSweep [] = {sweepStrip, 0};
+       
+        if((sweepStrip >= 13 && sweepStrip <= 24)|| (sweepStrip == 1)){
+           Serial.println(sweepStrip);
+        if(LEDNumber > 1){
+        verifyTest = fountainModel(LEDNumber, 2, LEDNumber-1, meridiansSweep , 1, 2);
+        verifyTest = fountainModel(LEDNumber, 2, LEDNumber-1, meridiansSweep , 1, 2);
+        }else {
         verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2);
+        verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2); 
+        }}else {
         verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2);
+        verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2); 
+        }
+        
         //Serial.println(verifyTest);
         if (verifyTest == true) {
           Serial.println(LEDNumber);
@@ -243,18 +255,19 @@ void loop() {
           currentMillis = millis();
 
         }
-      } else if (LEDNumber == 0) {
+      }else if (LEDNumber == 0) {
         // To Notify That We Are Done With LED Strip;
         LEDNumber = 28; // 28 value is to Reinitailze The Value in GUI [Clear the red dot on Meridian on GUI]
         Serial.println(LEDNumber);
         // previousMillis = 0;
-        clearAll();
+          clearAll();
         // sweep = false;
         // sweep_interval = 1750;
       }
 
     }
   }
+  
   // Code for patterns
   if (patterns == true) {
 
