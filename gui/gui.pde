@@ -165,7 +165,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    Workbook wb = null;
    float[][] angleData;
    float[] bottomMostAngle = new float[30];
-   public String ledMeri;
+
    
 
    // SERIAL OBJECT/ARDUINO
@@ -566,8 +566,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      isopter_text = this.createWriter(base_folder + "/" + patient_name + "_isopter.txt");
      isopter_text.println("Isopter angles for patient " + patient_name);
      isopter_text.println("MR No : " + patient_MR);
+     isopter_text.println("Date of Birth : " + patient_dob);
      isopter_text.println("Milestone Details : " + patient_milestone_details);
-     isopter_text.println("Occipital to Corneal Distance (mm) : " + patient_OTC);
+     isopter_text.println("Occipital to Corneal Distance (cm) : " + patient_OTC);
      isopter_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
      isopter_text.println("Timestamp\t|Meridian\t|Angle\t|Reaction Time (ms)\t|Flag\t");
      isopter_text.flush();
@@ -575,7 +576,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      quadHemi_text = this.createWriter(base_folder + "/" + patient_name + "_quads_hemis.txt");
      quadHemi_text.println("Meridian and Quad tests for patient " + patient_name);
      quadHemi_text.println("MR No : " + patient_MR);
+     quadHemi_text.println("Date of Birth : " + patient_dob);
      quadHemi_text.println("Milestone Details : " + patient_milestone_details);
+     quadHemi_text.println("Occipital to Corneal Distance (cm) : " + patient_OTC);
      quadHemi_text.println("Timestamp : " + hour() + ":" + minute() + ":" + second());
      quadHemi_text.println("Timestamp\t|Test done\t|Reaction Time\t|Flag\t");
      quadHemi_text.flush();
@@ -1550,9 +1553,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      //CKR
      if (abs(meridians[current_sweep_meridian]) > 0 && abs(meridians[current_sweep_meridian]) <= numberOfLEDs[(24 - current_sweep_meridian) % 24]) {
       if (abs(meridians[current_sweep_meridian]) > 3) {
-       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])])+ "(" + ledMeri + ")" + "\t");
+       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])])+ "(" + meridians[current_sweep_meridian]+ ")" + "\t");
       } else if (abs(meridians[current_sweep_meridian]) <= 3) {
-       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])]) + "(" + ledMeri + ")" + "\t");
+       isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])]) + "(" + meridians[current_sweep_meridian] + ")" + "\t");
       }
      }
      //CKR
@@ -1589,7 +1592,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    
      if (inString != null && inString.length() <= 4) {
      serialEventFlag = true;
-     ledMeri=inString.substring(0,inString.length()-2);
+     
      // string length four because it would be a 2-digit or 1-digit number with a \r\n at the end
      int temp_Val = Integer.parseInt(inString.substring(0, inString.length() - 2));
      if (temp_Val == 99 && SpaceKey_State == 1) { // Response For Clear All Command
@@ -1652,32 +1655,42 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
 
    void PATTERNONE() {
+     
+     if(frameCount >1){
     arduino.write('p');
     arduino.write(',');
     arduino.write('1');
     arduino.write('\n');
 
     pattern_state[0] = 2;
+     }
    }
 
 
    void PATTERNTWO() {
+     
+        if(frameCount >1){
     arduino.write('p');
     arduino.write(',');
     arduino.write('2');
     arduino.write('\n');
 
     pattern_state[1] = 2;
+        }
+        
    }
 
 
    void PATTERNTHREE() {
+     
+        if(frameCount >1){
     arduino.write('p');
     arduino.write(',');
     arduino.write('3');
     arduino.write('\n');
 
     pattern_state[2] = 2;
+        }
    }
 
 
