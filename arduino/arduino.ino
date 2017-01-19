@@ -95,7 +95,7 @@ char temp[25] = "";
 
 //Variables for Patterns
 byte allMeridians[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
-byte patternNumber;
+byte patternNumber = 0;
 int memoryAvailable;
 unsigned long patterns_interval = 500;
 boolean patterns;
@@ -134,6 +134,12 @@ int patternThreeIndex = 2; // To start with a one time sequence.
 
 byte colorIndex= 0;
 boolean daisyOn = false; 
+
+
+byte reducedNumofLEDs[] =  {14, 14, 14, 14, 14, 14, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 12, 12, 12, 14, 14, 14, 14};    // Start the stimulus from 60 Deg Periphery
+
+
+
 void setup() {
   // setup serial connection
   Serial.begin(115200);
@@ -538,7 +544,8 @@ void loop() {
                 sweepStrip = chosenStrip;
                 daisyStrip = daisyConverter(sweepStrip);
                 currentSweepLED = numPixels[sweepStrip - 1] + 3;    // adding 3 for the 3 LEDs in the daisy
-                LEDNumber = numPixels[sweepStrip - 1] + 3 - 1;
+                //  LEDNumber = numPixels[sweepStrip - 1] + 3 - 1;
+                LEDNumber = reducedNumofLEDs[sweepStrip - 1];
                 // Serial.println(LEDNumber); // First LED to start
                 currentMillis = 0;
               }
