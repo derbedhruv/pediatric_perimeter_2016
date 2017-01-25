@@ -134,6 +134,7 @@ int patternThreeIndex = 2; // To start with a one time sequence.
 
 byte colorIndex= 0;
 boolean daisyOn = false; 
+boolean ledCoupletOn = false;
 
 
 byte reducedNumofLEDs[] =  {14, 14, 14, 14, 14, 14, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 12, 12, 12, 14, 14, 14, 14};    // Start the stimulus from 60 Deg Periphery
@@ -239,7 +240,8 @@ void loop() {
       if ((LEDNumber <= numPixels[sweepStrip - 1] + 3 - 1) && LEDNumber > 0) {
         wayImplementFM = fixed;
         byte meridiansSweep [] = {sweepStrip, 0};
-       
+
+       if(ledCoupletOn){ //Switch to Use LED in couplets or not
         if((sweepStrip >= 13 && sweepStrip <= 24)|| (sweepStrip == 1)){
            Serial.println(sweepStrip);
         if(LEDNumber > 1){
@@ -249,6 +251,10 @@ void loop() {
         verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2);
         verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2); 
         }}else {
+        verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2);
+        verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2); 
+        }
+        }else{
         verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2);
         verifyTest = fountainModel(LEDNumber, 1, LEDNumber, meridiansSweep , 1, 2); 
         }
@@ -421,7 +427,18 @@ void loop() {
               }
               break;
             }
-           
+           case 'c': { // sets meridian to be on / off
+     
+              if (longit.toInt() == 1) {
+                ledCoupletOn = true;
+                 
+              }else if(longit.toInt() == 0){
+               ledCoupletOn = false;
+              }else {
+                ledCoupletOn = false;
+              }
+              break;
+            }
           case 'm': { // Choosen Meridian Will Turn On
               // Based on the number entered as longit[0], we will turn on that particular LED.
               Br = 1;

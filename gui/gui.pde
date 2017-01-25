@@ -189,6 +189,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    PFrame f;
    PApplet s;
    String daisy_On_Off = "OFF";
+   String ledCouplet = "OFF";
    /**********************************************************************************************************************************/
    // THIS IS THE MAIN FRAME
    void setup() {
@@ -418,6 +419,15 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
          .setColorLabel(color(0))
          .setSpacingColumn(50)
          .addItem("Daisy",1)
+         ;
+    cp5.addRadioButton("LED_COUPLET")
+         .setPosition(925,460)
+         .setSize(25,10)
+         .setColorForeground(hover_color)
+         .setColorActive(#ffff00)
+         .setColorLabel(color(0))
+         .setSpacingColumn(50)
+         .addItem("Led_Couplet",1)
          ;
 
     JPanel panel = new JPanel();
@@ -697,6 +707,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
     text(str(currentMillis) + "ms", 1075, 625); // milliseconds elapsed since the program began
     text("Value :" + cp5.getController("FIXATION").getValue(), 1025, 545); // display the brightness 
     text(daisy_On_Off, 925 , 450);
+    text(ledCouplet,925,485);
     // RECORD THE FRAME, SAVE AS RECORDED VIDEO
     // THIS MUST BE THE LAST THING IN void draw() OTHERWISE EVERYTHING WON'T GET ADDED TO THE VIDEO FRAME
     //  saveFrame(workingDirectory + base_folder + "/frames/frame-####.jpg");      //save each frame to disc without compression
@@ -1724,6 +1735,20 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    arduino.write('\n');
    }
    
+   void LED_COUPLET(int a){
+   arduino.write('c');
+   arduino.write(',');
+   if (a == 1){
+   arduino.write('1');
+   ledCouplet = "ON";
+   
+   }else {
+     ledCouplet = "OFF";
+    arduino.write('0');
+   
+   }
+   arduino.write('\n');
+   }
    
    // THE BANG FUNCTIONS
    void FINISH() {
