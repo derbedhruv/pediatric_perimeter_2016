@@ -86,7 +86,7 @@ byte b ;
 
 String inputString = "", lat = "", longit = "";
 boolean acquired = false, breakOut = false, sweep = false;
-unsigned long previousMillis, currentMillis, sweep_interval = 1367, Recieved_sweep_interval = 1367 ; // the interval for the sweep in kinetic perimetry (in ms)
+unsigned long previousMillis, currentMillis, sweep_interval = 1367, Recieved_sweep_interval = 1367,fixationMillis,flickerDuration ; // the interval for the sweep in kinetic perimetry (in ms)
 int fixationStrength = 100;  // brightness of the fixation
 byte sweepStart, longitudeInt, Slider = 255, currentSweepLED, LEDNumber , sweepStrip, daisyStrip;
 byte Respose_ClearAll;
@@ -139,7 +139,8 @@ boolean ledCoupletOn = false;
 
 byte reducedNumofLEDs[] =  {14, 14, 14, 14, 14, 14, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 12, 12, 12, 14, 14, 14, 14};    // Start the stimulus from 60 Deg Periphery
 
-
+boolean fixationState = false;
+boolean LED = true;
 
 void setup() {
   // setup serial connection
@@ -229,6 +230,25 @@ void loop() {
     }
     }
   */
+
+  //code to blink fixation
+
+if(fixationState){
+  if (millis() - fixationMillis <= flickerDuration/2) {
+  } else {
+  if(LED){
+  analogWrite(fixationLED, fixationStrength);
+  LED = false;
+  }else{
+  analogWrite(fixationLED, 0);
+  LED = true;
+  }
+  }
+  fixationMillis = millis();
+}
+else{
+  analogWrite(fixationLED, 0);
+} 
   // Code for Sweep
   if (sweep == true) {
 
@@ -447,7 +467,8 @@ void loop() {
                 g = Green;
                 b= Blue;
               //   Serial.println(1);
-              analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
+              //analogWrite(fixationLED, 0); // Fixation is very Important during kinetic perimetry.
+              fixationState = false;
               byte chosenStrip = longit.toInt();
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = false;
@@ -456,7 +477,9 @@ void loop() {
                 sweepStrip = chosenStrip;
 
                 meridians_turnOn [0] =  sweepStrip;
-                turnThemOn(meridians_turnOn, daisyOn, 1);
+                verifyTest = fountainModel(25,12 , 14, meridians_turnOn,1, 2);
+                verifyTest = fountainModel(25,12 , 14, meridians_turnOn,1, 2);
+               // turnThemOn(meridians_turnOn, daisyOn, 1);
               }
               // brightness = String(longit).toInt();
               break;
@@ -464,7 +487,8 @@ void loop() {
           case 'p':  {// Choose
               Br = 1;
               //     Serial.println(2);
-              analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
+              //analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
+              fixationState = true;
               byte chosenStrip = longit.toInt();
               if (chosenStrip <= 5) {
                 patterns = true;
@@ -547,7 +571,8 @@ void loop() {
               */
               byte chosenStrip = longit.toInt();
               //      Serial.println(3);
-              analogWrite(fixationLED, fixationStrength / 2); // Fixation is very Important during kinetic perimetry.
+              //analogWrite(fixationLED, fixationStrength / 2); // Fixation is very Important during kinetic perimetry.
+              fixationState = true;
               if (chosenStrip <= 24 && chosenStrip > 0) {
                 sweep = true;
                 Br = 2;
@@ -578,7 +603,8 @@ void loop() {
                 fixationStrength = longit.toInt();
                 //  Serial.println(4);
 
-                analogWrite(fixationLED, fixationStrength);
+                // analogWrite(fixationLED, fixationStrength);
+                fixationState = true;
               }
               break;
             }
@@ -586,7 +612,8 @@ void loop() {
               // clearAll();
               // turn off the fixation
               //  Serial.println(5);
-              analogWrite(fixationLED, 0);
+              // analogWrite(fixationLED, 0);
+              fixationState = false;
               Br = 1;
                //Set The Color of the LED in Strip 
                 r = Red;
@@ -623,7 +650,8 @@ void loop() {
               Serial.println("quadrants");
               // turn off the fixation
               //    Serial.println(6);
-              analogWrite(fixationLED, 0);
+              // analogWrite(fixationLED, 0);
+              fixationState = false;
               Br = 1;
                //Set The Color of the LED in Strip 
                 r = Red;
@@ -734,7 +762,8 @@ void clearAll() {
 
   // then put on fixation
   // Serial.println(fixationStrength);
-  analogWrite(fixationLED, fixationStrength);
+  // analogWrite(fixationLED, fixationStrength);
+  fixationState = true;
 }
 
 void sphere() {
