@@ -86,8 +86,12 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
  // ISOPTER VARIABLES [SWEEP]
  int meridian_state[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
  color meridian_color[] = { #bbbbbb, #bbbbbb, #00ff00, #ffff22}; // Color changes depending on the state
- int isopter_center[] = { 960, 210};
- int isopter_diameter = 300;
+ 
+ int[][] section_state = {{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
+ color section_color[] = { #bbbbbb, #bbbbbb, #00ff00, #ffff22};
+ 
+ int isopter_center[] = { 970, 220};
+ int isopter_diameter = 360;
 
  // 24 meridians and their present state of testing [MERIDIANS]
  int meridians[] = { 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28}; // negative value means its being hovered over
@@ -100,7 +104,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
  // THIS WILL ENABLE SENDING A SERIAL COMM TO THE ARDUINO VERY EASILY ON A MOUSE PRESS EVENT
  char hovered_object,
  lastTest_Hobject;
- int hovered_count,
+ int hovered_count, hovered_subcount,lastTes_Hsubcount,
  lastTest_Hcount; // the current meridian which has been hovered over
  color hover_color = #08BFC4; //  Color When hovering on Clickable objects
  color backgroundColor = #5f6171;
@@ -165,7 +169,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    Workbook wb = null;
    float[][] angleData;
    float[] bottomMostAngle = new float[30];
-
+int lowLimit,upperLimit;
    
 
    // SERIAL OBJECT/ARDUINO
@@ -635,8 +639,8 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      pattern_state[0] = 1;
      pattern_state[1] = 1;
      pattern_state[2] = 1;
-     arduino.write('x');
-     arduino.write('\n');
+     //arduino.write('x');
+     //arduino.write('\n');
     } else {
      exit();
     }
@@ -661,7 +665,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
     if (cam.available() == true) {
      cam.read();
     }
-    image(cam, 80, 50); // display the image, interpolate with the previous image if this one was a dropped frame
+   image(cam, 80, 50); // display the image, interpolate with the previous image if this one was a dropped frame
 
     // Overlay a protractor on the live feed 
     PImage protractor = loadImage("protractor.png");
@@ -1081,6 +1085,9 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
     // Then draw the 24 meridians
     for (int i = 0; i < 24; i++) {
+      
+      //To On the Complete Meridian
+     if( daisy_On_Off == "ON") {
      // first calculate the location of the points on the circumference of this circle, given that meridians are at 15 degree (PI/12) intervals
      float xm = cos(radians(-i * 15)) * diameter / 2 + x;
      float ym = sin(radians(-i * 15)) * diameter / 2 + y;
@@ -1098,7 +1105,60 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      // draw a line from the center to the meridian points (xm, ym)
      line(x, y, xm, ym);
      strokeWeight(1); // Restore the default Value 
+      }
+      else {   // This code is to control the  display of the each section from the tri-sected meridian
+      
+   float x1,y1,x2 ,y2;
 
+   // draw a line from the center to the meridian points (xm, ym)
+   x1 = x;
+   y1 = y;
+   
+   x2 = cos(radians(-i * 15)) * (diameter/2)+ x;
+   y2 =  sin(radians(-i * 15)) * (diameter/2)+y;
+   
+   strokeWeight(1); // Restore the default Value r
+   stroke(#bbbbbb);
+   line(x1, y1, x2, y2);
+  
+  for(int k =0; k<3 ; k++){
+    //println(section_state[i][k]);
+     if (section_state[i][k] < 0) { //Notify That the mouse is hovering on the Meridians
+      strokeWeight(2);
+      stroke(hover_color);
+      //println(i);
+      section_state[i][k] = abs(section_state[i][k]); // revert to earlier thing
+     x1 = cos(radians(-i * 15)) *( diameter*(k+1)*30/120) / 2 + x;
+     y1 = sin(radians(-i * 15)) * (diameter*(k+1)*30/120) / 2 + y;
+     
+     x2 =   cos(radians(-i * 15)) *( diameter*(k)*30/120) / 2 + x;
+     y2 = sin(radians(-i * 15)) * (diameter*(k)*30/120) / 2 + y;
+     line(x1, y1, x2, y2);
+           fill(hover_color);
+
+     text(str((k+1) * 30), x1, y1);
+
+     } else if (section_state[i][k] ==2 || section_state[i][k] == 3) { //Color The Meridian If It Is Done 
+    // println("Coloring Accordingly");
+      stroke(section_color[section_state[i][k]]);
+     x1 = cos(radians(-i * 15)) *( diameter*(k+1)*30/120) / 2 + x;
+     y1 = sin(radians(-i * 15)) * (diameter*(k+1)*30/120) / 2 + y;
+     
+     x2 = cos(radians(-i * 15)) * (diameter*(k)*30/120) / 2 + x;
+     y2 = sin(radians(-i * 15)) * (diameter*(k)*30/120) / 2 + y;
+     line(x1, y1, x2, y2);
+     } else {
+      stroke(#bbbbbb);
+      x1 =x;
+      y1 = y;
+      
+      x2 = cos(radians(-i * 15)) * (diameter)+ x;
+      y2 =  sin(radians(-i * 15)) * (diameter)+y;
+     }
+     strokeWeight(1);
+  }
+       
+     } 
      // draw the text at a location near the edge, which is along an imaginary circle of larger diameter - at point (xt, yt)
      float xt = cos(radians(-i * 15)) * (diameter + 30) / 2 + x - 10;
      float yt = sin(radians(-i * 15)) * (diameter + 20) / 2 + y + 5;
@@ -1109,7 +1169,8 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
       fill(0); //#DADEDE
      }
      text(str(i * 15), xt, yt); // draw the label of the meridian (in degrees)
-
+         
+     
      //Boundaries of the device need to be displayed 
      float radiusLargerSide = (angleData[16][0] / 120) * diameter;
      float radiusSmallerSide = (angleData[7][0] / 120) * diameter;
@@ -1162,8 +1223,28 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
       meridians[hovered_count] = abs(meridians[hovered_count]); // clear out the previously hovered one
       hovered_count = int((angle + 5) / 15) % 24; // this is the actual angle on which you are hovering
       if (r_isopter < 0.5 * (isopter_diameter)) { //Check On Meridians
+      
+      if (daisy_On_Off == "ON"){ // For Complete Meridian
        hovered_object = 'm';
        meridian_state[hovered_count] *= -1;
+       
+      } else{ // For Sections on Meridian
+      
+      if (r_isopter >= 0.5 * (isopter_diameter*60/120) && r_isopter < 0.5 * (isopter_diameter *90/120) ) {
+         hovered_object = 'z';
+         section_state[hovered_count][2] *= -1;
+         hovered_subcount = 2;
+       }else if((r_isopter >= 0.5 * (isopter_diameter*30/120) && r_isopter < 0.5 * (isopter_diameter *60/120) )) {
+         hovered_object = 'z';
+         section_state[hovered_count][1] *= -1;
+         hovered_subcount =1;
+       }else if(( r_isopter < 0.5 * (isopter_diameter *30/120) )){
+         hovered_object = 'z';
+         section_state[hovered_count][0] *= -1;
+         hovered_subcount =0;
+       }
+      }
+      
       } else {
        hovered_object = 's';
        meridians[hovered_count] = -1 * abs(meridians[hovered_count]); // set the presently hovered meridian to change state
@@ -1261,7 +1342,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    void mousePressed() {
     // really simple - just send the instruction to the arduino via serial
     // it will be of the form (hovered_object, hovered_count\n)
-    if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm') {
+    if (hovered_object == 'h' || hovered_object == 'q' || hovered_object == 's' || hovered_object == 'm' || hovered_object == 'z') {
      // reset flag and start high quality high speed recording
      flagged_test = false;
      startRecording = true;
@@ -1280,7 +1361,20 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      arduino.write(',');
      if (hovered_object == 's' || hovered_object == 'm') {
       arduino.write(str((24 - hovered_count) % 24 + 1)); // this converts coordinates to the frame of reference of the actual system (angles inverted w.r.t. x-axis)
-     } else {
+     }else if(hovered_object == 'z'){
+       println("HC :"+hovered_count);
+       println("HSC :"+ hovered_subcount);
+       getTheLimits(hovered_count,hovered_subcount);
+       println("LL :"+lowLimit);
+       println("UL :"+ upperLimit);
+    
+       arduino.write(str((24 - hovered_count) % 24 + 1)); 
+       arduino.write('/');
+       arduino.write(str(lowLimit));
+       arduino.write('/');
+       arduino.write(str(upperLimit));     
+   } 
+     else {
       arduino.write(str(hovered_count)); // this makes the char get converted into a string form, which over serial, is readable as the same ASCII char back again by the arduino [HACK]
      }
      arduino.write('\n');
@@ -1328,7 +1422,22 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
       current_sweep_meridian = hovered_count; // this needs to be stored in a seperate variable    
       break;
 
-
+     case 'z':
+      previousMillis = millis(); // start the timer from now
+      
+           
+     if(lowLimit == upperLimit){
+     section_state[hovered_count][hovered_subcount] = 1;
+      status = "Not Selected";
+     }else{
+      section_state[hovered_count][hovered_subcount]= 3;
+       status = "Section";
+       lastTes_Hsubcount = hovered_subcount;
+     // println(section_state[hovered_count][hovered_subcount]);
+        current_sweep_meridian = hovered_count; // this needs to be stored in a seperate variable    
+     }
+      break;
+  
      case 's':
       previousMillis = millis(); // start the timer from now
       status = "sweep";
@@ -1338,6 +1447,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    }
 
 
+   
    // Update the Objects to DONE state / back to normal if it is flagged
    void clearHemisQuads() {
     // checks if any hemi_state or quad_state values are == 3, and makes them into 2 (done)
@@ -1354,8 +1464,17 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      }
 
      for (int i = 0; i < 24; i++) { // 24 Meridians 
+     
+      if(daisy_On_Off == "ON"){
       if (abs(meridian_state[i]) == 3) {
        meridian_state[i] = 2;
+      }
+      }else {
+          for(int k =0; k<3 ; k++){
+            if (abs(section_state[i][k]) == 3) {
+               section_state[i][k] = 2;
+             }
+          }
       }
      }
 
@@ -1374,10 +1493,19 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
      }
 
      for (int i = 0; i < 24; i++) { // 24 Meridians 
+     
+     if(daisy_On_Off == "ON"){
       if (abs(meridian_state[i]) == 3) {
        meridian_state[i] = 1;
       }
      }
+     else{
+     for(int k =0; k<3 ; k++){
+            if (abs(section_state[i][k]) == 3) {
+               section_state[i][k] = 1;
+             }
+          }
+    }
 
     }
 
@@ -1387,7 +1515,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
       pattern_state[i] = 1;
      }
     }
-
+    }
    }
 
    // Mouse released To Notify The Slider To Update The Time Intervals And Send It To Arduino 
@@ -1542,7 +1670,23 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
     }
 
+ //For Section on a Merdidan
+ if (status == "Section") {
+   
+    quadHemi_text.println();
+     quadHemi_text.print(hour() + ":" + minute() + ":");
+     int s = second();
+     if (s < 10) {
+      quadHemi_text.print("0" + str(s) + "\t"); // so that the text formatting is proper
+     } else {
+      quadHemi_text.print(str(s) + "\t\t");
+     }
 
+     quadHemi_text.print("Section " +(lastTes_Hsubcount )*30+" - "+(lastTes_Hsubcount + 1)*30+ "\t" + (current_sweep_meridian) * 15);
+     quadHemi_text.print("\t" + str(reaction_time) + "\t");
+     quadHemi_text.flush();
+   
+ }
 
 
     // REDRAW AND SAVE THE ISOPTER TO FILE  
@@ -1567,7 +1711,8 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
        isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])])+ "(" + meridians[current_sweep_meridian]+ ")" + "\t");
       } else if (abs(meridians[current_sweep_meridian]) <= 3) {
        isopter_text.print(str(angleData[(24 - current_sweep_meridian) % 24][numberOfLEDs[(24 - current_sweep_meridian) % 24] - abs(meridians[current_sweep_meridian])]) + "(" + meridians[current_sweep_meridian] + ")" + "\t");
-      }
+      }else {
+        isopter_text.print("No Response" + "\t");}
      }
      //CKR
      isopter_text.print(str(reaction_time) + "\t\t\t");
@@ -1729,7 +1874,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    
    }else {
      daisy_On_Off = "OFF";
-    arduino.write('0');
+   arduino.write('0');
    
    }
    arduino.write('\n');
@@ -1744,7 +1889,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    
    }else {
      ledCouplet = "OFF";
-    arduino.write('0');
+   arduino.write('0');
    
    }
    arduino.write('\n');
@@ -1994,7 +2139,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
     println("All Cleared");
 
     if (flagged_test == false) {
-     if (status == "quadrant" || status == "hemi" || status == "Meridian") {
+     if (status == "quadrant" || status == "hemi" || status == "Meridian" || status == "Section") {
       flagged_test = true;
       Stop();
      } else if (status == "sweep") {
@@ -2046,6 +2191,14 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
         quadHemi_text.print("flagged");
         quadHemi_text.flush();
         break;
+        
+        case 'z':
+        previousMillis = millis(); // start the timer from now
+        status = "Flagged Section";
+        section_state[lastTest_Hcount][lastTes_Hsubcount] = 1;
+        quadHemi_text.print("flagged");
+        quadHemi_text.flush();
+        break;
 
        case 's':
         previousMillis = millis(); // start the timer from now
@@ -2069,7 +2222,7 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
 
     // just update hte flag variable to "flagged"
     if (flagged_test == true) {
-     if (last_tested == "quadrant" || last_tested == "hemi" || last_tested == "Meridian") {
+     if (last_tested == "quadrant" || last_tested == "hemi" || last_tested == "Meridian" || last_tested == "Section") {
       status = "Flagged " + last_tested;
       quadHemi_text.print("flagged");
       quadHemi_text.flush();
@@ -2085,6 +2238,74 @@ color quad_colors[][] = {{#eeeeee, #00ff00, #ffff22, #08BFC4}, {#dddddd, #00ff00
    }
 
 
+
+   //Find the Upper & Lower Limits of LED Numbders 
+   void getTheLimits(int Hcount,int Hscount){
+          // Get the Array elements
+    
+     int lenOfArray = 30 ;
+     //lenOfArray = angleData[(24 - Hcount) % 24].length;
+     // Switch to the appropriate Section
+     switch (Hscount){
+     case 0:{
+     lowLimit = 0;
+     upperLimit = 0;
+     for (int i = 0; i < lenOfArray -1;i++){
+      println(i);
+      //Check for Low Limit 
+      if(angleData[(24 - Hcount) % 24][i] >  0 && angleData[(24 - Hcount) % 24][i+1] == 0) {
+      lowLimit = i;
+      break;
+      }else if(angleData[(24 - Hcount) % 24][i] >= 30 && angleData[(24 - Hcount) % 24][i+1]<30){
+      upperLimit = i+1;   
+      }
+     }
+     break;
+     }
+   
+     case 1:{
+      lowLimit = 0;
+     upperLimit = 0;
+     for (int i = 0; i < lenOfArray -1;i++){
+      
+      //Check for Low Limit 
+      if(angleData[(24 - Hcount) % 24][i+1] < 30 && angleData[(24 - Hcount) % 24][i]>=30) {
+      lowLimit = i;
+      break;
+      }else if(angleData[(24 - Hcount) % 24][i] >= 60 && angleData[(24 - Hcount) % 24][i+1]<60){
+      upperLimit = i+1;
+      }
+      }
+     
+     break;
+     }
+     case 2:{
+       
+     lowLimit = 0;
+     upperLimit = 0;
+     for (int i = 0; i < lenOfArray -1;i++){
+      
+      //Check for Low Limit 
+      if(angleData[(24 - Hcount) % 24][i+1] < 60 && angleData[(24 - Hcount) % 24][i]>=60) {
+      lowLimit = i;
+      break;
+      } else if(angleData[(24 - Hcount) % 24][i] >= 90 && angleData[(24 - Hcount) % 24][i+1]<90){
+      upperLimit = i+1;
+      }
+     }
+     break;
+     }
+     
+     }
+          //update the values to the real world numbering 
+     lowLimit = numberOfLEDs[(24 - Hcount) % 24]  - lowLimit;
+     upperLimit =numberOfLEDs[(24 - Hcount) % 24] - upperLimit;
+     
+     //Reset The state of the section if both the lower limit and Upper Limit are equal
+
+   }
+   
+   
    // This Function Imports The Values From Excel Sheet And Calculates The Angle Subtedted by Each LED 
    float[][] importExcel(String filepath) {
 

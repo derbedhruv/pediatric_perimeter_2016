@@ -418,7 +418,7 @@ else{
   // Code to get serial data and process it.
   if (Serial.available() > 0) {
     char inChar = (char)Serial.read();
-    Serial.println(inChar);
+    //Serial.println(inChar);
     // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
     // for historical reasons we will store this as variables (lat, long)
     if (inChar == ',') {
@@ -430,7 +430,7 @@ else{
       // if its a newline, that means we've reached the end of the command. The stuff before this is a character indicating the second argument of the function to be performed.
       if (inChar == '\n') {
         
-    Serial.println("Serial");
+   // Serial.println("Serial");
         breakOut = false;
         longit = inputString;
         // reset everything again..
@@ -464,6 +464,44 @@ else{
               }
               break;
             }
+      
+            case 'z': { //for Sections in each Meridian
+             // Serial.println("Section Entered");
+               Br = 1;
+               //Set The Color of the LED in Strip 
+                r = Red;
+                g = Green;
+                b= Blue;
+                fixationState = true;
+               // Serial.println(longit.length());
+                int tempNum1 = longit.indexOf('/');
+               // Serial.println(tempNum1);
+              //  Serial.println(longit.substring(0,tempNum1));
+                int meridianNum = longit.substring(0,tempNum1).toInt();
+              // Serial.println(meridianNum);
+                int tempNum2 =  longit.substring(tempNum1+1,longit.length()).indexOf('/');
+               // Serial.println(tempNum2);
+                //Serial.println(longit.substring(tempNum1+1,tempNum1+tempNum2+1));
+                byte lowLimit = longit.substring(tempNum1+1,tempNum1+tempNum2+1).toInt();
+                //Serial.println(longit.substring(tempNum1+tempNum2+2,longit.length()));
+                byte upperLimit = longit.substring(tempNum1+tempNum2+2,longit.length()).toInt();
+
+                //Serial.println(lowLimit);
+                //Serial.println(upperLimit);
+  
+                //Set The Sweep Interval to False
+                    wayImplementFM = fixed;
+                sweepStrip = meridianNum;
+                 if (sweepStrip <= 24 && sweepStrip > 0 && lowLimit != upperLimit ) {
+                meridians_turnOn [0] =  sweepStrip;
+                verifyTest = fountainModel(upperLimit,upperLimit-lowLimit+1 , lowLimit, meridians_turnOn,1, 2);
+                verifyTest = fountainModel(upperLimit,upperLimit-lowLimit+1 , lowLimit, meridians_turnOn,1, 2);
+                // Serial.println(verifyTest);
+                 }
+              break;
+            } 
+          
+            
           case 'm': { // Choosen Meridian Will Turn On
               // Based on the number entered as longit[0], we will turn on that particular LED.
               Br = 1;
@@ -483,16 +521,16 @@ else{
 
                 meridians_turnOn [0] =  sweepStrip;
                 wayImplementFM = fixed;
-                Serial.println(wayImplementFM);
-                verifyTest = fountainModel(25,14, 12, meridians_turnOn,1, 2);
-                //verifyTest = fountainModel(25,14, 12, meridians_turnOn,1, 2);
+                // Serial.println(wayImplementFM);
+                verifyTest = fountainModel(25,22, 4, meridians_turnOn,1, 2);
+                verifyTest = fountainModel(25,22, 4, meridians_turnOn,1, 2);
                // turnThemOn(meridians_turnOn, daisyOn, 1);
               }
               // brightness = String(longit).toInt();
               break;
             }
           case 'p':  {// Choose
-            Serial.println("pattern");
+            // Serial.println("pattern");
               Br = 1;
               //     Serial.println(2);
               //analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
@@ -931,11 +969,11 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
     fallCounter = numOfPixelsInSetFM - 1;
     fallDone = true;
   }
-Serial.println("Printing Starts");
+/* Serial.println("Printing Starts");
 Serial.println(wayImplementFM);
 Serial.println(riseDone);
 Serial.println(fixedDone);
-Serial.println(fallDone);
+Serial.println(fallDone);*/
   //Set whether Rise is completed/Not Required
   if ((riseCounter == numOfPixelsInSetFM - 1)) {
     riseDone = true;
@@ -994,11 +1032,11 @@ Serial.println(fallDone);
   }
 
 
-Serial.println(startPixelNumberFM);
+/* Serial.println(startPixelNumberFM);
 Serial.println(numOfPixelsInSetFM);
 Serial.println(endPixelNumberFM);
 Serial.println(fixedCounter);
-Serial.println(riseDone);
+Serial.println(riseDone);*/
   //Code for Fixed
   if (fixedCounter < (startPixelNumberFM - endPixelNumberFM - numOfPixelsInSetFM + 2) && riseDone == true) {
     pixelIndex = 0;
@@ -1033,7 +1071,7 @@ Serial.println(riseDone);
       //CKR   Serial.println(pixelIndex);
       turnOnDaisy(daisyPixelsTurnOn, pixelIndex);
     }
-    Serial.println(pixelIndex);
+  //  Serial.println(pixelIndex);
     fixedCounter += 1;
   }
 
