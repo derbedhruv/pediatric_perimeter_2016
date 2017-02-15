@@ -232,7 +232,7 @@ void loop() {
   */
 
   //code to blink fixation
-
+// Serial.println("blink");
 if(fixationState){
   if (millis() - fixationMillis <= flickerDuration/2) {
   } else {
@@ -250,6 +250,7 @@ else{
   analogWrite(fixationLED, 0);
 } 
   // Code for Sweep
+//Serial.println("sweep");
   if (sweep == true) {
 
     // Serial.println(currentMillis - previousMillis);
@@ -301,6 +302,7 @@ else{
   }
   
   // Code for patterns
+ // Serial.println("pattern");
   if (patterns == true) {
 
     // Serial.println(currentMillis - previousMillis);
@@ -369,7 +371,7 @@ else{
                }
               }
             }*/
-          wayImplementRM = riseFixed;
+          wayImplementFM = riseFixed;
           verifyTest = fountainModel(3, 3, 1, allMeridians, 6 * (patternTwoIndex + 1 ), 2);
           if (verifyTest == true) {
             patternTwoIndex += 1;
@@ -416,6 +418,7 @@ else{
   // Code to get serial data and process it.
   if (Serial.available() > 0) {
     char inChar = (char)Serial.read();
+    Serial.println(inChar);
     // if there's a comma, that means the stuff before the comma is one character indicating the type of function to be performed
     // for historical reasons we will store this as variables (lat, long)
     if (inChar == ',') {
@@ -426,6 +429,8 @@ else{
     } else {
       // if its a newline, that means we've reached the end of the command. The stuff before this is a character indicating the second argument of the function to be performed.
       if (inChar == '\n') {
+        
+    Serial.println("Serial");
         breakOut = false;
         longit = inputString;
         // reset everything again..
@@ -477,14 +482,17 @@ else{
                 sweepStrip = chosenStrip;
 
                 meridians_turnOn [0] =  sweepStrip;
-                verifyTest = fountainModel(25,12 , 14, meridians_turnOn,1, 2);
-                verifyTest = fountainModel(25,12 , 14, meridians_turnOn,1, 2);
+                wayImplementFM = fixed;
+                Serial.println(wayImplementFM);
+                verifyTest = fountainModel(25,14, 12, meridians_turnOn,1, 2);
+                //verifyTest = fountainModel(25,14, 12, meridians_turnOn,1, 2);
                // turnThemOn(meridians_turnOn, daisyOn, 1);
               }
               // brightness = String(longit).toInt();
               break;
             }
           case 'p':  {// Choose
+            Serial.println("pattern");
               Br = 1;
               //     Serial.println(2);
               //analogWrite(fixationLED, fixationStrength); // Fixation is very Important during kinetic perimetry.
@@ -923,7 +931,11 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
     fallCounter = numOfPixelsInSetFM - 1;
     fallDone = true;
   }
-
+Serial.println("Printing Starts");
+Serial.println(wayImplementFM);
+Serial.println(riseDone);
+Serial.println(fixedDone);
+Serial.println(fallDone);
   //Set whether Rise is completed/Not Required
   if ((riseCounter == numOfPixelsInSetFM - 1)) {
     riseDone = true;
@@ -982,7 +994,11 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
   }
 
 
-
+Serial.println(startPixelNumberFM);
+Serial.println(numOfPixelsInSetFM);
+Serial.println(endPixelNumberFM);
+Serial.println(fixedCounter);
+Serial.println(riseDone);
   //Code for Fixed
   if (fixedCounter < (startPixelNumberFM - endPixelNumberFM - numOfPixelsInSetFM + 2) && riseDone == true) {
     pixelIndex = 0;
@@ -1017,7 +1033,7 @@ boolean fountainModel(int startPixelNumberFM, int numOfPixelsInSetFM, int endPix
       //CKR   Serial.println(pixelIndex);
       turnOnDaisy(daisyPixelsTurnOn, pixelIndex);
     }
-
+    Serial.println(pixelIndex);
     fixedCounter += 1;
   }
 
