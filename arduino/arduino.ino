@@ -850,56 +850,57 @@ void hemisphere4() {
 //Initializes Quadrant 1
 void quad1() {
   // meridian 1 to 7
-  byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7};
+  // byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7};
+  byte meridians_turnOn[] = {3, 4, 5};
   turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 2
 void quad2() {
   // 7 to 13
-  byte meridians_turnOn[] = {7, 8, 9, 10, 11, 12, 13};
+  byte meridians_turnOn[] = { 9, 10, 11};
   turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 3
 void quad3() {
   // meridian 13 to 19
-  byte meridians_turnOn[] = {13, 14, 15, 16, 17, 18, 19};
+  byte meridians_turnOn[] = { 15, 16, 17 };
   turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 4
 void quad4() {
   // 19 to 24
-  byte meridians_turnOn[] = {19, 20, 21, 22, 23, 24};
+  byte meridians_turnOn[] = { 20, 21, 22};
   turnThemOn(meridians_turnOn, true, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 5 - which is quad 1 without the central 30
 void quad5() {
   // meridian 1 to 7, without central LEDs
-  byte meridians_turnOn[] = {1, 2, 3, 4, 5, 6, 7};
+  byte meridians_turnOn[] = { 3, 4, 5};
   turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 6
 void quad6() {
   // meridian 7 to 13, without central LEDs
-  byte meridians_turnOn[] = {7, 8, 9, 10, 11, 12, 13};
+  byte meridians_turnOn[] = {9, 10, 11};
   turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 7 -
 void quad7() {
   // meridian 13 to 19 without cental LEDs
-  byte meridians_turnOn[] = {13, 14, 15, 16, 17, 18, 19};
+  byte meridians_turnOn[] = { 15, 16, 17};
   turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 
 //Initializes Quadrant 8
 void quad8() {
   // 19 to 24, without central
-  byte meridians_turnOn[] = {19, 20, 21, 22, 23, 24};
+  byte meridians_turnOn[] = {20, 21, 22};
   turnThemOn(meridians_turnOn, false, sizeof(meridians_turnOn));
 }
 

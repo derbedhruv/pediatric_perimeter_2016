@@ -1100,6 +1100,7 @@ int lowLimit,upperLimit;
       stroke(meridian_color[meridian_state[i]]);
      } else {
       stroke(#bbbbbb);
+    
      }
 
      // draw a line from the center to the meridian points (xm, ym)
@@ -1118,7 +1119,11 @@ int lowLimit,upperLimit;
    y2 =  sin(radians(-i * 15)) * (diameter/2)+y;
    
    strokeWeight(1); // Restore the default Value r
-   stroke(#bbbbbb);
+     if((i%2)== 0){
+      stroke(#bbbbbb);
+       } else {
+        stroke(#304661);
+      }
    line(x1, y1, x2, y2);
   
   for(int k =0; k<3 ; k++){
